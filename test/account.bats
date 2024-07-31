@@ -14,5 +14,6 @@ teardown() {
 @test "Can say hello" {
     dfx deploy
     run dfx canister call account hello
-    assert_output '(variant { Ok = "hello" })'
+    assert_output '("hello")'
 }
+
