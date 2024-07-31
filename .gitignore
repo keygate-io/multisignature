@@ -1,1 +1,4 @@
 .idea
+.dfx/
+canisters/
+target/
