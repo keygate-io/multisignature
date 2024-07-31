@@ -1,0 +1,8 @@
+[workspace]
+members = ["."]
+resolver = "2"
+
+[workspace.dependencies]
+candid = "0.10"
+ic-cdk = "0.15.0"
+ic-cdk-bindgen = "0.1.3"
