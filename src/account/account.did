@@ -1,0 +1,2 @@
+type Result = variant { Ok : text; Err : text };
+service : { hello : () -> (Result) query }

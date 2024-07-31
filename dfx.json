@@ -4,7 +4,7 @@
     "account": {
       "type": "rust",
       "package": "account",
-      "candid": "src/account/account.did",
+      "candid": "src/account/account.did"
     }
   },
   "defaults": {
