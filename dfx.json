@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "canisters": {
+    "account": {
+      "type": "rust",
+      "package": "account",
+      "candid": "src/account/account.did",
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env"
+}
