@@ -1,11 +1,21 @@
-use ic_cdk::query;
+use std::cell::RefCell;
 
-/**
-Account ->
-- Principal Ids
-**/
+use ic_cdk::{query, update};
+use candid::{Principal};
 
+thread_local! {
+    static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
+}
 
+#[update]
+fn include_signee(signee: String) {
+    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
+        match Principal::from_text(signee) {
+            Ok(x) => signees.borrow_mut().push(x),
+            Err(x) => ic_cdk::trap(&format!("Could not parse signee principal: {}. Is it a valid principal?", x))
+        }
+    });
+}
 
 #[query]
 fn hello() -> String {

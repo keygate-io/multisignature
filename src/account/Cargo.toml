@@ -2,6 +2,7 @@
 name = "account"
 version = "0.0.1"
 edition = "2021"
+rust-version = "1.75.0"
 
 [lib]
 crate-type = ["cdylib"]
@@ -10,3 +11,4 @@ crate-type = ["cdylib"]
 candid = { workspace = true }
 ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
+miette = { version = "7.2.0", features = ["fancy"] }

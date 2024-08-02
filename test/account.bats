@@ -12,8 +12,22 @@ teardown() {
 }
 
 @test "Can say hello" {
-    dfx deploy
-    run dfx canister call account hello
-    assert_output '("hello")'
+  dfx deploy
+  run dfx canister call account hello
+  assert_output '("hello")'
 }
+
+@test "Include signee: invalid principal" {
+  dfx deploy
+  run dfx canister call account include_signee invalid_principal
+  assert_output --partial 'Is it a valid principal?'
+}
+
+@test "Include signee: valid principal" {
+  dfx deploy
+  run dfx canister call account include_signee un4fu-tqaaa-aaaab-qadjq-cai
+  assert_success
+}
+
+
 
