@@ -18,6 +18,13 @@ fn include_signee(signee: String) {
 }
 
 #[query]
+fn get_signees() -> Vec<Principal> {
+    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
+        signees.borrow().clone()
+    })
+}
+
+#[query]
 fn hello() -> String {
     String::from("hello")
 }
