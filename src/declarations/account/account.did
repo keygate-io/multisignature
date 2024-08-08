@@ -1,5 +1,0 @@
-service : {
-  get_signees : () -> (vec principal) query;
-  hello : () -> (text) query;
-  include_signee : (text) -> ();
-}
