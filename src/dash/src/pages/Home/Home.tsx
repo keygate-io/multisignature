@@ -1,9 +1,12 @@
+import { Button } from "antd";
 import React from "react";
 
 const Home: React.FC = () => {
   return (
     <div className="p-12">
-      <h1 className="text-2xl font-bold m-0 bg-gray-700 text-white p-4">T1</h1>
+      <h1 className="text-2xl font-bold m-0 bg-gray-700 text-white p-4">
+        Ea minim duis laborum et eu eiusmod nostrud incididunt excepteur.
+      </h1>
       <p>
         Cupidatat esse laborum enim ipsum Lorem voluptate enim magna aliqua amet
         velit aute eu. Nostrud irure excepteur et consequat labore elit et amet
@@ -57,6 +60,9 @@ const Home: React.FC = () => {
             quis elit eu ad irure excepteur tempor. Fugiat anim consectetur esse
             proident magna dolor adipisicing mollit.
           </p>
+        </div>
+        <div className="col-span-2 bg-gray-700 text-white p-4">
+          <Button type="primary">Continue</Button>
         </div>
       </div>
     </div>
