@@ -5,6 +5,16 @@
       "type": "rust",
       "package": "account",
       "candid": "src/account/account.did"
+    },
+    "dash": {
+      "dependencies": [
+        "account"
+      ],
+      "source": [
+        "src/dash/dist"
+      ],
+      "type": "assets",
+      "workspace": "dash"
     }
   },
   "defaults": {

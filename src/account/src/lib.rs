@@ -24,9 +24,4 @@ fn get_signees() -> Vec<Principal> {
     })
 }
 
-#[query]
-fn hello() -> String {
-    String::from("hello")
-}
-
 ic_cdk_macros::export_candid!();

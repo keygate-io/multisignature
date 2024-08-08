@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "type": "module",
     "scripts": {
-        "setup": "npm i && dfx canister create custodial_backend && dfx generate custodial_backend && dfx deploy",
+        "setup": "npm i && dfx canister create dash && dfx generate dash && dfx deploy",
         "start": "vite --port 3000",
         "prebuild": "dfx generate",
         "build": "tsc && vite build",
