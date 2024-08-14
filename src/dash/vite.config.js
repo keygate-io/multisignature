@@ -6,6 +6,14 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: "../../.env" });
 
+/**
+ * Change the II_URL based on the network.
+ */
+process.env.II_URL =
+  process.env.DFX_NETWORK === "local"
+    ? `http://${process.env.INTERNET_IDENTITY_CANISTER_ID}.localhost:4943/`
+    : `https://identity.ic0.app`;
+
 export default defineConfig({
   build: {
     emptyOutDir: true,
@@ -27,6 +35,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    environment(["II_URL"]),
     environment("all", { prefix: "CANISTER_" }),
     environment("all", { prefix: "DFX_" }),
   ],
