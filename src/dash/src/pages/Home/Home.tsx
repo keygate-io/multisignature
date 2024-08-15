@@ -1,7 +1,6 @@
 import { Button } from "antd";
-import { useInternetIdentity } from "ic-use-internet-identity";
 import React from "react";
-import { Link } from "react-router-dom";
+import { useInternetIdentity } from "../../ic-use-internet-identity/src";
 
 const Home: React.FC = () => {
   const { login, loginStatus } = useInternetIdentity();
@@ -9,7 +8,8 @@ const Home: React.FC = () => {
   return (
     <div className="p-12">
       <h1 className="text-2xl font-bold m-0 bg-gray-700 text-white p-4">
-        Ea minim duis laborum et eu eiusmod nostrud incididunt excepteur.{" "}
+        Ea minim duis laborum et eu eiusmod nostrud incididunt excepteur.
+        {loginStatus}
       </h1>
       <p>
         Cupidatat esse laborum enim ipsum Lorem voluptate enim magna aliqua amet
@@ -67,7 +67,7 @@ const Home: React.FC = () => {
         </div>
         <div className="col-span-2 bg-gray-700 text-white p-4">
           <Button type="primary" onClick={login}>
-            <Link to="/login">Login</Link>
+            Login
           </Button>
         </div>
       </div>
