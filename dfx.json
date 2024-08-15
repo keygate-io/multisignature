@@ -6,6 +6,11 @@
       "package": "account",
       "candid": "src/account/account.did"
     },
+    "registration": {
+      "type": "rust",
+      "package": "account",
+      "candid": "src/account/account.did"
+    },
     "dash": {
       "dependencies": [
         "account"

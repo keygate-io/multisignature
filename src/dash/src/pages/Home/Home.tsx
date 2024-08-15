@@ -1,6 +1,6 @@
 import { Button } from "antd";
 import React from "react";
-import { useInternetIdentity } from "../../ic-use-internet-identity/src";
+import { useInternetIdentity } from "../../hooks/use-internet-identity";
 
 const Home: React.FC = () => {
   const { login, loginStatus } = useInternetIdentity();
@@ -9,6 +9,7 @@ const Home: React.FC = () => {
     <div className="p-12">
       <h1 className="text-2xl font-bold m-0 bg-gray-700 text-white p-4">
         Ea minim duis laborum et eu eiusmod nostrud incididunt excepteur.
+        <br />
         {loginStatus}
       </h1>
       <p>
