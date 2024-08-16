@@ -19,7 +19,7 @@ const CreateProfile = () => {
 
       const exists = await isRegistered(identity!.getPrincipal());
       if (exists) {
-        navigate("/existing-profile");
+        navigate("/dashboard");
       }
     };
 

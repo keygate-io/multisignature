@@ -14,7 +14,7 @@ const Home: React.FC = () => {
         try {
           const exists = await isRegistered(identity!.getPrincipal());
           if (exists) {
-            navigate("/existing-profile");
+            navigate("/dashboard");
           } else {
             navigate("/new-profile/create");
           }
