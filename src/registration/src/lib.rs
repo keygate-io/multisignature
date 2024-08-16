@@ -1,27 +1,42 @@
+use std::collections::HashMap;
 use std::cell::RefCell;
 
 use ic_cdk::{query, update};
-use candid::{Principal};
+use candid::{CandidType, Deserialize, Principal};
+
+#[derive(Clone, CandidType, Deserialize)]
+struct UserInfo {
+    first_name: String,
+    last_name: String,
+}
 
 thread_local! {
-    static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
+    static USERS: RefCell<HashMap<Principal, UserInfo>> = RefCell::default();
 }
 
 #[update]
-fn include_signee(signee: String) {
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
-        match Principal::from_text(signee) {
-            Ok(x) => signees.borrow_mut().push(x),
-            Err(x) => ic_cdk::trap(&format!("Could not parse signee principal: {}. Is it a valid principal?", x))
+fn register_user(principal: Principal, first_name: String, last_name: String) {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        if users.contains_key(&principal) {
+            ic_cdk::trap(&format!("User with principal {} already exists", principal));
         }
+        users.insert(principal, UserInfo { first_name, last_name });
     });
 }
 
 #[query]
-fn get_signees() -> Vec<Principal> {
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
-        signees.borrow().clone()
+fn get_user(principal: Principal) -> Option<UserInfo> {
+    USERS.with(|users| {
+        users.borrow().get(&principal).cloned()
     })
 }
 
-ic_cdk_macros::export_candid!();
+#[query]
+fn user_exists(principal: Principal) -> bool {
+    USERS.with(|users| {
+        users.borrow().contains_key(&principal)
+    })
+}
+
+ic_cdk::export_candid!();

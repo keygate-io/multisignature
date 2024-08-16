@@ -18,7 +18,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ main }) => {
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       <Header />
-      <div className="w-full bg-gray-500 flex-1">
+      <div className="w-full bg-gray-500 flex-1 flex">
         {location.pathname === "/" ? (
           <Home />
         ) : location.pathname === "/login" ? (

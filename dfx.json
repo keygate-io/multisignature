@@ -8,8 +8,8 @@
     },
     "registration": {
       "type": "rust",
-      "package": "account",
-      "candid": "src/account/account.did"
+      "package": "registration",
+      "candid": "src/registration/registration.did"
     },
     "dash": {
       "dependencies": [

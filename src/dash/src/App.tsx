@@ -4,6 +4,7 @@ import { ConfigProvider } from "antd";
 import PageLayout from "./components/PageLayout";
 import Login from "./pages/Login/Login";
 import Home from "./pages/Home/Home";
+import CreateProfile from "./pages/NewProfile/Create";
 
 function App() {
   return (
@@ -18,6 +19,10 @@ function App() {
         <Routes>
           <Route path="/" element={<PageLayout main={<Home />} />} />
           <Route path="/login" element={<PageLayout main={<Login />} />} />
+          <Route
+            path="/new-profile/create"
+            element={<PageLayout main={<CreateProfile />} />}
+          />
         </Routes>
       </ConfigProvider>
     </BrowserRouter>

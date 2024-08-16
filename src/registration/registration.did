@@ -1,4 +1,6 @@
+type UserInfo = record { first_name : text; last_name : text };
 service : {
-  get_signees : () -> (vec principal) query;
-  include_signee : (text) -> ();
+  get_user : (principal) -> (opt UserInfo) query;
+  register_user : (principal, text, text) -> ();
+  user_exists : (principal) -> (bool) query;
 }
