@@ -13,7 +13,7 @@ const CreateProfile = () => {
   useEffect(() => {
     const redirect = async () => {
       if (loginStatus !== "success") {
-        window.location.href = "/";
+        navigate("/login");
         return;
       }
 
