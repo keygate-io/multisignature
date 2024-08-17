@@ -13,7 +13,7 @@ struct UserInfo {
 
 thread_local! {
     static USERS: RefCell<HashMap<Principal, UserInfo>> = RefCell::default();
-    static WALLET_WASM: RefCell<Vec<u8>> = RefCell::default();
+    static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
 }
 
 #[init]
