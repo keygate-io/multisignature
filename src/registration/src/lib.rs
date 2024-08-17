@@ -1,3 +1,5 @@
+mod deployer;
+
 use std::collections::HashMap;
 use std::cell::RefCell;
 
@@ -39,6 +41,19 @@ fn add_account(principal: Principal, account: Principal) {
         let user = users.get_mut(&principal).unwrap_or_else(|| ic_cdk::trap("User not found"));
         user.accounts.push(account);
     });
+}
+
+#[update]
+async fn deploy_account(principal: Principal) -> Principal {
+    let wallet_wasm = WALLET_WASM.with(|wasm| wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded")));
+    let deployed = deployer::deploy(wallet_wasm).await;
+    match deployed {
+        Ok(canister_id) => {
+            add_account(principal, canister_id);
+            canister_id
+        }
+        Err(err) => ic_cdk::trap(&format!("Failed to deploy account: {}", err)),
+    }
 }
 
 #[update]

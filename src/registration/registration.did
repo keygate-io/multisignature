@@ -1,0 +1,13 @@
+type UserInfo = record {
+  accounts : vec principal;
+  first_name : text;
+  last_name : text;
+};
+service : () -> {
+  add_account : (principal, principal) -> ();
+  deploy_account : (principal) -> (principal);
+  get_user : (principal) -> (opt UserInfo) query;
+  load_wallet_wasm : () -> ();
+  register_user : (principal, text, text) -> ();
+  user_exists : (principal) -> (bool) query;
+}
