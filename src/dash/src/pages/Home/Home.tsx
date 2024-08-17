@@ -2,7 +2,7 @@ import { Button } from "antd";
 import React, { useEffect } from "react";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 import { useNavigate } from "react-router-dom";
-import { isRegistered } from "../../api/users";
+import { hasAnAccount, isRegistered } from "../../api/users";
 
 const Home: React.FC = () => {
   const { login, loginStatus, identity } = useInternetIdentity();
@@ -14,7 +14,12 @@ const Home: React.FC = () => {
         try {
           const exists = await isRegistered(identity!.getPrincipal());
           if (exists) {
-            navigate("/dashboard");
+            const has = await hasAnAccount(identity!.getPrincipal());
+            if (has) {
+              navigate("/dashboard");
+            } else {
+              navigate("/new-account/create");
+            }
           } else {
             navigate("/new-profile/create");
           }

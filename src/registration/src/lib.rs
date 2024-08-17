@@ -8,6 +8,7 @@ use candid::{CandidType, Deserialize, Principal};
 struct UserInfo {
     first_name: String,
     last_name: String,
+    accounts: Vec<Principal>,
 }
 
 thread_local! {
@@ -21,7 +22,16 @@ fn register_user(principal: Principal, first_name: String, last_name: String) {
         if users.contains_key(&principal) {
             ic_cdk::trap(&format!("User with principal {} already exists", principal));
         }
-        users.insert(principal, UserInfo { first_name, last_name });
+        users.insert(principal, UserInfo { first_name, last_name, accounts: Vec::new() });
+    });
+}
+
+#[update]
+fn add_account(principal: Principal, account: Principal) {
+    USERS.with(|users| {
+        let mut users = users.borrow_mut();
+        let user = users.get_mut(&principal).unwrap_or_else(|| ic_cdk::trap("User not found"));
+        user.accounts.push(account);
     });
 }
 
