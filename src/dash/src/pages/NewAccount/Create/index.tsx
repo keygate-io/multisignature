@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Progress } from "antd";
+import { Button, message, Progress } from "antd";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { getUser } from "../../../api/users";
 import { useNavigate } from "react-router-dom";
@@ -173,20 +173,26 @@ const Review = ({
 const CreateAccount = () => {
   const [step, setStep] = useState(1);
   const [accountName, setAccountName] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState("Sepolia");
+  const [selectedNetwork, setSelectedNetwork] = useState("ICP");
   const [signers, setSigners] = useState<Signer[]>([
     { name: "Signer 1", principalId: "" },
   ]);
   const [threshold, setThreshold] = useState(1);
   const { identity } = useInternetIdentity();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const nextStep = () => {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Handle form submission or further steps
-      console.log("Form submitted");
+      messageApi.open({
+        type: "loading",
+        content: "Creating smart account..",
+        duration: 0,
+      });
+      // Dismiss manually and asynchronously
+      setTimeout(messageApi.destroy, 2500);
     }
   };
 
@@ -221,6 +227,7 @@ const CreateAccount = () => {
 
   return (
     <div className="bg-gray-800 text-white max-h-screen w-full flex flex-col">
+      {contextHolder}
       <main className="mt-20 flex-grow flex justify-center">
         <div className="max-w-xl w-full">
           <h2 className="text-2xl font-bold mb-6">Create new Safe Account</h2>

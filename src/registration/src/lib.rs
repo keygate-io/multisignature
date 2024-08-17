@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::cell::RefCell;
 
-use ic_cdk::{query, update};
+use ic_cdk::{init, query, update};
 use candid::{CandidType, Deserialize, Principal};
 
 #[derive(Clone, CandidType, Deserialize)]
@@ -13,6 +13,12 @@ struct UserInfo {
 
 thread_local! {
     static USERS: RefCell<HashMap<Principal, UserInfo>> = RefCell::default();
+    static WALLET_WASM: RefCell<Vec<u8>> = RefCell::default();
+}
+
+#[init]
+fn init() {
+    load_wallet_wasm();
 }
 
 #[update]
@@ -32,6 +38,14 @@ fn add_account(principal: Principal, account: Principal) {
         let mut users = users.borrow_mut();
         let user = users.get_mut(&principal).unwrap_or_else(|| ic_cdk::trap("User not found"));
         user.accounts.push(account);
+    });
+}
+
+#[update]
+fn load_wallet_wasm() {
+    let wasm_module: Vec<u8> = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    WALLET_WASM.with(|wasm| {
+        *wasm.borrow_mut() = Some(wasm_module);
     });
 }
 

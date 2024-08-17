@@ -5,6 +5,7 @@ type UserInfo = record {
 };
 service : {
   add_account : (principal, principal) -> ();
+  deploy_acount : (principal) -> ();
   get_user : (principal) -> (opt UserInfo) query;
   register_user : (principal, text, text) -> ();
   user_exists : (principal) -> (bool) query;
