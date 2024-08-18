@@ -3,6 +3,7 @@ import { Button, message, Progress } from "antd";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { getUser } from "../../../api/users";
 import { useNavigate } from "react-router-dom";
+import { registration } from "../../../../../declarations/registration";
 
 interface Step1Props {
   accountName: string;
@@ -191,8 +192,11 @@ const CreateAccount = () => {
         content: "Creating smart account..",
         duration: 0,
       });
-      // Dismiss manually and asynchronously
-      setTimeout(messageApi.destroy, 2500);
+
+      registration.deploy_account(identity!.getPrincipal()).then((res) => {
+        messageApi.destroy();
+        navigate("/dashboard");
+      });
     }
   };
 

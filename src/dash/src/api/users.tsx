@@ -23,3 +23,12 @@ export async function hasAnAccount(principal: Principal): Promise<boolean> {
   const req = await registration.get_user(principal);
   return req[0] !== undefined && req[0].accounts.length > 0;
 }
+
+export async function deployAccount(
+  principal: Principal,
+  accountName: string,
+  signers: string[],
+  threshold: number
+): Promise<Principal> {
+  return registration.deploy_account(principal);
+}
