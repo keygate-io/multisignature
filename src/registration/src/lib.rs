@@ -1,4 +1,5 @@
 mod deployer;
+mod memory;
 
 use std::collections::HashMap;
 use std::cell::RefCell;
@@ -16,6 +17,7 @@ struct UserInfo {
 thread_local! {
     static USERS: RefCell<HashMap<Principal, UserInfo>> = RefCell::default();
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
+    
 }
 
 #[init]

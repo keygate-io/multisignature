@@ -87,7 +87,12 @@ const Dashboard = () => {
               <Typography>
                 Receive ICP to start interacting with your account.
               </Typography>
-              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2 }}
+                onClick={handleOpen}
+              >
                 Receive ICP
               </Button>
             </CardContent>
@@ -129,7 +134,7 @@ const Dashboard = () => {
             p: 4,
           }}
         >
-          <Typography variant="h6">Text in a modal</Typography>
+          <Typography variant="h6">Top up the smart account</Typography>
           <Typography sx={{ mt: 2 }}>
             Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
           </Typography>
