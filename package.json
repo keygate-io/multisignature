@@ -17,6 +17,11 @@
     ],
     "dependencies": {
         "@ant-design/icons": "^5.3.5",
+        "@emotion/react": "^11.13.0",
+        "@emotion/styled": "^11.13.0",
+        "@fontsource/roboto": "^5.0.14",
+        "@mui/icons-material": "^5.16.7",
+        "@mui/material": "^5.16.7",
         "bech32": "^2.0.0",
         "buffer": "^6.0.3",
         "clsx": "^2.1.0",
