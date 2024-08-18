@@ -1,16 +1,26 @@
 import { Principal } from "@dfinity/principal";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
-import { Layout, Button, Progress, Card } from "antd";
 import { useEffect, useState } from "react";
 import { getUser } from "../../api/users";
 import { useNavigate } from "react-router-dom";
-
-const { Sider, Content } = Layout;
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Modal,
+  Typography,
+  CircularProgress,
+  CssBaseline,
+} from "@mui/material";
 
 const Dashboard = () => {
   const { identity } = useInternetIdentity();
   const [account, setAccount] = useState<Principal | null>(null);
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   useEffect(() => {
     function fetchUser() {
@@ -29,58 +39,103 @@ const Dashboard = () => {
   }, [identity]);
 
   return (
-    <Layout style={{ minHeight: "80vh" }}>
-      <Sider width={326} theme="dark">
-        <div className="p-4 text-white text-center">
-          {account?.toText() ?? "Fetching account"}
-        </div>
-        <Button type="primary" style={{ width: "90%", margin: "0 5%" }}>
+    <Box sx={{ display: "flex", minHeight: "80vh" }}>
+      <CssBaseline />
+      <Box
+        sx={{
+          width: 326,
+          backgroundColor: "#333",
+          color: "#fff",
+          p: 4,
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Typography>{account?.toText() ?? "Fetching account"}</Typography>
+        <Button variant="contained" color="primary" sx={{ mt: 2 }}>
           New transaction
         </Button>
-      </Sider>
-      <Layout className="bg-gray-800">
-        <Content style={{ margin: "24px 16px" }} className="text-white p-4">
-          <div>
-            <p className="text-lg">Total asset value</p>
-            <div className="text-5xl font-semibold">0 ICP</div>
-          </div>
-          <div className="flex flex-row space-x-8 mt-8">
-            <div>
-              <Progress percent={50} type="circle" />
-            </div>
-            <div className="leading-none">
-              <p className="text-2xl">Activate your Smart Account</p>
-              <p>
-                1 of 2 steps completed. Finish the next steps to start using all
-                Safe Account features:
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-row space-x-12 mt-12 w-full">
-            <Card title="Add native assets" bordered={false} className="w-1/3">
-              <p>Receive ICP to start interacting with your account.</p>
-              <Button type="primary">Receive ICP</Button>
-              {/* <div
-                className="font-bold break-all"
-                style={{ fontFamily: "monospace" }}
-              >
-                89e1ce873416e42c72257315354771122c4116e0d23c0e8073a0697908bda121
-              </div> */}
-            </Card>
-            <Card title="Create your first transaction" bordered={false}>
-              <p>Simply send funds or add a new signer to the account.</p>
-              <Button type="primary">Create transaction</Button>
-            </Card>
-            <Card title="Safe Account is ready!" bordered={false}>
-              <p>
+      </Box>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          backgroundColor: "#2c2c2c",
+          p: 4,
+          color: "#fff",
+        }}
+      >
+        <Typography variant="h5">Total asset value</Typography>
+        <Typography variant="h3" fontWeight="bold">
+          0 ICP
+        </Typography>
+        <Box sx={{ display: "flex", mt: 8, alignItems: "center" }}>
+          <CircularProgress variant="determinate" value={50} size={60} />
+          <Box sx={{ ml: 4 }}>
+            <Typography variant="h6">Activate your Smart Account</Typography>
+            <Typography>
+              1 of 2 steps completed. Finish the next steps to start using all
+              Safe Account features:
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex", mt: 12, gap: 3 }}>
+          <Card sx={{ width: "33%" }}>
+            <CardContent>
+              <Typography variant="h6">Add native assets</Typography>
+              <Typography>
+                Receive ICP to start interacting with your account.
+              </Typography>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+                Receive ICP
+              </Button>
+            </CardContent>
+          </Card>
+          <Card sx={{ width: "33%" }}>
+            <CardContent>
+              <Typography variant="h6">
+                Create your first transaction
+              </Typography>
+              <Typography>
+                Simply send funds or add a new signer to the account.
+              </Typography>
+              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+                Create transaction
+              </Button>
+            </CardContent>
+          </Card>
+          <Card sx={{ width: "33%" }}>
+            <CardContent>
+              <Typography variant="h6">Safe Account is ready!</Typography>
+              <Typography>
                 Continue to improve your account security and unlock more
                 features.
-              </p>
-            </Card>
-          </div>
-        </Content>
-      </Layout>
-    </Layout>
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
+      <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography variant="h6">Text in a modal</Typography>
+          <Typography sx={{ mt: 2 }}>
+            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+          </Typography>
+        </Box>
+      </Modal>
+    </Box>
   );
 };
 

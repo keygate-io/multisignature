@@ -10,10 +10,7 @@ interface PageLayoutProps {
 
 const PageLayout: React.FC<PageLayoutProps> = ({ main }) => {
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    >
+    <div className="min-h-screen flex flex-col">
       <Header />
       <div className="w-full bg-gray-800 flex-1 flex">{main}</div>
       <Footer />
