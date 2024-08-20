@@ -1,16 +1,11 @@
 mod deployer;
 mod memory;
-mod subaccount;
-mod types;
 
 use std::collections::HashMap;
 use std::cell::RefCell;
 
 use ic_cdk::{init, query, update};
 use candid::{CandidType, Deserialize, Principal};
-use memory::LAST_SUBACCOUNT_NONCE;
-use subaccount::to_subaccount;
-use types::Error;
 
 #[derive(Clone, CandidType, Deserialize)]
 struct UserInfo {
@@ -23,10 +18,6 @@ thread_local! {
     static USERS: RefCell<HashMap<Principal, UserInfo>> = RefCell::default();
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
     
-}
-
-fn nonce() -> u32 {
-    LAST_SUBACCOUNT_NONCE.with(|nonce_ref| *nonce_ref.borrow().get())
 }
 
 #[init]
@@ -55,15 +46,16 @@ fn add_account(principal: Principal, account: Principal) {
 }
 
 #[update]
-async fn add_subaccount() -> Result<String, Error> {
-    let principal = ic_cdk::caller();
-    let user = USERS.with(|users| {
-        users.borrow().get(&principal).cloned()
-    }).ok_or(Error { message: "User not found".to_string() })?;
-    let account_length = user.accounts.len() as u32;
-    let subaccount_nonce = nonce();
-    let subaccount = to_subaccount(subaccount_nonce, account_length);
-    Ok("Subaccount added".to_string())
+async fn deploy_account(principal: Principal) -> Principal {
+    let wallet_wasm = WALLET_WASM.with(|wasm| wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded")));
+    let deployed = deployer::deploy(wallet_wasm).await;
+    match deployed {
+        Ok(canister_id) => {
+            add_account(principal, canister_id);
+            canister_id
+        }
+        Err(err) => ic_cdk::trap(&format!("Failed to deploy account: {}", err)),
+    }
 }
 
 #[update]
