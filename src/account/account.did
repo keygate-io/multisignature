@@ -1,4 +1,7 @@
+type Error = record { message : text };
+type Result = variant { Ok : text; Err : Error };
 service : {
+  add_subaccount : () -> (Result);
   get_signees : () -> (vec principal) query;
   include_signee : (text) -> ();
 }

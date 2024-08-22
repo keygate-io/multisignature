@@ -1,5 +1,3 @@
-type Error = record { message : text };
-type Result = variant { Ok : text; Err : Error };
 type UserInfo = record {
   accounts : vec principal;
   first_name : text;
@@ -7,7 +5,7 @@ type UserInfo = record {
 };
 service : () -> {
   add_account : (principal, principal) -> ();
-  add_subaccount : () -> (Result);
+  deploy_account : (principal) -> (principal);
   get_user : (principal) -> (opt UserInfo) query;
   load_wallet_wasm : () -> ();
   register_user : (principal, text, text) -> ();
