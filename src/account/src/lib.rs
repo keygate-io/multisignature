@@ -113,29 +113,6 @@ fn to_subaccount_id(subaccount: Subaccount) -> AccountIdentifier {
     AccountIdentifier::new(&principal_id, &subaccount)
 }
 
-/// Hashes a transaction by converting it into a `ledger::Transaction` and generating its hash.
-///
-/// This function takes a `types::Transaction` and converts its fields into the corresponding
-/// `ledger::Transaction` fields. It then generates a hash of this transaction.
-///
-/// # Arguments
-///
-/// * `tx` - A reference to a `types::Transaction` to be hashed.
-///
-/// # Returns
-///
-/// * `Ok(String)` - A hexadecimal string representation of the transaction hash if successful.
-/// * `Err(String)` - An error message if any part of the process fails.
-///
-/// # Errors
-///
-/// This function will return an `Err` if:
-/// * The transaction's operation is not a `Transfer`.
-/// * The `from`, `to`, or `spender` (if present) account identifiers are invalid.
-///
-/// # Panics
-///
-/// This function will panic if `tx.operation` is `None` or not a `Transfer` operation.
 fn hash_transaction(tx: &types::Transaction) -> Result<String, String> {
     let transfer = match &tx.operation {
         Some(types::Operation::Transfer(transfer)) => transfer,
