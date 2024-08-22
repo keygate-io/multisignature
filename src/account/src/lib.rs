@@ -34,7 +34,6 @@ thread_local! {
     static LIST_OF_SUBACCOUNTS: RefCell<HashMap<u64, Subaccount>> = RefCell::default();
 }
 
-
 #[derive(Debug, CandidType, Deserialize, Serialize)]
 struct Error {
     message: String,

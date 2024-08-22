@@ -1,4 +1,5 @@
 mod deployer;
+mod types;
 
 use std::collections::HashMap;
 use std::cell::RefCell;
