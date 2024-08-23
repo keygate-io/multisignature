@@ -2,6 +2,7 @@ import { Principal } from "@dfinity/principal";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 import { useEffect, useState } from "react";
 import { getUser } from "../../api/users";
+import { getSubaccount } from "../../api/account";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,7 +13,10 @@ import {
   Typography,
   CircularProgress,
   CssBaseline,
+  IconButton,
+  TextField,
 } from "@mui/material";
+import { ContentCopy, Refresh } from "@mui/icons-material";
 
 const Dashboard = () => {
   const { identity } = useInternetIdentity();
@@ -21,22 +25,58 @@ const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [icpAccount, setIcpAccount] = useState<String | null>(null);
+
+  const handleCopy = () => {
+    if (icpAccount) {
+      navigator.clipboard.writeText(String(icpAccount)).then(() => {
+        setCopySuccess(true);
+      });
+    }
+  };
 
   useEffect(() => {
     function fetchUser() {
       if (identity) {
-        getUser(identity.getPrincipal()).then((user) => {
+        return getUser(identity.getPrincipal()).then((user) => {
           if (user) {
+            console.log("User found:", user);
             setAccount(user.accounts[0]);
           } else {
             navigate("/new-account");
           }
         });
       }
+
+      return Promise.resolve();
     }
 
     fetchUser();
   }, [identity]);
+
+  useEffect(() => {
+    async function fetchIcpAccount() {
+      if (!account) {
+        return;
+      }
+
+      const icpAccountQuery = await getSubaccount(account!, "ICP");
+      console.log("ICP subaccount query:", icpAccountQuery);
+      if ("Ok" in icpAccountQuery) {
+        const icpAccountString = icpAccountQuery.Ok;
+        console.log("ICP subaccount:", icpAccountString);
+        setIcpAccount(icpAccountString);
+      } else {
+        console.error(
+          "Failed to get ICP subaccount:",
+          icpAccountQuery.Err.message
+        );
+      }
+    }
+
+    fetchIcpAccount();
+  }, [account]);
 
   return (
     <Box sx={{ display: "flex", minHeight: "80vh" }}>
@@ -67,9 +107,11 @@ const Dashboard = () => {
         }}
       >
         <Typography variant="h5">Total asset value</Typography>
-        <Typography variant="h3" fontWeight="bold">
-          0 ICP
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="h3" fontWeight="bold">
+            0 ICP
+          </Typography>
+        </Box>
         <Box sx={{ display: "flex", mt: 8, alignItems: "center" }}>
           <CircularProgress variant="determinate" value={50} size={60} />
           <Box sx={{ ml: 4 }}>
@@ -128,7 +170,6 @@ const Dashboard = () => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
@@ -136,8 +177,35 @@ const Dashboard = () => {
         >
           <Typography variant="h6">Top up the smart account</Typography>
           <Typography sx={{ mt: 2 }}>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+            Send ICP to the following address to top up your account.
           </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+            <TextField
+              value={icpAccount || ""}
+              InputProps={{
+                readOnly: true,
+                style: {
+                  fontFamily: "monospace",
+                  fontSize: "0.8rem",
+                  backgroundColor: "#f0f0f0",
+                },
+              }}
+              fullWidth
+              variant="outlined"
+              size="small"
+            />
+            <IconButton onClick={handleCopy} size="small" sx={{ ml: 1 }}>
+              <ContentCopy />
+            </IconButton>
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+            onClick={handleClose}
+          >
+            Done
+          </Button>
         </Box>
       </Modal>
     </Box>

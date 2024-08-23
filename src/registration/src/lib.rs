@@ -35,12 +35,11 @@ fn register_user(principal: Principal, first_name: String, last_name: String) {
     });
 }
 
-#[update]
-fn add_account(principal: Principal, account: Principal) {
+fn add_account(user_principal: Principal, account_canister_id: Principal) {
     USERS.with(|users| {
         let mut users = users.borrow_mut();
-        let user = users.get_mut(&principal).unwrap_or_else(|| ic_cdk::trap("User not found"));
-        user.accounts.push(account);
+        let user = users.get_mut(&user_principal).unwrap_or_else(|| ic_cdk::trap("User not found"));
+        user.accounts.push(account_canister_id);
     });
 }
 

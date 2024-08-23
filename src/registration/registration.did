@@ -4,7 +4,6 @@ type UserInfo = record {
   last_name : text;
 };
 service : () -> {
-  add_account : (principal, principal) -> ();
   deploy_account : (principal) -> (principal);
   get_user : (principal) -> (opt UserInfo) query;
   load_wallet_wasm : () -> ();

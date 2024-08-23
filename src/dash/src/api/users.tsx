@@ -28,12 +28,3 @@ export async function getAccounts(principal: Principal): Promise<Principal[]> {
   const req = await registration.get_user(principal);
   return req[0]?.accounts ?? [];
 }
-
-export async function deployAccount(
-  principal: Principal,
-  accountName: string,
-  signers: string[],
-  threshold: number
-): Promise<Principal> {
-  return registration.deploy_account(principal);
-}

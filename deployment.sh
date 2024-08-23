@@ -28,9 +28,9 @@ export LEDGER_ACC=$(dfx identity get-principal)
 export ARCHIVE_CONTROLLER=$(dfx identity get-principal)
 
 # Step 9: Deploy the ledger canister with archiving options
-dfx canister create ledger-canister --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai
-dfx build ledger-canister
-dfx canister install ledger-canister --argument "(variant {
+dfx canister create ledger --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai
+dfx build ledger
+dfx canister install ledger --argument "(variant {
   Init = record {
     minting_account = \"$ACCOUNT_ID\";
     icrc1_minting_account = opt record {

@@ -32,7 +32,7 @@
       },
       "frontend": {}
     },
-    "ledger-canister": {
+    "ledger": {
       "type": "custom",
       "candid": "https://raw.githubusercontent.com/dfinity/ic/a17247bd86c7aa4e87742bf74d108614580f216d/rs/rosetta-api/icp_ledger/ledger.did",
       "wasm": "https://download.dfinity.systems/ic/a17247bd86c7aa4e87742bf74d108614580f216d/canisters/ledger-canister.wasm.gz",

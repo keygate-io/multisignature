@@ -4,6 +4,7 @@ import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { getUser } from "../../../api/users";
 import { useNavigate } from "react-router-dom";
 import { registration } from "../../../../../declarations/registration";
+import { createSubaccount, deployAccount } from "../../../api/account";
 
 interface Step1Props {
   accountName: string;
@@ -179,7 +180,7 @@ const CreateAccount = () => {
     { name: "Signer 1", principalId: "" },
   ]);
   const [threshold, setThreshold] = useState(1);
-  const { identity } = useInternetIdentity();
+  const { identity, isInitializing } = useInternetIdentity();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -193,7 +194,10 @@ const CreateAccount = () => {
         duration: 0,
       });
 
-      registration.deploy_account(identity!.getPrincipal()).then((res) => {
+      deployAccount(identity!.getPrincipal()).then(async (id) => {
+        const subaccount_id = await createSubaccount(id, "ICP");
+
+        console.log(`Account id: ${JSON.stringify(subaccount_id)}`);
         messageApi.destroy();
         navigate("/dashboard");
       });
@@ -209,6 +213,10 @@ const CreateAccount = () => {
   useEffect(() => {
     async function loadUser() {
       if (!identity) {
+        if (isInitializing) {
+          return;
+        }
+
         navigate("/");
         return;
       }
