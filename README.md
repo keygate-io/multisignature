@@ -11,6 +11,10 @@ Clone the repository.
 
 `git clone git@github.com:polysign-labs/multisignature.git`
 
+Install frontend dependencies via NPM
+
+`npm install`
+
 Run the deployment script.
 
 `./deployment.sh`
