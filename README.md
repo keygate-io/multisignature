@@ -2,7 +2,8 @@
 A cross-chain decentralized multisignature wallet.
 
 ## Prerequisites
-* Rust (using rustup)
+* [Tsc compiler](https://www.typescriptlang.org/download/) 
+* [Rust (using rustup)](https://www.rust-lang.org/tools/install)
 * [DFX command-line tool](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/#installing-dfx-via-dfxvm)
 
 ## Installation
