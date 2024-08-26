@@ -21,7 +21,8 @@ Run the deployment script.
 
 ## Canisters
 - Ledger canister
-This canister is imported from the existing DFINITY native ICP ledger through `dfx.json`. This is used to fetch the ICP balance of a smart account via the code equivalent of `dfx ledger balance <account_id> --network local`
+
+This canister is imported from the existing DFINITY native ICP ledger through `dfx.json`. It's used to fetch the ICP balance of a smart account via the code equivalent of `dfx ledger balance <account_id> --network local`
 
 - Dashboard canister (`dash`)
 - Account canister
