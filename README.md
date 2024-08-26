@@ -7,7 +7,9 @@ A cross-chain decentralized multisignature wallet.
 
 ## Installation
 Clone the repository.
+
 `git clone git@github.com:polysign-labs/multisignature.git`
 
 Run the deployment script.
+
 `./deployment.sh`
