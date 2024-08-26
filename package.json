@@ -28,6 +28,8 @@
         "web3": "^4.7.0"
     },
     "devDependencies": {
+        "@mui/icons-material": "^5.16.7",
+        "@mui/types": "^7.2.15",
         "@types/bech32": "^1.1.4",
         "@types/crypto-js": "^4.2.2",
         "@types/node": "^20.11.30",

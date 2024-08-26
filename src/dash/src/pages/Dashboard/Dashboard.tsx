@@ -2,6 +2,7 @@ import { Principal } from "@dfinity/principal";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 import { useEffect, useState } from "react";
 import { getUser } from "../../api/users";
+import { balanceOf } from "../../api/ledger";
 import { getSubaccount } from "../../api/account";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,7 +17,9 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import { ContentCopy, Refresh } from "@mui/icons-material";
+import { ContentCopy } from "@mui/icons-material";
+
+const BALANCE_REFRESH_DELAY = 2000;
 
 const Dashboard = () => {
   const { identity } = useInternetIdentity();
@@ -27,6 +30,7 @@ const Dashboard = () => {
   const handleClose = () => setOpen(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [icpAccount, setIcpAccount] = useState<String | null>(null);
+  const [balance, setBalance] = useState<bigint>(BigInt(0));
 
   const handleCopy = () => {
     if (icpAccount) {
@@ -35,6 +39,24 @@ const Dashboard = () => {
       });
     }
   };
+
+
+  useEffect(() => {
+    async function requestBalance() {
+      if (!icpAccount) {
+        return;
+      }
+
+      const balance = await balanceOf(icpAccount as string);
+      setBalance(balance.e8s)
+    }
+
+    const refresh = setTimeout(() => requestBalance(), BALANCE_REFRESH_DELAY)
+      
+    return () => {
+      clearTimeout(refresh);
+    };
+  }, []);
 
   useEffect(() => {
     function fetchUser() {
