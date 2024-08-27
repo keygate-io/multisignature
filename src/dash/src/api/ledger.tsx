@@ -1,13 +1,15 @@
 import { ledger } from "../../../declarations/ledger";
+import { Buffer } from 'buffer';
+import { fromHex } from "@dfinity/agent";
 import { AccountIdentifier } from "../../../declarations/ledger/ledger.did";
 
-export function balanceOf(account_id: string) {
+export async function balanceOf(account_id: string) {
   // Convert the account_id string to a Uint8Array
-  const accountIdentifier: AccountIdentifier = Uint8Array.from(
-    Buffer.from(account_id)
-  );
+  const accountIdentifier: AccountIdentifier = new Uint8Array(fromHex(account_id));
 
-  return ledger.account_balance({
+  const balance = await ledger.account_balance({
     account: accountIdentifier,
   });
+
+  return balance;
 }

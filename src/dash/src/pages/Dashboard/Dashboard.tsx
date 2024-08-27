@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import { ContentCopy } from "@mui/icons-material";
 
+
 const BALANCE_REFRESH_DELAY = 2000;
 
 const Dashboard = () => {
@@ -40,18 +41,20 @@ const Dashboard = () => {
     }
   };
 
-
-  useEffect(() => {
-    async function requestBalance() {
-      if (!icpAccount) {
-        return;
-      }
-
-      const balance = await balanceOf(icpAccount as string);
-      setBalance(balance.e8s)
+  async function requestBalance() {
+    if (!icpAccount) {
+      console.log("No ICP account")
+      return;
     }
 
-    const refresh = setTimeout(() => requestBalance(), BALANCE_REFRESH_DELAY)
+    console.log("Checking balance for", icpAccount);
+    const balance = await balanceOf(icpAccount as string);
+    console.log("ICP subaccount balance is ", JSON.stringify(balance.e8s.toString()));
+    setBalance(balance.e8s)
+  }
+
+  useEffect(() => {
+    const refresh = setInterval(() => requestBalance(), BALANCE_REFRESH_DELAY)
       
     return () => {
       clearTimeout(refresh);

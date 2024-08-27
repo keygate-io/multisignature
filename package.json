@@ -17,6 +17,7 @@
     ],
     "dependencies": {
         "@ant-design/icons": "^5.3.5",
+        "@dfinity/nns": "^5.2.0",
         "bech32": "^2.0.0",
         "buffer": "^6.0.3",
         "clsx": "^2.1.0",
