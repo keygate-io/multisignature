@@ -18,6 +18,7 @@ import {
   TextField,
 } from "@mui/material";
 import { ContentCopy } from "@mui/icons-material";
+import { CheckCircleFilled } from "@ant-design/icons";
 
 
 const BALANCE_REFRESH_DELAY = 2000;
@@ -57,9 +58,9 @@ const Dashboard = () => {
     const refresh = setInterval(() => requestBalance(), BALANCE_REFRESH_DELAY)
       
     return () => {
-      clearTimeout(refresh);
+      clearInterval(refresh);
     };
-  }, []);
+  }, [icpAccount, requestBalance]);
 
   useEffect(() => {
     function fetchUser() {
@@ -134,7 +135,7 @@ const Dashboard = () => {
         <Typography variant="h5">Total asset value</Typography>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Typography variant="h3" fontWeight="bold">
-            0 ICP
+            {balance.toLocaleString()} ICP
           </Typography>
         </Box>
         <Box sx={{ display: "flex", mt: 8, alignItems: "center" }}>
@@ -150,7 +151,10 @@ const Dashboard = () => {
         <Box sx={{ display: "flex", mt: 12, gap: 3 }}>
           <Card sx={{ width: "33%" }}>
             <CardContent>
-              <Typography variant="h6">Add native assets</Typography>
+              {balance != BigInt(0) && <CheckCircleFilled />}
+              <Typography variant="h6">
+                Add native assets
+              </Typography>
               <Typography>
                 Receive ICP to start interacting with your account.
               </Typography>
@@ -159,6 +163,7 @@ const Dashboard = () => {
                 color="primary"
                 sx={{ mt: 2 }}
                 onClick={handleOpen}
+                disabled={balance != BigInt(0)}
               >
                 Receive ICP
               </Button>
