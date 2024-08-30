@@ -78,8 +78,8 @@ const Step2 = ({
         2. Signers and confirmations
       </h3>
       <p className="text-sm text-gray-300 mb-4">
-        Set the signer wallets of your Safe Account and how many need to confirm
-        to execute a valid transaction.
+        Set the signer wallets of your Smart Account and how many need to
+        confirm to execute a valid transaction.
       </p>
       {signers.map((signer, index) => (
         <div key={index} className="mb-4 flex space-x-2">
@@ -146,7 +146,7 @@ const Review = ({
   <div className="bg-gray-700 rounded-lg p-6 mb-4">
     <h3 className="text-lg font-semibold mb-4">3. Review</h3>
     <p className="text-sm text-gray-300 mb-4">
-      You're about to create a new Safe Account and will have to confirm the
+      You're about to create a new Smart Account and will have to confirm the
       transaction with your connected wallet.
     </p>
     <div className="mb-4">
@@ -242,7 +242,7 @@ const CreateAccount = () => {
       {contextHolder}
       <main className="mt-20 flex-grow flex justify-center">
         <div className="max-w-xl w-full">
-          <h2 className="text-2xl font-bold mb-6">Create new Safe Account</h2>
+          <h2 className="text-2xl font-bold mb-6">Create new Smart Account</h2>
           <Progress
             percent={step * 33}
             strokeColor="#4ade80"

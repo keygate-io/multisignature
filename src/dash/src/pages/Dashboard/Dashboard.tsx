@@ -13,13 +13,13 @@ import {
   Modal,
   Typography,
   CircularProgress,
-  CssBaseline,
   IconButton,
   TextField,
 } from "@mui/material";
 import { ContentCopy } from "@mui/icons-material";
 import { CheckCircleFilled } from "@ant-design/icons";
-
+import AccountPageLayout from "../AccountPageLayout";
+import MultipleRouteModal from "../../modals/MultipleRouteModal";
 
 const BALANCE_REFRESH_DELAY = 2000;
 
@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [account, setAccount] = useState<Principal | null>(null);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [multipleRouteModalOpen, setMultipleRouteModalOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -42,21 +43,33 @@ const Dashboard = () => {
     }
   };
 
+  const handleMultipleRouteModalOpen = () => setMultipleRouteModalOpen(true);
+  const handleMultipleRouteModalClose = () => setMultipleRouteModalOpen(false);
+
+  const handleMultipleRouteOptionSelect = (option: string) => {
+    console.log(`Selected option: ${option}`);
+    // Handle the selected option here
+    handleMultipleRouteModalClose();
+  };
+
   async function requestBalance() {
     if (!icpAccount) {
-      console.log("No ICP account")
+      console.log("No ICP account");
       return;
     }
 
     console.log("Checking balance for", icpAccount);
     const balance = await balanceOf(icpAccount as string);
-    console.log("ICP subaccount balance is ", JSON.stringify(balance.e8s.toString()));
-    setBalance(balance.e8s)
+    console.log(
+      "ICP subaccount balance is ",
+      JSON.stringify(balance.e8s.toString())
+    );
+    setBalance(balance.e8s);
   }
 
   useEffect(() => {
-    const refresh = setInterval(() => requestBalance(), BALANCE_REFRESH_DELAY)
-      
+    const refresh = setInterval(() => requestBalance(), BALANCE_REFRESH_DELAY);
+
     return () => {
       clearInterval(refresh);
     };
@@ -105,93 +118,67 @@ const Dashboard = () => {
   }, [account]);
 
   return (
-    <Box sx={{ display: "flex", minHeight: "80vh" }}>
-      <CssBaseline />
-      <Box
-        sx={{
-          width: 326,
-          backgroundColor: "#333",
-          color: "#fff",
-          p: 4,
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Typography>{account?.toText() ?? "Fetching account"}</Typography>
-        <Button variant="contained" color="primary" sx={{ mt: 2 }}>
-          New transaction
-        </Button>
+    <AccountPageLayout>
+      <Typography variant="h5">Total asset value</Typography>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Typography variant="h3" fontWeight="bold">
+          {balance.toLocaleString()} ICP
+        </Typography>
       </Box>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          backgroundColor: "#2c2c2c",
-          p: 4,
-          color: "#fff",
-        }}
-      >
-        <Typography variant="h5">Total asset value</Typography>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography variant="h3" fontWeight="bold">
-            {balance.toLocaleString()} ICP
+      <Box sx={{ display: "flex", mt: 8, alignItems: "center" }}>
+        <CircularProgress variant="determinate" value={50} size={60} />
+        <Box sx={{ ml: 4 }}>
+          <Typography variant="h6">Activate your Smart Account</Typography>
+          <Typography>
+            1 of 2 steps completed. Finish the next steps to start using all
+            Smart Account features:
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", mt: 8, alignItems: "center" }}>
-          <CircularProgress variant="determinate" value={50} size={60} />
-          <Box sx={{ ml: 4 }}>
-            <Typography variant="h6">Activate your Smart Account</Typography>
+      </Box>
+      <Box sx={{ display: "flex", mt: 12, gap: 3 }}>
+        <Card sx={{ width: "33%" }}>
+          <CardContent>
+            {balance != BigInt(0) && <CheckCircleFilled />}
+            <Typography variant="h6">Add native assets</Typography>
             <Typography>
-              1 of 2 steps completed. Finish the next steps to start using all
-              Safe Account features:
+              Receive ICP to start interacting with your account.
             </Typography>
-          </Box>
-        </Box>
-        <Box sx={{ display: "flex", mt: 12, gap: 3 }}>
-          <Card sx={{ width: "33%" }}>
-            <CardContent>
-              {balance != BigInt(0) && <CheckCircleFilled />}
-              <Typography variant="h6">
-                Add native assets
-              </Typography>
-              <Typography>
-                Receive ICP to start interacting with your account.
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2 }}
-                onClick={handleOpen}
-                disabled={balance != BigInt(0)}
-              >
-                Receive ICP
-              </Button>
-            </CardContent>
-          </Card>
-          <Card sx={{ width: "33%" }}>
-            <CardContent>
-              <Typography variant="h6">
-                Create your first transaction
-              </Typography>
-              <Typography>
-                Simply send funds or add a new signer to the account.
-              </Typography>
-              <Button variant="contained" color="primary" sx={{ mt: 2 }}>
-                Create transaction
-              </Button>
-            </CardContent>
-          </Card>
-          <Card sx={{ width: "33%" }}>
-            <CardContent>
-              <Typography variant="h6">Safe Account is ready!</Typography>
-              <Typography>
-                Continue to improve your account security and unlock more
-                features.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handleOpen}
+              disabled={balance != BigInt(0)}
+            >
+              Receive ICP
+            </Button>
+          </CardContent>
+        </Card>
+        <Card sx={{ width: "33%" }}>
+          <CardContent>
+            <Typography variant="h6">Create your first transaction</Typography>
+            <Typography>
+              Simply send funds or add a new signer to the account.
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handleMultipleRouteModalOpen}
+            >
+              Create transaction
+            </Button>
+          </CardContent>
+        </Card>
+        <Card sx={{ width: "33%" }}>
+          <CardContent>
+            <Typography variant="h6">Smart Account is ready!</Typography>
+            <Typography>
+              Continue to improve your account security and unlock more
+              features.
+            </Typography>
+          </CardContent>
+        </Card>
       </Box>
       <Modal open={open} onClose={handleClose}>
         <Box
@@ -238,7 +225,12 @@ const Dashboard = () => {
           </Button>
         </Box>
       </Modal>
-    </Box>
+      <MultipleRouteModal
+        open={multipleRouteModalOpen}
+        onClose={handleMultipleRouteModalClose}
+        onOptionSelect={handleMultipleRouteOptionSelect}
+      />
+    </AccountPageLayout>
   );
 };
 

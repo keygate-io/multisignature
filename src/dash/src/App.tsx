@@ -5,6 +5,7 @@ import Home from "./pages/Home/Home";
 import CreateProfile from "./pages/NewProfile/Create";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import CreateAccount from "./pages/NewAccount/Create";
+import Assets from "./pages/Dashboard/Assets/Assets";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             path="/new-account/create"
             element={<PageLayout main={<CreateAccount />} />}
           />
+          <Route path="/assets" element={<PageLayout main={<Assets />} />} />
         </Routes>
       </ConfigProvider>
     </BrowserRouter>
