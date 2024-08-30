@@ -6,21 +6,12 @@ mod ledger;
 mod hashof;
 
 use std::{cell::RefCell, collections::HashMap, hash::DefaultHasher};
-use ic_cdk::{api, query, update};
+use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
 use ic_ledger_types::{AccountIdentifier, Memo, Subaccount, Tokens};
 use serde::{Deserialize, Serialize};
-use ic_cdk_macros::*;
-use ic_cdk_timers::TimerId;
 use std::hash::{Hash, Hasher};
-
-use types::{
-    CallerGuard, CanisterApiManagerTrait,
-    InterCanisterCallManager, Network,
-    Operation, QueryBlocksRequest, QueryBlocksResponse, StoredPrincipal, StoredTransactions,
-    SweepStatus, TimerManager, TimerManagerTrait, Timestamp, Transaction,
-    CanisterApiManager
-};
+use types::*;
 
 use memory::{
     CONNECTED_NETWORK, CUSTODIAN_PRINCIPAL, INTERVAL_IN_SECONDS, LAST_SUBACCOUNT_NONCE, NEXT_BLOCK,
@@ -64,13 +55,6 @@ impl ToU64Hash for AccountIdentifier {
     }
 }
 
-#[cfg(not(test))]
-impl CanisterApiManagerTrait for CanisterApiManager {
-    fn id() -> Principal {
-        api::id()
-    }
-}
-
 // Helper functions
 fn from_hex(hex: &str) -> Result<[u8; 32], Error> {
     let vec = hex::decode(hex).map_err(|_| Error {
@@ -88,52 +72,6 @@ fn nonce() -> u32 {
     LAST_SUBACCOUNT_NONCE.with(|nonce_ref| *nonce_ref.borrow().get())
 }
 
-fn to_subaccount(nonce: u32) -> Subaccount {
-    let mut subaccount = Subaccount([0; 32]);
-    let nonce_bytes = nonce.to_be_bytes();
-    subaccount.0[32 - nonce_bytes.len()..].copy_from_slice(&nonce_bytes);
-    subaccount
-}
-
-fn to_subaccount_id(subaccount: Subaccount) -> AccountIdentifier {
-    let principal_id = CanisterApiManager::id();
-    AccountIdentifier::new(&principal_id, &subaccount)
-}
-
-fn hash_transaction(tx: &types::Transaction) -> Result<String, String> {
-    let transfer = match &tx.operation {
-        Some(types::Operation::Transfer(transfer)) => transfer,
-        _ => unreachable!("tx.operation should always be Operation::Transfer"),
-    };
-    
-    let from_account = ledger::AccountIdentifier::from_slice(transfer.from.as_slice())
-        .map_err(|e| format!("Failed to create from: {:?}", e))?;
-
-    let to_account = ledger::AccountIdentifier::from_slice(transfer.to.as_slice())
-        .map_err(|e| format!("Failed to create to: {:?}", e))?;
-
-    let spender = transfer.spender.as_ref().map(|spender| {
-        ledger::AccountIdentifier::from_slice(spender.as_slice())
-            .map_err(|e| format!("Failed to create spender: {:?}", e))
-    }).transpose()?;
-
-    let tx_hash = ledger::Transaction::new(
-        from_account,
-        to_account,
-        spender,
-        Tokens::from_e8s(transfer.amount.e8s),
-        Tokens::from_e8s(transfer.fee.e8s),
-        Memo(tx.memo),
-        ledger::TimeStamp {
-            timestamp_nanos: tx.created_at_time.timestamp_nanos,
-        },
-    )
-    .generate_hash();
-
-    Ok(tx_hash.to_hex())
-}
-
-// Public functions (query and update)
 #[update]
 fn include_signee(signee: String) {
     SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {

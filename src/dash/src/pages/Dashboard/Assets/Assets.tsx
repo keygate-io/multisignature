@@ -42,7 +42,7 @@ const Assets: React.FC = () => {
 
   return (
     <AccountPageLayout>
-      <Box>
+      <Box sx={{ width: "100%" }}>
         <Typography variant="h4" sx={{ mb: 3 }}>
           Assets
         </Typography>

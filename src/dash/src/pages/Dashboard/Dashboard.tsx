@@ -48,7 +48,10 @@ const Dashboard = () => {
 
   const handleMultipleRouteOptionSelect = (option: string) => {
     console.log(`Selected option: ${option}`);
-    // Handle the selected option here
+    if (option === "send-token") {
+      navigate("/assets/send-token");
+    }
+    
     handleMultipleRouteModalClose();
   };
 

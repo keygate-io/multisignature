@@ -1,6 +1,6 @@
-use crate::hashof::HashOf;
+use crate::{hashof::HashOf, types::{CanisterApiManager, CanisterApiManagerTrait}};
 use candid::CandidType;
-use ic_ledger_types::{Memo, Tokens};
+use ic_ledger_types::{Memo, Subaccount, Tokens};
 use serde::{de, de::Error, Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use sha2::{Digest, Sha256};
@@ -9,6 +9,8 @@ use std::{
     fmt::{Display, Formatter},
 };
 use strum_macros::IntoStaticStr;
+use ic_ledger_types::AccountIdentifier as LedgerAccountIdentifier;
+
 
 const HASH_LENGTH: usize = 32;
 
@@ -248,3 +250,49 @@ impl LedgerTransaction for Transaction {
         HashOf::new(fixed_result)
     }
 }
+
+pub fn to_subaccount(nonce: u32) -> Subaccount {
+    let mut subaccount = Subaccount([0; 32]);
+    let nonce_bytes = nonce.to_be_bytes();
+    subaccount.0[32 - nonce_bytes.len()..].copy_from_slice(&nonce_bytes);
+    subaccount
+}
+
+pub fn to_subaccount_id(subaccount: Subaccount) -> LedgerAccountIdentifier {
+    let principal_id = CanisterApiManager::id();
+    LedgerAccountIdentifier::new(&principal_id, &subaccount)
+}
+
+pub fn hash_transaction(tx: &crate::types::Transaction) -> Result<String, String> {
+    let transfer = match &tx.operation {
+        Some(crate::types::Operation::Transfer(transfer)) => transfer,
+        _ => return Err("tx.operation should always be Operation::Transfer".to_string()),
+    };
+
+    let from_account = AccountIdentifier::from_slice(transfer.from.as_slice())
+        .map_err(|e| format!("Failed to create from: {:?}", e))?;
+
+    let to_account = AccountIdentifier::from_slice(transfer.to.as_slice())
+        .map_err(|e| format!("Failed to create to: {:?}", e))?;
+
+    let spender = transfer.spender.as_ref().map(|spender| {
+        AccountIdentifier::from_slice(spender.as_slice())
+            .map_err(|e| format!("Failed to create spender: {:?}", e))
+    }).transpose()?;
+
+    let tx_hash = Transaction::new(
+        from_account,
+        to_account,
+        spender,
+        Tokens::from_e8s(transfer.amount.e8s),
+        Tokens::from_e8s(transfer.fee.e8s),
+        Memo(tx.memo),
+        TimeStamp {
+            timestamp_nanos: tx.created_at_time.timestamp_nanos,
+        },
+    )
+    .generate_hash();
+
+    Ok(tx_hash.to_hex())
+}
+

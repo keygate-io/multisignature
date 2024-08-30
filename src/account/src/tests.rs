@@ -2,6 +2,7 @@
 mod tests {
     use crate::types::*;
     use crate::*;
+    use ic_cdk_timers::TimerId;
     use once_cell::sync::Lazy;
     use std::{future::Future, time::{SystemTime, UNIX_EPOCH}};
 

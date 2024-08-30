@@ -6,6 +6,7 @@ import CreateProfile from "./pages/NewProfile/Create";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import CreateAccount from "./pages/NewAccount/Create";
 import Assets from "./pages/Dashboard/Assets/Assets";
+import SendToken from "./pages/Dashboard/Assets/SendToken/SendToken";
 
 function App() {
   return (
@@ -32,6 +33,10 @@ function App() {
             element={<PageLayout main={<CreateAccount />} />}
           />
           <Route path="/assets" element={<PageLayout main={<Assets />} />} />
+          <Route
+            path="/assets/send-token"
+            element={<PageLayout main={<SendToken />} />}
+          />
         </Routes>
       </ConfigProvider>
     </BrowserRouter>

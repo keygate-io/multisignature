@@ -61,7 +61,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   }, [identity, navigate]);
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", width: "100%" }}>
       <CssBaseline />
       <Box
         sx={{
@@ -129,10 +129,10 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
           backgroundColor: "#2c2c2c",
           p: 4,
           color: "#fff",
+          width: "100%",
         }}
       >
         {children}
