@@ -33,7 +33,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const [account, setAccount] = useState<Principal | null>(null);
 
   const menuItems = [
-    { text: "Home", icon: <HomeOutlined />, path: "/dashboard" },
+    { text: "Home", icon: <HomeOutlined />, path: "/dashboard", badge: "New" },
     { text: "Assets", icon: <AccountBalanceWalletOutlined />, path: "/assets" },
     { text: "Swap", icon: <SwapHorizOutlined />, path: "/swap" },
     { text: "Transactions", icon: <ReceiptOutlined />, path: "/transactions" },

@@ -4,11 +4,13 @@ mod types;
 mod tests;
 mod ledger;
 mod hashof;
+mod intent;
 
-use std::{cell::RefCell, collections::HashMap, hash::DefaultHasher};
+use std::{cell::RefCell, collections::{HashMap, LinkedList}, hash::DefaultHasher};
 use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
 use ic_ledger_types::{AccountIdentifier, Memo, Subaccount, Tokens};
+use intent::*;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use types::*;
@@ -22,7 +24,7 @@ use ledger::*;
 
 // Thread-local storage
 thread_local! {
-    static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
+    pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
     static LIST_OF_SUBACCOUNTS: RefCell<HashMap<u64, Subaccount>> = RefCell::default();
     static TOKEN_SUBACCOUNTS: RefCell<HashMap<String, Subaccount>> = RefCell::default();
 }

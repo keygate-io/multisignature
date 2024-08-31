@@ -1,7 +1,28 @@
+type Decision = record {
+  id : nat64;
+  approved : bool;
+  signee : principal;
+  intent_id : nat64;
+};
 type Error = record { message : text };
+type Intent = record {
+  id : nat64;
+  to : text;
+  token : text;
+  from : text;
+  network : SupportedNetwork;
+  amount : nat64;
+  intent_type : IntentType;
+};
+type IntentType = variant { Swap; Transfer };
 type Result = variant { Ok : text; Err : Error };
+type SupportedNetwork = variant { ETH; ICP };
 service : () -> {
+  add_decision : (Decision) -> ();
+  add_intent : (blob, Intent) -> ();
   add_subaccount : (text) -> (Result);
+  get_decisions : (nat64) -> (vec Decision) query;
+  get_intents : (blob) -> (vec Intent) query;
   get_signees : () -> (vec principal) query;
   get_subaccount : (text) -> (Result) query;
   include_signee : (text) -> ();
