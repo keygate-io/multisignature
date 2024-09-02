@@ -39,7 +39,7 @@ const Home: React.FC = () => {
         Secure Multi-Signature Smart Accounts
       </h1>
       <p className="mt-4">
-        Keyblock provides practical applications of cryptography for secure
+        Keygate provides practical applications of cryptography for secure
         management of on-chain assets. Our multi-signature smart accounts offer
         enhanced security for both retail and enterprise users on the Internet
         Computer Protocol (ICP) blockchain.
