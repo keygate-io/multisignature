@@ -1,47 +1,52 @@
-use std::{collections::HashMap, future::Future, pin::Pin};
+use std::{borrow::BorrowMut, collections::HashMap, future::Future, pin::Pin, sync::Arc};
 
+use dyn_clone::DynClone;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
 
 use crate::TOKEN_SUBACCOUNTS;
 
 use super::{Intent, IntentStatus, IntentType, SupportedNetwork};
 
-pub(crate) trait BlockchainAdapter {
+
+pub(crate) trait BlockchainAdapter: DynClone {
     fn network(&self) -> SupportedNetwork;
     fn token(&self) -> String;
     fn intent_type(&self) -> IntentType;
     fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>>;
 }
 
+dyn_clone::clone_trait_object!(BlockchainAdapter);
+
 type Token = String;
 
-pub struct BlockchainExecutionManager {
-    // Key is ${token-network}
-    pub(crate) adapters: HashMap<String, Box<dyn BlockchainAdapter>>,
+pub fn add_adapter(adapter: Box<dyn BlockchainAdapter>) {
+    let s: &'static str = adapter.network().into();
+    let it: &'static str = adapter.intent_type().into();
+    let key = [adapter.token(), s.to_string(), it.to_string()].join("-");
+    super::ADAPTERS.with(|adapters| {
+        adapters.borrow_mut().insert(key, adapter);
+    });
 }
 
-impl BlockchainExecutionManager {
-    pub fn new() -> BlockchainExecutionManager {
-        BlockchainExecutionManager {
-            adapters: HashMap::new(),
+pub async fn execute(intent: &Intent) -> IntentStatus {
+    let network: &'static str = intent.network().into();
+    let it: &'static str = intent.intent_type().into();
+    let key = format!("{}-{}-{}", intent.token(), network, it);
+    
+    let adapter = super::ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
+        dyn_clone::clone_box(adapters.borrow().get(&key).expect("Error getting adapter").as_ref())
+    });
+
+    match adapter.execute(intent).await {
+        Ok(status) => status,
+        Err(e) => {
+            println!("Error executing intent: {}", e);
+            IntentStatus::Failed
         }
     }
-
-    pub fn add_adapter(&mut self, adapter: Box<dyn BlockchainAdapter>) {
-        let s: &'static str = adapter.network().into();
-        let it: &'static str = adapter.intent_type().into();
-        self.adapters.insert([adapter.token(), s.to_string(), it.to_string()].join("-"), adapter);
-    }
-
-    pub async fn execute(&self, intent: &Intent) -> Result<IntentStatus, String> {
-        let network: &'static str = intent.network().into();
-        let it: &'static str = intent.intent_type().into();
-        let key = [intent.token(), network.to_string(), it.to_string()].join("-");
-        let adapter = self.adapters.get(&key).unwrap();
-        adapter.execute(intent).await
-    }
 }
 
+#[derive(Clone)]
 pub struct ICPNativeTransferAdapter {
     pub(crate) network: SupportedNetwork,
     pub(crate) token: Token,
@@ -54,6 +59,7 @@ type ICPNativeTransferArgs = TransferArgs;
  * See TransferArgs in ic_ledger_types
  */
 const RECOMMENDED_TRANSACTION_FEE: u64 = 10000;
+
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {
     fn network(&self) -> SupportedNetwork {
@@ -70,7 +76,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
 
     fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
-             println!("Executing ICPAdapter");
+            println!("Executing ICPAdapter");
             let subaccount = TOKEN_SUBACCOUNTS.with(|list_ref| {
                 list_ref.borrow().get(&intent.token()).unwrap().clone()
             });

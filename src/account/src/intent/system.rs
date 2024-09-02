@@ -5,7 +5,7 @@ use ic_cdk::{query, update};
 use ic_ledger_types::Subaccount;
 use serde::{Deserialize, Serialize};
 
-use super::BlockchainExecutionManager;
+use super::{BlockchainAdapter};
 
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
@@ -109,7 +109,7 @@ thread_local! {
     pub static INTENTS: RefCell<HashMap<Subaccount, LinkedList<Intent>>> = RefCell::default();
     pub static DECISIONS: RefCell<HashMap<u64, LinkedList<Decision>>> = RefCell::default();
     pub static INTENT_ID: RefCell<u64> = RefCell::new(0);
-    pub static EXECUTION_MANAGER: RefCell<BlockchainExecutionManager> = RefCell::new(BlockchainExecutionManager::new());
+    pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
 
 
@@ -152,4 +152,41 @@ pub fn get_decisions(intent_id: u64) -> LinkedList<Decision> {
             None => LinkedList::new()
         }
     })
+}
+
+#[update]
+pub async fn execute_intent(intent_id: u64) -> IntentStatus {
+    let intent_option = INTENTS.with(|intents| {
+        let intents = intents.borrow();
+        intents.values()
+            .flat_map(|list| list.iter())
+            .find(|intent| intent.id() == intent_id)
+            .cloned()
+    });
+
+    match intent_option {
+        Some(intent) => {
+            // Start execution
+            let execution_result = super::execute(&intent).await;
+
+            // Update the intent's status in storage
+            update_intent_status(intent_id, execution_result.clone());
+
+            execution_result
+        },
+        None => IntentStatus::Failed,
+    }
+}
+
+// Helper function to update intent status
+fn update_intent_status(intent_id: u64, new_status: IntentStatus) {
+    INTENTS.with(|intents| {
+        let mut intents = intents.borrow_mut();
+        for intent_list in intents.values_mut() {
+            if let Some(intent) = intent_list.iter_mut().find(|i| i.id() == intent_id) {
+                intent.status = new_status;
+                break;
+            }
+        }
+    });
 }

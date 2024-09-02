@@ -26,5 +26,6 @@ serde_bytes = "0.11.14"
 crc32fast = "1.4.0"
 strum_macros = "0.26.2"
 sha2 = "0.10.8"
+dyn-clone = "1.0.17"
 
 

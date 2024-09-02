@@ -22,17 +22,3 @@ pub fn should_execute(intent: &Intent) -> bool {
     return approvals >= signees.len();
 }
 
-pub fn execute(intent: Intent) {
-    if !should_execute(&intent) {
-        return;
-    }
-
-    let network = intent.network(); 
-    let token = intent.token();
-
-    super::EXECUTION_MANAGER.with(|manager| {
-        let manager = manager.borrow();
-        manager.execute(&intent);
-    });
-}
-
