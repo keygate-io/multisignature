@@ -38,7 +38,7 @@ const Step1 = ({
         onChange={(e) => setSelectedNetwork(e.target.value)}
         className="w-full bg-gray-600 p-2 rounded text-white"
       >
-        <option value="Sepolia">ICP</option>
+        <option value="ICP">ICP</option>
       </select>
     </div>
   </div>
