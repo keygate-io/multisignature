@@ -17,6 +17,14 @@ export MINT_ACC=$(dfx identity get-principal)
 export ACCOUNT_ID=$(dfx ledger account-id)
 dfx identity get-principal
 
+# Create three additional identities for testing
+for i in {1..3}
+do
+    dfx identity new test_identity_$i
+    dfx identity use test_identity_$i
+    export TEST_ACCOUNT_ID_$i=$(dfx ledger account-id)
+done
+
 # Step 7: Switch back to your default identity and record its ledger account identifier
 dfx identity use default  
 export LEDGER_ACC=$(dfx identity get-principal)
@@ -82,3 +90,8 @@ echo "MINT_ACC=$MINT_ACC"
 echo "ACCOUNT_ID=$ACCOUNT_ID" 
 echo "LEDGER_ACC=$LEDGER_ACC"
 echo "ARCHIVE_CONTROLLER=$ARCHIVE_CONTROLLER"
+
+echo "Test Identities Account IDs:"
+echo "TEST_ACCOUNT_ID_1=$TEST_ACCOUNT_ID_1"
+echo "TEST_ACCOUNT_ID_2=$TEST_ACCOUNT_ID_2"
+echo "TEST_ACCOUNT_ID_3=$TEST_ACCOUNT_ID_3"
