@@ -7,24 +7,24 @@ A cross-chain decentralized multisignature wallet.
 * [DFX command-line tool](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/#installing-dfx-via-dfxvm)
 
 ## Installation
-Clone the repository.
+1. Clone the repository:
+   ```
+   git clone git@github.com:polysign-labs/multisignature.git
+   ```
+2. Install frontend dependencies via NPM:
+   ```
+   npm install
+   ```
+3. Run the deployment script:
+   ```
+   ./deployment.sh
+   ```
 
-`git clone git@github.com:polysign-labs/multisignature.git`
+## Architecture
+<img width="804" alt="image" src="https://github.com/user-attachments/assets/66a939de-133a-4c2f-a1d8-290101df6c80">
 
-Install frontend dependencies via NPM
+**Ledger canister**: Imported from the existing DFINITY native ICP ledger through `dfx.json`. Used to fetch the ICP balance of a smart account.
 
-`npm install`
+**Dashboard canister** (`dash`): Provides the user interface for interacting with the multisignature wallet.
 
-Run the deployment script.
-
-`./deployment.sh`
-
-## Canisters
-**Ledger canister**
-
-This canister is imported from the existing DFINITY native ICP ledger through `dfx.json`. It's used to fetch the ICP balance of a smart account via the code equivalent of `dfx ledger balance <account_id> --network local`
-
-**Dashboard canister** (`dash`)
-
-
-**Account canister**
+**Account canister**: Manages the multisignature wallet functionality, including transaction creation, approval, and execution.
