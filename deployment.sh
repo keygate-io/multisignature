@@ -14,11 +14,8 @@ dfx start --background --clean
 dfx identity new minter
 dfx identity use minter
 export MINT_ACC=$(dfx identity get-principal)
+export ACCOUNT_ID=$(dfx ledger account-id)
 dfx identity get-principal
-
-echo "Navigate to https://icscan.io/principal/$MINT_ACC and copy the 'Accounts' value"
-read -p "Paste the 'Accounts' value: " ACCOUNT_ID
-export ACCOUNT_ID
 
 # Step 7: Switch back to your default identity and record its ledger account identifier
 dfx identity use default  
