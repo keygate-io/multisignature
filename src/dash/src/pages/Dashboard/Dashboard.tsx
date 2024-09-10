@@ -1,9 +1,4 @@
-import { Principal } from "@dfinity/principal";
-import { useInternetIdentity } from "../../hooks/use-internet-identity";
-import { useEffect, useState } from "react";
-import { getUser } from "../../api/users";
-import { balanceOf } from "../../api/ledger";
-import { getSubaccount } from "../../api/account";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -20,25 +15,24 @@ import { ContentCopy } from "@mui/icons-material";
 import { CheckCircleFilled } from "@ant-design/icons";
 import AccountPageLayout from "../AccountPageLayout";
 import MultipleRouteModal from "../../modals/MultipleRouteModal";
-
-const BALANCE_REFRESH_DELAY = 2000;
+import { useAccount } from "../../contexts/AccountContext";
 
 const Dashboard = () => {
-  const { identity } = useInternetIdentity();
-  const [account, setAccount] = useState<Principal | null>(null);
   const navigate = useNavigate();
+  const { icpAccount, balance, isLoading, error } = useAccount();
+
   const [open, setOpen] = useState(false);
   const [multipleRouteModalOpen, setMultipleRouteModalOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [copySuccess, setCopySuccess] = useState(false);
-  const [icpAccount, setIcpAccount] = useState<String | null>(null);
-  const [balance, setBalance] = useState<bigint>(BigInt(0));
 
   const handleCopy = () => {
     if (icpAccount) {
-      navigator.clipboard.writeText(String(icpAccount)).then(() => {
+      navigator.clipboard.writeText(icpAccount).then(() => {
         setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
       });
     }
   };
@@ -51,82 +45,22 @@ const Dashboard = () => {
     if (option === "send-token") {
       navigate("/assets/send-token");
     }
-    
     handleMultipleRouteModalClose();
   };
-
-  async function requestBalance() {
-    if (!icpAccount) {
-      console.log("No ICP account");
-      return;
-    }
-
-    console.log("Checking balance for", icpAccount);
-    const balance = await balanceOf(icpAccount as string);
-    console.log(
-      "ICP subaccount balance is ",
-      JSON.stringify(balance.e8s.toString())
-    );
-    setBalance(balance.e8s);
-  }
-
-  useEffect(() => {
-    const refresh = setInterval(() => requestBalance(), BALANCE_REFRESH_DELAY);
-
-    return () => {
-      clearInterval(refresh);
-    };
-  }, [icpAccount, requestBalance]);
-
-  useEffect(() => {
-    function fetchUser() {
-      if (identity) {
-        return getUser(identity.getPrincipal()).then((user) => {
-          if (user) {
-            console.log("User found:", user);
-            setAccount(user.accounts[0]);
-          } else {
-            navigate("/new-account");
-          }
-        });
-      }
-
-      return Promise.resolve();
-    }
-
-    fetchUser();
-  }, [identity]);
-
-  useEffect(() => {
-    async function fetchIcpAccount() {
-      if (!account) {
-        return;
-      }
-
-      const icpAccountQuery = await getSubaccount(account!, "ICP");
-      console.log("ICP subaccount query:", icpAccountQuery);
-      if ("Ok" in icpAccountQuery) {
-        const icpAccountString = icpAccountQuery.Ok;
-        console.log("ICP subaccount:", icpAccountString);
-        setIcpAccount(icpAccountString);
-      } else {
-        console.error(
-          "Failed to get ICP subaccount:",
-          icpAccountQuery.Err.message
-        );
-      }
-    }
-
-    fetchIcpAccount();
-  }, [account]);
 
   return (
     <AccountPageLayout>
       <Typography variant="h5">Total asset value</Typography>
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <Typography variant="h3" fontWeight="bold">
-          {balance.toLocaleString()} ICP
-        </Typography>
+        {isLoading ? (
+          <CircularProgress size={24} sx={{ mr: 2 }} />
+        ) : error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <Typography variant="h3" fontWeight="bold">
+            {balance.toLocaleString()} ICP
+          </Typography>
+        )}
       </Box>
       <Box sx={{ display: "flex", mt: 8, alignItems: "center" }}>
         <CircularProgress variant="determinate" value={50} size={60} />
@@ -218,6 +152,11 @@ const Dashboard = () => {
               <ContentCopy />
             </IconButton>
           </Box>
+          {copySuccess && (
+            <Typography color="success" sx={{ mt: 1 }}>
+              Address copied to clipboard!
+            </Typography>
+          )}
           <Button
             variant="contained"
             color="primary"
