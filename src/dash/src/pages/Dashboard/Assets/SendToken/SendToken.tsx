@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useCallback } from "react";
 import AccountPageLayout from "../../../AccountPageLayout";
 import {
   Box,
@@ -8,15 +8,37 @@ import {
   Step,
   StepLabel,
   SelectChangeEvent,
+  CircularProgress,
 } from "@mui/material";
 import SendForm from "./SendForm";
 import ConfirmationView from "./ConfirmationView";
+import {
+  createIntent,
+  addIntent,
+  executeIntent,
+} from "../../../../api/account";
+import { useAccount } from "../../../../contexts/AccountContext";
+import { Buffer } from "buffer";
+
+if (typeof window !== "undefined") {
+  window.Buffer = Buffer;
+}
 
 const SendToken: React.FC = () => {
+  const {
+    account,
+    icpAccount,
+    balance,
+    isLoading: contextLoading,
+    error: contextError,
+  } = useAccount();
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [token, setToken] = useState<string>("ICP");
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
   const handleRecipientChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -34,52 +56,77 @@ const SendToken: React.FC = () => {
 
   const handleNext = () => {
     setShowConfirmation(true);
+    setCurrentStep(1);
   };
 
   const handleBack = () => {
     setShowConfirmation(false);
+    setCurrentStep(0);
   };
 
-  const handleExecute = () => {
-    // Implement the execution logic here
-  };
+  const handleExecute = useCallback(async () => {
+    if (!account || !icpAccount) {
+      setError("Account information is missing");
+      return;
+    }
 
-  const memoizedSendForm = useMemo(
-    () => (
-      <SendForm
-        recipient={recipient}
-        amount={amount}
-        token={token}
-        handleRecipientChange={handleRecipientChange}
-        handleAmountChange={handleAmountChange}
-        handleTokenChange={handleTokenChange}
-        handleNext={handleNext}
-      />
-    ),
-    [recipient, amount, token]
-  );
+    setIsLoading(true);
+    setError(null);
 
-  const memoizedConfirmationView = useMemo(
-    () => (
-      <ConfirmationView
-        amount={amount}
-        recipient={recipient}
-        handleBack={handleBack}
-        handleExecute={handleExecute}
-      />
-    ),
-    [amount, recipient]
-  );
+    try {
+      const intent = createIntent(BigInt(amount), token, recipient, icpAccount);
+      console.log("Intent:", intent);
+      const intentId = await addIntent(
+        account,
+        new Uint8Array(Buffer.from(icpAccount, "hex")),
+        intent
+      );
+      console.log("Intent ID:", intentId);
+      setCurrentStep(2);
+
+      const result = await executeIntent(account, intentId);
+
+      if ("Completed" in result) {
+        setCurrentStep(3);
+      } else if ("Failed" in result) {
+        setError(`Transaction failed: ${result.Failed}`);
+      }
+    } catch (err) {
+      setError(`An error occurred: ${err}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [account, icpAccount, amount, token, recipient]);
+
+  if (contextLoading) {
+    return (
+      <AccountPageLayout>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </AccountPageLayout>
+    );
+  }
+
+  if (contextError) {
+    return (
+      <AccountPageLayout>
+        <Typography color="error">{contextError}</Typography>
+      </AccountPageLayout>
+    );
+  }
 
   return (
     <AccountPageLayout>
       <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          p: 3,
-        }}
+        sx={{ display: "flex", flexDirection: "column", height: "100%", p: 3 }}
       >
         <Typography
           variant="h4"
@@ -90,22 +137,58 @@ const SendToken: React.FC = () => {
 
         <Box sx={{ display: "flex", gap: 3 }}>
           <Paper sx={{ flex: 2, p: 3 }}>
-            {showConfirmation ? memoizedConfirmationView : memoizedSendForm}
+            {isLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : showConfirmation ? (
+              <ConfirmationView
+                amount={amount}
+                recipient={recipient}
+                handleBack={handleBack}
+                handleExecute={handleExecute}
+              />
+            ) : (
+              <SendForm
+                recipient={recipient}
+                amount={amount}
+                token={token}
+                handleRecipientChange={handleRecipientChange}
+                handleAmountChange={handleAmountChange}
+                handleTokenChange={handleTokenChange}
+                handleNext={handleNext}
+              />
+            )}
+            {error && (
+              <Typography color="error" sx={{ mt: 2 }}>
+                {error}
+              </Typography>
+            )}
           </Paper>
 
           <Paper sx={{ flex: 1, p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Transaction status
             </Typography>
-            <Stepper orientation="vertical">
-              <Step active completed={showConfirmation}>
+            <Stepper activeStep={currentStep} orientation="vertical">
+              <Step>
                 <StepLabel>Create</StepLabel>
               </Step>
-              <Step active={showConfirmation}>
-                <StepLabel>Confirmed (0 of 1)</StepLabel>
+              <Step>
+                <StepLabel>Confirm</StepLabel>
               </Step>
               <Step>
                 <StepLabel>Execute</StepLabel>
+              </Step>
+              <Step>
+                <StepLabel>Complete</StepLabel>
               </Step>
             </Stepper>
           </Paper>

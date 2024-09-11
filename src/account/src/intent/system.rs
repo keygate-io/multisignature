@@ -112,14 +112,23 @@ thread_local! {
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
 
-
 #[update]
-pub fn add_intent(subaccount: Subaccount, intent: Intent) {
+pub fn add_intent(subaccount: Subaccount, mut intent: Intent) -> u64 {
+    let new_id = INTENT_ID.with(|id| {
+        let mut id = id.borrow_mut();
+        *id += 1;
+        *id
+    });
+
+    intent.id = new_id;
+
     INTENTS.with(|intents| {
         let mut intents = intents.borrow_mut();
         let intent_list = intents.entry(subaccount).or_insert(LinkedList::new());
         intent_list.push_back(intent);
     });
+
+    new_id
 }
 
 #[update]

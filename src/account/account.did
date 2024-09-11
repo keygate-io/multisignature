@@ -27,7 +27,7 @@ type Result = variant { Ok : text; Err : Error };
 type SupportedNetwork = variant { ETH; ICP };
 service : () -> {
   add_decision : (Decision) -> ();
-  add_intent : (blob, Intent) -> ();
+  add_intent : (blob, Intent) -> (nat64);
   add_subaccount : (text) -> (Result);
   execute_intent : (nat64) -> (IntentStatus);
   get_decisions : (nat64) -> (vec Decision) query;

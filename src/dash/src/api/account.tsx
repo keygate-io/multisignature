@@ -6,6 +6,7 @@ import {
   IntentStatus,
 } from "../../../declarations/account/account.did"; // Make sure this path is correct
 
+
 export function deployAccount(principal: Principal) {
   return registration.deploy_account(principal);
 }
@@ -23,13 +24,10 @@ export function getSubaccount(account_canister_id: Principal, token: string) {
 
 export function addIntent(
   account_canister_id: Principal,
-  subaccount: Principal,
+  subaccount: Uint8Array,
   intent: Intent
 ) {
-  return createActor(account_canister_id).add_intent(
-    subaccount.toUint8Array(),
-    intent
-  );
+  return createActor(account_canister_id).add_intent(subaccount, intent);
 }
 
 export function executeIntent(

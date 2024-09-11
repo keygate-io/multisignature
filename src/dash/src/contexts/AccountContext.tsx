@@ -4,6 +4,8 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useCallback,
+  useRef,
 } from "react";
 import { Principal } from "@dfinity/principal";
 import { balanceOf } from "../api/ledger";
@@ -18,11 +20,12 @@ interface AccountContextType {
   balance: bigint;
   isLoading: boolean;
   error: string | null;
+  refreshBalance: () => Promise<void>;
 }
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
-const BALANCE_REFRESH_INTERVAL = 2000; // 2 seconds
+const BALANCE_REFRESH_INTERVAL = 10000; // 10 seconds
 
 export const AccountProvider: React.FC<React.PropsWithChildren<{}>> = ({
   children,
@@ -32,75 +35,109 @@ export const AccountProvider: React.FC<React.PropsWithChildren<{}>> = ({
   const [account, setAccount] = useState<Principal | null>(null);
   const [icpAccount, setIcpAccount] = useState<string | null>(null);
   const [balance, setBalance] = useState<bigint>(BigInt(0));
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const latestBalanceRef = useRef<bigint>(BigInt(0));
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchBalance = useCallback(async () => {
+    if (!icpAccount) return;
+
+    try {
+      const result = await balanceOf(icpAccount);
+      if (result.e8s !== latestBalanceRef.current) {
+        latestBalanceRef.current = result.e8s;
+        setBalance(result.e8s);
+      }
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch balance:", err);
+      // Don't set error state here to avoid unnecessary re-renders
+    }
+  }, [icpAccount]);
+
+  const refreshBalance = useCallback(async () => {
+    setIsLoading(true);
+    await fetchBalance();
+    setIsLoading(false);
+  }, [fetchBalance]);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchUser = async () => {
       if (identity) {
         try {
           const user = await getUser(identity.getPrincipal());
-          if (user) {
-            console.log("User found:", user);
+          if (user && isMounted) {
             setAccount(user.accounts[0]);
-          } else {
-            navigate("/new-account");
+          } else if (!user && isMounted) {
+            navigate("/new-profile/create");
+          } else if (isMounted) {
+            navigate("/new-account/create");
           }
         } catch (err) {
           console.error("Failed to fetch user:", err);
-          setError("Failed to fetch user account");
+          if (isMounted) {
+            setError("Failed to fetch user account");
+          }
         }
       }
     };
 
     fetchUser();
+    return () => {
+      isMounted = false;
+    };
   }, [identity, navigate]);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchIcpAccount = async () => {
       if (account) {
         try {
           const icpAccountQuery = await getSubaccount(account, "ICP");
           if ("Ok" in icpAccountQuery) {
             setIcpAccount(icpAccountQuery.Ok);
-          } else {
+          } else if ("Err" in icpAccountQuery) {
+            // @ts-ignore: Ignore the TypeScript error for now
             throw new Error(icpAccountQuery.Err.message);
+          } else {
+            throw new Error("Unexpected response from getSubaccount");
           }
         } catch (err) {
-          setError("Failed to get ICP subaccount");
           console.error("Failed to get ICP subaccount:", err);
+          if (isMounted) {
+            setError("Failed to get ICP subaccount");
+          }
         }
       }
     };
     fetchIcpAccount();
+    return () => {
+      isMounted = false;
+    };
   }, [account]);
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      if (!icpAccount) return;
+    fetchBalance();
+    timerRef.current = setInterval(fetchBalance, BALANCE_REFRESH_INTERVAL);
 
-      setIsLoading(true);
-      try {
-        const result = await balanceOf(icpAccount);
-        setBalance(result.e8s);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch balance");
-        console.error("Failed to fetch balance:", err);
-      } finally {
-        setIsLoading(false);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
     };
+  }, [fetchBalance]);
 
-    fetchBalance();
-    const intervalId = setInterval(fetchBalance, BALANCE_REFRESH_INTERVAL);
-
-    return () => clearInterval(intervalId);
-  }, [icpAccount]);
+  useEffect(() => {
+    if (account && icpAccount) {
+      setIsLoading(false);
+    }
+  }, [account, icpAccount]);
 
   const value = useMemo(
-    () => ({ account, icpAccount, balance, isLoading, error }),
-    [account, icpAccount, balance, isLoading, error]
+    () => ({ account, icpAccount, balance, isLoading, error, refreshBalance }),
+    [account, icpAccount, balance, isLoading, error, refreshBalance]
   );
 
   return (

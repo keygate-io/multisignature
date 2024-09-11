@@ -1,37 +1,27 @@
 import { Button } from "antd";
 import React, { useEffect } from "react";
-import { useInternetIdentity } from "../../hooks/use-internet-identity";
 import { useNavigate } from "react-router-dom";
-import { hasAnAccount, isRegistered } from "../../api/users";
+import { useAccount } from "../../contexts/AccountContext";
+import { useInternetIdentity } from "../../hooks/use-internet-identity";
 
 const Home: React.FC = () => {
-  const { login, loginStatus, identity } = useInternetIdentity();
+  const { account, isLoading, error } = useAccount();
+  const { login } = useInternetIdentity();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const redirect = async () => {
-      if (loginStatus === "success") {
-        try {
-          const exists = await isRegistered(identity!.getPrincipal());
-          if (exists) {
-            const has = await hasAnAccount(identity!.getPrincipal());
-            if (has) {
-              navigate("/dashboard");
-            } else {
-              navigate("/new-account/create");
-            }
-          } else {
-            navigate("/new-profile/create");
-          }
-        } catch (error) {
-          console.error("Error checking user existence:", error);
-          // Handle error (e.g., show a notification to the user)
-        }
-      }
-    };
+    if (account) {
+      navigate("/dashboard");
+    }
+  }, [account, navigate]);
 
-    redirect();
-  }, [loginStatus, identity]);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="p-12">
