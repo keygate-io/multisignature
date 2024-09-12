@@ -16,6 +16,7 @@ dependencies = [
  "ic-ledger-types",
  "ic-stable-structures",
  "icrc-ledger-types",
+ "lazy_static",
  "once_cell",
  "serde",
  "serde_bytes",

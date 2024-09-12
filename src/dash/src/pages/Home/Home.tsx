@@ -5,7 +5,7 @@ import { useAccount } from "../../contexts/AccountContext";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 
 const Home: React.FC = () => {
-  const { account, isLoading, error } = useAccount();
+  const { account, error } = useAccount();
   const { login } = useInternetIdentity();
   const navigate = useNavigate();
 
@@ -14,10 +14,6 @@ const Home: React.FC = () => {
       navigate("/dashboard");
     }
   }, [account, navigate]);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   if (error) {
     return <div>Error: {error}</div>;

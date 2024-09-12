@@ -112,6 +112,13 @@ thread_local! {
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
 
+#[query]
+pub fn get_adapters() -> Vec<String> {
+    ADAPTERS.with(|adapters| {
+        adapters.borrow().keys().cloned().collect()
+    })
+}
+
 #[update]
 pub fn add_intent(subaccount: Subaccount, mut intent: Intent) -> u64 {
     let new_id = INTENT_ID.with(|id| {

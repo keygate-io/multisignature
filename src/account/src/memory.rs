@@ -4,6 +4,7 @@ use ic_stable_structures::{StableBTreeMap, StableCell};
 use std::cell::RefCell;
 
 use crate::types::{Memory, Network, StoredPrincipal, StoredTransactions};
+use crate::BlockchainAdapter;
 
 const PRINCIPAL_MEMORY: MemoryId = MemoryId::new(0);
 const LAST_SUBACCOUNT_NONCE_MEMORY: MemoryId = MemoryId::new(1);
@@ -13,6 +14,7 @@ const TRANSACTIONS_MEMORY: MemoryId = MemoryId::new(4);
 const CUSTODIAN_PRINCIPAL_MEMORY: MemoryId = MemoryId::new(5);
 const NETWORK_MEMORY: MemoryId = MemoryId::new(6);
 const WEBHOOK_URL_MEMORY: MemoryId = MemoryId::new(7);
+const ADAPTERS_MEMORY: MemoryId = MemoryId::new(8);
 
 thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
@@ -24,6 +26,7 @@ thread_local! {
             StoredPrincipal::default() // TODO: add to init function
         ).expect("Initializing PRINCIPAL StableCell failed")
     );
+
     // u32 - upper limit is 4,294,967,295
     pub static LAST_SUBACCOUNT_NONCE: RefCell<StableCell<u32, Memory>> = RefCell::new(
         StableCell::init(
@@ -31,12 +34,14 @@ thread_local! {
             0
         ).expect("Initializing LAST_SUBACCOUNT_NONCE StableCell failed")
     );
+
     pub static NEXT_BLOCK: RefCell<StableCell<u64, Memory>> = RefCell::new(
         StableCell::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(NEXT_BLOCK_MEMORY)),
             1 // Default is 1
         ).expect("Initializing NEXT_BLOCK StableCell failed")
     );
+
     pub static INTERVAL_IN_SECONDS: RefCell<StableCell<u64, Memory>> = RefCell::new(
         StableCell::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(INTERVAL_IN_SECONDS_MEMORY)),

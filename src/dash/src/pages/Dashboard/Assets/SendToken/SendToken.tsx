@@ -16,6 +16,7 @@ import {
   createIntent,
   addIntent,
   executeIntent,
+  getAdapters,
 } from "../../../../api/account";
 import { useAccount } from "../../../../contexts/AccountContext";
 import { Buffer } from "buffer";
@@ -83,6 +84,9 @@ const SendToken: React.FC = () => {
       );
       console.log("Intent ID:", intentId);
       setCurrentStep(2);
+
+      const adapters = await getAdapters(account);
+      console.log("Adapters:", adapters);
 
       const result = await executeIntent(account, intentId);
 

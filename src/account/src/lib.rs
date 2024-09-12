@@ -125,10 +125,21 @@ fn get_subaccount(token: String) -> Result<String, Error> {
     })
 }
 
+#[ic_cdk::post_upgrade]
+fn post_upgrade() {
+    ADAPTERS.with(|adapters| {
+        adapters.borrow_mut().insert("ICP".to_string(), Box::new(ICPNativeTransferAdapter::new()));
+    });
+}
+
 #[ic_cdk::init]
 async fn init() {
     LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
         let _ = nonce_ref.borrow_mut().set(0);
+    });
+
+    ADAPTERS.with(|adapters| {
+        adapters.borrow_mut().insert("ICP".to_string(), Box::new(ICPNativeTransferAdapter::new()));
     });
 }
 

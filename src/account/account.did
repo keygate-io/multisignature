@@ -30,6 +30,7 @@ service : () -> {
   add_intent : (blob, Intent) -> (nat64);
   add_subaccount : (text) -> (Result);
   execute_intent : (nat64) -> (IntentStatus);
+  get_adapters : () -> (vec text) query;
   get_decisions : (nat64) -> (vec Decision) query;
   get_intents : (blob) -> (vec Intent) query;
   get_signees : () -> (vec principal) query;

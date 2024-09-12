@@ -30,6 +30,10 @@ export function addIntent(
   return createActor(account_canister_id).add_intent(subaccount, intent);
 }
 
+export function getAdapters(account_canister_id: Principal) {
+  return createActor(account_canister_id).get_adapters();
+}
+
 export function executeIntent(
   account_canister_id: Principal,
   intent_id: bigint

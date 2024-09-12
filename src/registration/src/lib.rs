@@ -1,21 +1,16 @@
 mod deployer;
 mod types;
+mod memory;
 
-use std::collections::HashMap;
-use std::cell::RefCell;
+use std::{borrow::BorrowMut, cell::RefCell};
 
 use ic_cdk::{init, query, update};
 use candid::{CandidType, Deserialize, Principal};
+use memory::USERS;
+use types::UserInfo;
 
-#[derive(Clone, CandidType, Deserialize)]
-struct UserInfo {
-    first_name: String,
-    last_name: String,
-    accounts: Vec<Principal>,
-}
 
 thread_local! {
-    static USERS: RefCell<HashMap<Principal, UserInfo>> = RefCell::default();
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
 }
 
@@ -37,9 +32,12 @@ fn register_user(principal: Principal, first_name: String, last_name: String) {
 
 fn add_account(user_principal: Principal, account_canister_id: Principal) {
     USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        let user = users.get_mut(&user_principal).unwrap_or_else(|| ic_cdk::trap("User not found"));
-        user.accounts.push(account_canister_id);
+        let users = users.borrow();
+        if let Some(user) = users.get(&user_principal).borrow_mut() {
+            user.accounts.push(account_canister_id);
+        } else {
+            ic_cdk::trap("User not found");
+        }
     });
 }
 
@@ -67,7 +65,7 @@ fn load_wallet_wasm() {
 #[query]
 fn get_user(principal: Principal) -> Option<UserInfo> {
     USERS.with(|users| {
-        users.borrow().get(&principal).cloned()
+        users.borrow().get(&principal)
     })
 }
 
@@ -76,6 +74,11 @@ fn user_exists(principal: Principal) -> bool {
     USERS.with(|users| {
         users.borrow().contains_key(&principal)
     })
+}
+
+#[ic_cdk::post_upgrade]
+fn post_upgrade() {
+    load_wallet_wasm();
 }
 
 ic_cdk::export_candid!();

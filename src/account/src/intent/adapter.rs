@@ -7,7 +7,6 @@ use crate::TOKEN_SUBACCOUNTS;
 
 use super::{Intent, IntentStatus, IntentType, SupportedNetwork};
 
-
 pub(crate) trait BlockchainAdapter: DynClone {
     fn network(&self) -> SupportedNetwork;
     fn token(&self) -> String;
@@ -99,7 +98,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
 }
 
 impl ICPNativeTransferAdapter {
-    fn new() -> ICPNativeTransferAdapter {
+    pub fn new() -> ICPNativeTransferAdapter {
         ICPNativeTransferAdapter {
             network: SupportedNetwork::ICP,
             token: "ICP".to_string(),
