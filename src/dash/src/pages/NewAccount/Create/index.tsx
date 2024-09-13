@@ -194,7 +194,8 @@ const CreateAccount = () => {
         duration: 0,
       });
 
-      deployAccount(identity!.getPrincipal()).then(async (id) => {
+      deployAccount(identity!.getPrincipal(), accountName).then(async (id) => {
+        console.log(`Account id: ${JSON.stringify(id)}`);
         const subaccount_id = await createSubaccount(id, "ICP");
 
         console.log(`Account id: ${JSON.stringify(subaccount_id)}`);

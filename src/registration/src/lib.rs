@@ -1,17 +1,33 @@
 mod deployer;
 mod types;
-mod memory;
 
-use std::{borrow::BorrowMut, cell::RefCell};
+use std::{cell::RefCell};
 
 use ic_cdk::{init, query, update};
-use candid::{CandidType, Deserialize, Principal};
-use memory::USERS;
-use types::UserInfo;
+use candid::Principal;
+use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager}, StableBTreeMap, DefaultMemoryImpl};
+use types::{Memory, Token, UserInfo};
 
+const USERS_MEMORY: MemoryId = MemoryId::new(0);
+const VAULTS_MEMORY: MemoryId = MemoryId::new(1);
 
 thread_local! {
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
+
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
+        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+
+    pub static STABLE_USERS: RefCell<StableBTreeMap<Principal, UserInfo, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEMORY))
+        )
+    );
+
+    pub static STABLE_VAULTS: RefCell<StableBTreeMap<(Principal, Token), Principal, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
+        )
+    );
 }
 
 #[init]
@@ -21,33 +37,31 @@ fn init() {
 
 #[update]
 fn register_user(principal: Principal, first_name: String, last_name: String) {
-    USERS.with(|users| {
+    STABLE_USERS.with(|users| {
         let mut users = users.borrow_mut();
         if users.contains_key(&principal) {
             ic_cdk::trap(&format!("User with principal {} already exists", principal));
         }
-        users.insert(principal, UserInfo { first_name, last_name, accounts: Vec::new() });
+        users.insert(principal, UserInfo { first_name, last_name });
     });
 }
 
-fn add_account(user_principal: Principal, account_canister_id: Principal) {
-    USERS.with(|users| {
-        let users = users.borrow();
-        if let Some(user) = users.get(&user_principal).borrow_mut() {
-            user.accounts.push(account_canister_id);
-        } else {
-            ic_cdk::trap("User not found");
-        }
+fn add_account(user_principal: Principal, vault_name: String, account_canister_id: Principal) {
+    STABLE_VAULTS.with(|vaults| {
+        let mut vaults = vaults.borrow_mut();
+        vaults.insert((user_principal, Token(vault_name)), account_canister_id);
     });
 }
 
 #[update]
-async fn deploy_account(principal: Principal) -> Principal {
-    let wallet_wasm = WALLET_WASM.with(|wasm| wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded")));
-    let deployed = deployer::deploy(wallet_wasm).await;
-    match deployed {
+async fn deploy_account(principal: Principal, vault_name: String) -> Principal {
+    let wallet_wasm = WALLET_WASM.with(|wasm| {
+        wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded"))
+    });
+    
+    match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
-            add_account(principal, canister_id);
+            add_account(principal, vault_name, canister_id);
             canister_id
         }
         Err(err) => ic_cdk::trap(&format!("Failed to deploy account: {}", err)),
@@ -64,16 +78,22 @@ fn load_wallet_wasm() {
 
 #[query]
 fn get_user(principal: Principal) -> Option<UserInfo> {
-    USERS.with(|users| {
-        users.borrow().get(&principal)
+    STABLE_USERS.with(|users| users.borrow().get(&principal))
+}
+
+#[query]
+fn get_user_vaults(principal: Principal) -> Vec<(String, Principal)> {
+    STABLE_VAULTS.with(|vaults| {
+        vaults.borrow().iter()
+            .filter(|(key, _)| key.0 == principal)
+            .map(|(key, value)| (key.1.0.clone(), value.clone()))
+            .collect()
     })
 }
 
 #[query]
 fn user_exists(principal: Principal) -> bool {
-    USERS.with(|users| {
-        users.borrow().contains_key(&principal)
-    })
+    STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
 }
 
 #[ic_cdk::post_upgrade]

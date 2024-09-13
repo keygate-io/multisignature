@@ -7,8 +7,8 @@ import {
 } from "../../../declarations/account/account.did"; // Make sure this path is correct
 
 
-export function deployAccount(principal: Principal) {
-  return registration.deploy_account(principal);
+export function deployAccount(principal: Principal, vault_name: string) {
+  return registration.deploy_account(principal, vault_name);
 }
 
 export function createSubaccount(

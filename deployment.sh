@@ -82,16 +82,21 @@ else
   echo "Deployment failed. Please check the error messages above."
 fi
 
-echo "Exported variables:"
-echo "REVISION=$REVISION"
-echo "LEDGER_WASM_URL=$LEDGER_WASM_URL"
-echo "LEDGER_DID_URL=$LEDGER_DID_URL"
-echo "MINT_ACC=$MINT_ACC"
-echo "ACCOUNT_ID=$ACCOUNT_ID" 
-echo "LEDGER_ACC=$LEDGER_ACC"
-echo "ARCHIVE_CONTROLLER=$ARCHIVE_CONTROLLER"
+# Create .debug file with exported variables
+cat << EOF > .debug
+Exported variables:
+REVISION=$REVISION
+LEDGER_WASM_URL=$LEDGER_WASM_URL
+LEDGER_DID_URL=$LEDGER_DID_URL
+MINT_ACC=$MINT_ACC
+ACCOUNT_ID=$ACCOUNT_ID 
+LEDGER_ACC=$LEDGER_ACC
+ARCHIVE_CONTROLLER=$ARCHIVE_CONTROLLER
 
-echo "Test Identities Account IDs:"
-echo "TEST_ACCOUNT_ID_1=$TEST_ACCOUNT_ID_1"
-echo "TEST_ACCOUNT_ID_2=$TEST_ACCOUNT_ID_2"
-echo "TEST_ACCOUNT_ID_3=$TEST_ACCOUNT_ID_3"
+Test Identities Account IDs:
+TEST_ACCOUNT_ID_1=$TEST_ACCOUNT_ID_1
+TEST_ACCOUNT_ID_2=$TEST_ACCOUNT_ID_2
+TEST_ACCOUNT_ID_3=$TEST_ACCOUNT_ID_3
+EOF
+
+echo "Debug information has been written to .debug file"

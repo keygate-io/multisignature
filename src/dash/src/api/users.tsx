@@ -1,6 +1,10 @@
 import { Principal } from "@dfinity/principal";
 import { registration } from "../../../declarations/registration";
-import { UserInfo } from "../../../declarations/registration/registration.did";
+
+export interface UserInfo {
+  first_name: string;
+  last_name: string;
+}
 
 export function isRegistered(principal: Principal): Promise<boolean> {
   return registration.user_exists(principal);
@@ -14,17 +18,36 @@ export function registerUser(
   return registration.register_user(principal, firstName, lastName);
 }
 
-export async function getUser(principal: Principal): Promise<null | UserInfo> {
-  const req = await registration.get_user(principal);
-  return req[0] ?? null;
+export async function getUser(principal: Principal): Promise<UserInfo | null> {
+  const result = await registration.get_user(principal);
+  return result[0] ?? null;
 }
 
+export async function deployAccount(
+  principal: Principal,
+  tokenName: string
+): Promise<Principal> {
+  return registration.deploy_account(principal, tokenName);
+}
+
+export async function getUserVaults(
+  principal: Principal
+): Promise<[string, Principal][]> {
+  return registration.get_user_vaults(principal);
+}
+
+export function loadWalletWasm(): Promise<void> {
+  return registration.load_wallet_wasm();
+}
+
+// Helper functions
+
 export async function hasAnAccount(principal: Principal): Promise<boolean> {
-  const req = await registration.get_user(principal);
-  return req[0] !== undefined && req[0].accounts.length > 0;
+  const vaults = await getUserVaults(principal);
+  return vaults.length > 0;
 }
 
 export async function getAccounts(principal: Principal): Promise<Principal[]> {
-  const req = await registration.get_user(principal);
-  return req[0]?.accounts ?? [];
+  const vaults = await getUserVaults(principal);
+  return vaults.map(([_, accountPrincipal]) => accountPrincipal);
 }

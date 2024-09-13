@@ -23,17 +23,13 @@ const Dashboard = () => {
 
   const [open, setOpen] = useState(false);
   const [multipleRouteModalOpen, setMultipleRouteModalOpen] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handleCopy = () => {
     if (icpAccount) {
-      navigator.clipboard.writeText(icpAccount).then(() => {
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
-      });
+      navigator.clipboard.writeText(icpAccount);
     }
   };
 
@@ -152,11 +148,6 @@ const Dashboard = () => {
               <ContentCopy />
             </IconButton>
           </Box>
-          {copySuccess && (
-            <Typography color="success" sx={{ mt: 1 }}>
-              Address copied to clipboard!
-            </Typography>
-          )}
           <Button
             variant="contained"
             color="primary"
