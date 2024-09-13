@@ -1,7 +1,6 @@
 // Imports
 mod memory;
 mod types;
-mod tests;
 mod ledger;
 mod hashof;
 mod intent;

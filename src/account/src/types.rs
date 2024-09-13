@@ -14,6 +14,7 @@ use icrc_ledger_types::icrc1::transfer::TransferArg;
 use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::{borrow::Cow, collections::HashMap};
+use once_cell::sync::Lazy;
 
 pub type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -23,6 +24,16 @@ pub struct State {
 
 thread_local! {
     pub static STATE: RefCell<State> = RefCell::new(State{pending_requests: BTreeSet::new()});
+}
+
+static STATIC_PRINCIPAL: Lazy<Principal> =
+    Lazy::new(|| Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap());
+
+#[cfg(test)]
+impl CanisterApiManagerTrait for CanisterApiManager {
+    fn id() -> Principal {
+        *STATIC_PRINCIPAL
+    }
 }
 
 // CallerGuard section was inspired by or directly uses work done by AlphaCQ
