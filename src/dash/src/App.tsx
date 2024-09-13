@@ -12,14 +12,14 @@ import { AccountProvider } from "./contexts/AccountContext";
 function App() {
   return (
     <BrowserRouter>
-      <ConfigProvider
-        theme={{
-          token: {
-            fontFamily: "Inter, sans-serif",
-          },
-        }}
-      >
-        <AccountProvider>
+      <AccountProvider>
+        <ConfigProvider
+          theme={{
+            token: {
+              fontFamily: "Inter, sans-serif",
+            },
+          }}
+        >
           <Routes>
             <Route path="/" element={<PageLayout main={<Home />} />} />
             <Route
@@ -40,8 +40,8 @@ function App() {
               element={<PageLayout main={<SendToken />} />}
             />
           </Routes>
-        </AccountProvider>
-      </ConfigProvider>
+        </ConfigProvider>
+      </AccountProvider>
     </BrowserRouter>
   );
 }

@@ -16,11 +16,11 @@ pub enum IntentType {
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
 pub enum IntentStatus {
-    Pending,
-    InProgress,
-    Completed,
-    Rejected,
-    Failed,
+    Pending(String),
+    InProgress(String),
+    Completed(String),
+    Rejected(String),
+    Failed(String),
 }
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
@@ -190,7 +190,7 @@ pub async fn execute_intent(intent_id: u64) -> IntentStatus {
 
             execution_result
         },
-        None => IntentStatus::Failed,
+        None => IntentStatus::Failed("Intent not found".to_string()),
     }
 }
 

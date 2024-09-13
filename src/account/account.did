@@ -16,11 +16,11 @@ type Intent = record {
   intent_type : IntentType;
 };
 type IntentStatus = variant {
-  Failed;
-  Rejected;
-  InProgress;
-  Completed;
-  Pending;
+  Failed : text;
+  Rejected : text;
+  InProgress : text;
+  Completed : text;
+  Pending : text;
 };
 type IntentType = variant { Swap; Transfer };
 type Result = variant { Ok : text; Err : Error };

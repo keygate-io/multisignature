@@ -128,7 +128,7 @@ fn get_subaccount(token: String) -> Result<String, Error> {
 #[ic_cdk::post_upgrade]
 fn post_upgrade() {
     ADAPTERS.with(|adapters| {
-        adapters.borrow_mut().insert("ICP".to_string(), Box::new(ICPNativeTransferAdapter::new()));
+        adapters.borrow_mut().insert("ICP-ICP-Transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
     });
 }
 
@@ -139,7 +139,7 @@ async fn init() {
     });
 
     ADAPTERS.with(|adapters| {
-        adapters.borrow_mut().insert("ICP".to_string(), Box::new(ICPNativeTransferAdapter::new()));
+        adapters.borrow_mut().insert("ICP-ICP-Transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
     });
 }
 

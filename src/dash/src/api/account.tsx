@@ -55,6 +55,6 @@ export function createIntent(
     to,
     from,
     network: { ICP: null },
-    status: { Pending: null },
+    status: { Pending: "Pending" },
   };
 }

@@ -93,7 +93,9 @@ const SendToken: React.FC = () => {
       if ("Completed" in result) {
         setCurrentStep(3);
       } else if ("Failed" in result) {
-        setError(`Transaction failed: ${result.Failed}`);
+        setError(`Transaction failed: ${JSON.stringify(result)}`);
+      } else {
+        setError(`Unknown error: ${JSON.stringify(result)}`);
       }
     } catch (err) {
       setError(`An error occurred: ${err}`);

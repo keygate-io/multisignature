@@ -40,7 +40,7 @@ pub async fn execute(intent: &Intent) -> IntentStatus {
         Ok(status) => status,
         Err(e) => {
             println!("Error executing intent: {}", e);
-            IntentStatus::Failed
+            IntentStatus::Failed(e)
         }
     }
 }
@@ -57,7 +57,7 @@ type ICPNativeTransferArgs = TransferArgs;
 /**
  * See TransferArgs in ic_ledger_types
  */
-const RECOMMENDED_TRANSACTION_FEE: u64 = 10000;
+const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000;
 
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {
@@ -90,7 +90,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
             };
 
             match ICPNativeTransferAdapter::transfer(args).await {
-                Ok(_) => Ok(IntentStatus::Completed),
+                Ok(_) => Ok(IntentStatus::Completed("Successfully transferred native ICP.".to_string())),
                 Err(e) => Err(e.to_string()),
             }
         })
