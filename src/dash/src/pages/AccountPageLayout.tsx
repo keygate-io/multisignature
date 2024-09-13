@@ -9,21 +9,16 @@ import {
   ListItemText,
   Typography,
   Tooltip,
-  IconButton,
   Snackbar,
-  CircularProgress,
 } from "@mui/material";
 import {
   AccountBalanceWalletOutlined,
-  ContactsOutlined,
   HomeOutlined,
   ReceiptOutlined,
-  SettingsOutlined,
-  SwapHorizOutlined,
-  ContentCopy,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
+import MultipleRouteModal from "../modals/MultipleRouteModal";
 
 interface MenuItemType {
   text: string;
@@ -45,6 +40,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     icpSubaccount: icpAccount,
   } = useAccount();
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
+  const [multipleRouteModalOpen, setMultipleRouteModalOpen] = useState(false);
 
   const menuItems: MenuItemType[] = [
     { text: "Home", icon: <HomeOutlined />, path: "/dashboard" },
@@ -62,6 +58,17 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
   const handleCloseSnackbar = () => {
     setCopySnackbarOpen(false);
+  };
+
+  const handleMultipleRouteModalOpen = () => setMultipleRouteModalOpen(true);
+  const handleMultipleRouteModalClose = () => setMultipleRouteModalOpen(false);
+
+  const handleMultipleRouteOptionSelect = (option: string) => {
+    console.log(`Selected option: ${option}`);
+    if (option === "send-token") {
+      navigate("/assets/send-token");
+    }
+    handleMultipleRouteModalClose();
   };
 
   const renderMenuItem = (item: MenuItemType) => (
@@ -146,7 +153,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
           variant="contained"
           color="primary"
           sx={{ mb: 2, mx: 2 }}
-          onClick={() => navigate("/new-transaction")}
+          onClick={handleMultipleRouteModalOpen}
         >
           New transaction
         </Button>
@@ -170,6 +177,11 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
         onClose={handleCloseSnackbar}
         message="Address copied to clipboard"
         autoHideDuration={2000}
+      />
+      <MultipleRouteModal
+        open={multipleRouteModalOpen}
+        onClose={handleMultipleRouteModalClose}
+        onOptionSelect={handleMultipleRouteOptionSelect}
       />
     </Box>
   );
