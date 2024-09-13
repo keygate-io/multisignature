@@ -39,16 +39,17 @@ interface PageLayoutProps {
 const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { account, icpAccount, balance, isLoading, error } = useAccount();
+  const {
+    vaultCanisterId,
+    vaultName,
+    icpSubaccount: icpAccount,
+  } = useAccount();
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
 
   const menuItems: MenuItemType[] = [
-    { text: "Home", icon: <HomeOutlined />, path: "/dashboard", badge: "New" },
+    { text: "Home", icon: <HomeOutlined />, path: "/dashboard" },
     { text: "Assets", icon: <AccountBalanceWalletOutlined />, path: "/assets" },
-    { text: "Swap", icon: <SwapHorizOutlined />, path: "/swap" },
     { text: "Transactions", icon: <ReceiptOutlined />, path: "/transactions" },
-    { text: "Address book", icon: <ContactsOutlined />, path: "/address-book" },
-    { text: "Settings", icon: <SettingsOutlined />, path: "/settings" },
   ];
 
   const handleCopyAddress = () => {
@@ -120,21 +121,26 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
           <Tooltip title={icpAccount || "Fetching account"}>
             <Typography
               variant="subtitle2"
-              sx={{ flexGrow: 1, overflow: "hidden", textOverflow: "ellipsis" }}
+              sx={{ textAlign: "center", fontWeight: "bold" }}
             >
-              {icpAccount
-                ? `${icpAccount.slice(0, 8)}...${icpAccount.slice(-8)}`
-                : "Fetching account"}
+              {vaultName || "Fetching name"}
             </Typography>
           </Tooltip>
-          <IconButton
-            size="small"
-            onClick={handleCopyAddress}
-            sx={{ color: "inherit" }}
-            disabled={!icpAccount}
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              flexGrow: 1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              textAlign: "left",
+            }}
           >
-            <ContentCopy fontSize="small" />
-          </IconButton>
+            {vaultCanisterId
+              ? `${vaultCanisterId.toString()}`
+              : "Fetching account"}
+          </Typography>
         </Box>
         <Button
           variant="contained"

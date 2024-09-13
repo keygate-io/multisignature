@@ -27,9 +27,9 @@ if (typeof window !== "undefined") {
 
 const SendToken: React.FC = () => {
   const {
-    account,
-    icpAccount,
-    balance,
+    vaultCanisterId: account,
+    icpSubaccount: icpAccount,
+    icpBalance: balance,
     isLoading: contextLoading,
     error: contextError,
   } = useAccount();

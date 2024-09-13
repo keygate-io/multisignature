@@ -13,9 +13,10 @@ import { useInternetIdentity } from "../hooks/use-internet-identity";
 import { useNavigate } from "react-router-dom";
 
 interface AccountContextType {
-  account: Principal | undefined;
-  icpAccount: string | undefined;
-  balance: bigint;
+  vaultCanisterId: Principal | undefined;
+  vaultName: string | undefined;
+  icpSubaccount: string | undefined;
+  icpBalance: bigint;
   isLoading: boolean;
   error: string;
   refreshBalance: () => Promise<void>;
@@ -34,18 +35,21 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 }) => {
   const { identity } = useInternetIdentity();
   const navigate = useNavigate();
-  const [account, setAccount] = useState<Principal | undefined>(undefined);
-  const [icpAccount, setIcpAccount] = useState<string | undefined>(undefined);
-  const [balance, setBalance] = useState<bigint>(BigInt(0));
+  const [vaultCanisterId, setVaultCanisterId] = useState<Principal | undefined>(
+    undefined
+  );
+  const [icpSubaccount, setIcpSubaccount] = useState<string | undefined>(
+    undefined
+  );
+  const [vaultName, setVaultName] = useState<string | undefined>(undefined);
+  const [icpBalance, setIcpBalance] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const setupAccount = async (): Promise<void> => {
       if (!identity) {
-        if (!window.location.href.includes("/")) {
-          navigate("/");
-        }
+        navigate("/");
         return;
       }
 
@@ -54,7 +58,10 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
         const vaults = await getUserVaults(identity.getPrincipal());
 
         if (user && vaults.length > 0) {
-          setAccount(vaults[0][1]);
+          console.log("vaults", vaults);
+          setVaultCanisterId(vaults[0][1]);
+          console.log("vaults[0][0]", vaults[0][0]);
+          setVaultName(vaults[0][0]);
         } else if (user && vaults.length === 0) {
           navigate("/new-account/create");
         } else {
@@ -70,12 +77,12 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 
   useEffect(() => {
     const fetchIcpAccount = async (): Promise<void> => {
-      if (!account) return;
+      if (!vaultCanisterId) return;
 
       try {
-        const result = await getSubaccount(account, "ICP");
+        const result = await getSubaccount(vaultCanisterId, "ICP");
         if ("Ok" in result) {
-          setIcpAccount(result.Ok);
+          setIcpSubaccount(result.Ok);
         } else {
           throw new Error("Failed to get ICP subaccount");
         }
@@ -85,15 +92,15 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
     };
 
     fetchIcpAccount();
-  }, [account]);
+  }, [vaultCanisterId]);
 
   useEffect(() => {
     const fetchBalance = async (): Promise<void> => {
-      if (!icpAccount) return;
+      if (!icpSubaccount) return;
 
       try {
-        const result = await balanceOf(icpAccount);
-        setBalance(result.e8s);
+        const result = await balanceOf(icpSubaccount);
+        setIcpBalance(result.e8s);
         setError("");
       } catch (err) {
         setError("Failed to fetch balance");
@@ -106,14 +113,14 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
     const intervalId = setInterval(fetchBalance, BALANCE_REFRESH_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [icpAccount]);
+  }, [icpSubaccount]);
 
   const refreshBalance = async (): Promise<void> => {
     setIsLoading(true);
-    if (icpAccount) {
+    if (icpSubaccount) {
       try {
-        const result = await balanceOf(icpAccount);
-        setBalance(result.e8s);
+        const result = await balanceOf(icpSubaccount);
+        setIcpBalance(result.e8s);
         setError("");
       } catch (err) {
         setError("Failed to fetch balance");
@@ -124,10 +131,11 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
   };
 
   const value: AccountContextType = {
-    account,
-    icpAccount,
-    balance,
+    vaultCanisterId,
+    icpSubaccount,
+    icpBalance,
     isLoading,
+    vaultName,
     error,
     refreshBalance,
   };

@@ -5,7 +5,7 @@ import { useAccount } from "../../contexts/AccountContext";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 
 const Home: React.FC = () => {
-  const { account, error } = useAccount();
+  const { vaultCanisterId: account, error } = useAccount();
   const { login } = useInternetIdentity();
   const navigate = useNavigate();
 
