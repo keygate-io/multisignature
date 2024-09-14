@@ -1,7 +1,9 @@
+use crate::DECISIONS;
+
 use super::Intent;
 
 pub fn should_execute(intent: &Intent) -> bool {
-    let approvals = super::DECISIONS.with(|decisions| {
+    let approvals = DECISIONS.with(|decisions| {
         let decisions = decisions.borrow();
         let decision_list = decisions.get(&intent.id());
         match decision_list {

@@ -2,29 +2,16 @@ use serde::{Deserialize, Serialize};
 use candid::{CandidType, Principal};
 use core::future::Future;
 use ic_cdk::api::call::CallResult;
-use ic_cdk::api;
 use ic_cdk_timers::TimerId;
 use ic_ledger_types::{BlockIndex, TransferArgs};
-use ic_stable_structures::{
-    memory_manager::VirtualMemory,
-    storable::{Bound, Storable},
-    DefaultMemoryImpl,
-};
+use ic_stable_structures::storable::{Bound, Storable};
 use icrc_ledger_types::icrc1::transfer::TransferArg;
-use std::cell::RefCell;
-use std::collections::BTreeSet;
 use std::{borrow::Cow, collections::HashMap};
 use once_cell::sync::Lazy;
 
-pub type Memory = VirtualMemory<DefaultMemoryImpl>;
+#[cfg(not(test))]
+use ic_cdk::api;
 
-pub struct State {
-    pending_requests: BTreeSet<Principal>,
-}
-
-thread_local! {
-    pub static STATE: RefCell<State> = RefCell::new(State{pending_requests: BTreeSet::new()});
-}
 
 static STATIC_PRINCIPAL: Lazy<Principal> =
     Lazy::new(|| Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap());
@@ -33,44 +20,6 @@ static STATIC_PRINCIPAL: Lazy<Principal> =
 impl CanisterApiManagerTrait for CanisterApiManager {
     fn id() -> Principal {
         *STATIC_PRINCIPAL
-    }
-}
-
-// CallerGuard section was inspired by or directly uses work done by AlphaCQ
-// Their original work can be found at https://github.com/AlphaCQ/IC_Utils
-
-#[derive(Deserialize, CandidType, Clone)]
-pub struct CallerGuard {
-    principal: Principal,
-}
-
-impl CallerGuard {
-    pub fn new(principal: Principal) -> Result<Self, String> {
-        STATE.with(|state| {
-            let pending_requests = &mut state.borrow_mut().pending_requests;
-            if pending_requests.contains(&principal) {
-                return Err(format!(
-                    "Already processing a request for principal {:?}",
-                    &principal
-                ));
-            }
-            pending_requests.insert(principal);
-            Ok(Self { principal })
-        })
-    }
-
-    fn _unlock(principal: &Principal) {
-        STATE.with(|state| {
-            let _flag = state.borrow_mut().pending_requests.remove(principal);
-        })
-    }
-}
-
-impl Drop for CallerGuard {
-    fn drop(&mut self) {
-        STATE.with(|state| {
-            state.borrow_mut().pending_requests.remove(&self.principal);
-        })
     }
 }
 

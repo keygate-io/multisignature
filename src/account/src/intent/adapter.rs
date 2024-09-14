@@ -3,7 +3,7 @@ use std::{borrow::BorrowMut, collections::HashMap, future::Future, pin::Pin, syn
 use dyn_clone::DynClone;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
 
-use crate::TOKEN_SUBACCOUNTS;
+use crate::{ADAPTERS, TOKEN_SUBACCOUNTS};
 
 use super::{Intent, IntentStatus, IntentType, SupportedNetwork};
 
@@ -22,7 +22,7 @@ pub fn add_adapter(adapter: Box<dyn BlockchainAdapter>) {
     let s: &'static str = adapter.network().into();
     let it: &'static str = adapter.intent_type().into();
     let key = [adapter.token(), s.to_string(), it.to_string()].join("-");
-    super::ADAPTERS.with(|adapters| {
+    ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert(key, adapter);
     });
 }
@@ -32,7 +32,7 @@ pub async fn execute(intent: &Intent) -> IntentStatus {
     let it: &'static str = intent.intent_type().into();
     let key = format!("{}-{}-{}", intent.token(), network, it);
     
-    let adapter = super::ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
+    let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
         dyn_clone::clone_box(adapters.borrow().get(&key).expect("Error getting adapter").as_ref())
     });
 
@@ -57,7 +57,7 @@ type ICPNativeTransferArgs = TransferArgs;
 /**
  * See TransferArgs in ic_ledger_types
  */
-const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000;
+const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000; 
 
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {

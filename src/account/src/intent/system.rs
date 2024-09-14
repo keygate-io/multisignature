@@ -1,9 +1,12 @@
-use std::{cell::RefCell, collections::{HashMap, LinkedList}};
+use std::{borrow::Cow, cell::RefCell, collections::{HashMap, LinkedList}};
 
 use candid::{CandidType, Principal};
 use ic_cdk::{query, update};
 use ic_ledger_types::Subaccount;
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
+
+use crate::{ADAPTERS, DECISIONS, INTENTS, INTENT_ID};
 
 use super::{BlockchainAdapter};
 
@@ -77,6 +80,22 @@ impl Intent {
     
 }
 
+impl Storable for Intent {
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 1024,
+        is_fixed_size: false,
+    };
+
+    fn to_bytes(&self) -> Cow<[u8]> {
+        let serialized = minicbor::to_vec(self).unwrap();
+        Cow::Borrowed(&serialized)
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        let deserialized: Intent = minicbor::from_slice(&bytes.to_vec()).unwrap();
+        deserialized
+    }
+}
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Decision {
@@ -103,13 +122,6 @@ impl Decision {
     pub fn approved(&self) -> bool {
         self.approved
     }
-}
-
-thread_local! {
-    pub static INTENTS: RefCell<HashMap<Subaccount, LinkedList<Intent>>> = RefCell::default();
-    pub static DECISIONS: RefCell<HashMap<u64, LinkedList<Decision>>> = RefCell::default();
-    pub static INTENT_ID: RefCell<u64> = RefCell::new(0);
-    pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
 
 #[query]

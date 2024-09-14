@@ -8,6 +8,7 @@ import CreateAccount from "./pages/NewAccount/Create";
 import Assets from "./pages/Dashboard/Assets/Assets";
 import SendToken from "./pages/Dashboard/Assets/SendToken/SendToken";
 import { AccountProvider } from "./contexts/AccountContext";
+import Transactions from "./pages/Dashboard/Transactions/Transactions";
 
 function App() {
   return (
@@ -38,6 +39,10 @@ function App() {
             <Route
               path="/assets/send-token"
               element={<PageLayout main={<SendToken />} />}
+            />
+            <Route
+              path="/transactions"
+              element={<PageLayout main={<Transactions />} />}
             />
           </Routes>
         </ConfigProvider>

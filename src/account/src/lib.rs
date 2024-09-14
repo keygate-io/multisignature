@@ -1,5 +1,3 @@
-// Imports
-mod memory;
 mod types;
 mod ledger;
 mod hashof;
@@ -8,24 +6,57 @@ mod intent;
 use std::{cell::RefCell, collections::{HashMap, LinkedList}, hash::DefaultHasher};
 use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
-use ic_ledger_types::{AccountIdentifier, Memo, Subaccount, Tokens};
+use ic_ledger_types::{AccountIdentifier, Subaccount};
+use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog, StableCell};
 use intent::*;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use types::*;
 
-use memory::{
-    CONNECTED_NETWORK, CUSTODIAN_PRINCIPAL, INTERVAL_IN_SECONDS, LAST_SUBACCOUNT_NONCE, NEXT_BLOCK,
-    PRINCIPAL, TRANSACTIONS, WEBHOOK_URL,
-};
-
 use ledger::*;
+
+
+const PRINCIPAL_MEMORY: MemoryId = MemoryId::new(0);
+const LAST_SUBACCOUNT_NONCE_MEMORY: MemoryId = MemoryId::new(1);
+const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
+const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
+
+pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
 // Thread-local storage
 thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
     static LIST_OF_SUBACCOUNTS: RefCell<HashMap<u64, Subaccount>> = RefCell::default();
     static TOKEN_SUBACCOUNTS: RefCell<HashMap<String, Subaccount>> = RefCell::default();
+
+    static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
+        RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+
+    pub static PRINCIPAL: RefCell<StableCell<StoredPrincipal, VM>> = RefCell::new(
+        StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(PRINCIPAL_MEMORY)),
+            StoredPrincipal::default() // TODO: add to init function
+        ).expect("Initializing PRINCIPAL StableCell failed")
+    );
+
+    // u32 - upper limit is 4,294,967,295
+    pub static LAST_SUBACCOUNT_NONCE: RefCell<StableCell<u32, VM>> = RefCell::new(
+        StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(LAST_SUBACCOUNT_NONCE_MEMORY)),
+            0
+        ).expect("Initializing LAST_SUBACCOUNT_NONCE StableCell failed")
+    );
+
+    pub static INTENTS: RefCell<StableLog<Intent, VM, VM>> = RefCell::new(
+        StableLog::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_INDEX_MEMORY)),
+            MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_DATA_MEMORY)),
+        ).expect("Failed to initialize INTENTS StableLog")
+    );
+    
+    pub static DECISIONS: RefCell<HashMap<u64, LinkedList<Decision>>> = RefCell::default();
+    pub static INTENT_ID: RefCell<u64> = RefCell::new(0);
+    pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
 
 // Structs and Traits
