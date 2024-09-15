@@ -43,7 +43,6 @@ export function createIntent(
   from: string
 ): Intent {
   return {
-    id: BigInt(Date.now()),
     intent_type: { Transfer: null },
     amount,
     token,

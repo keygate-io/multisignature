@@ -10,11 +10,13 @@ import {
   ListItemIcon,
   Divider,
   Chip,
+  Paper,
 } from "@mui/material";
 import {
   Send as SendIcon,
   SwapHoriz as SwapIcon,
   AccountBalanceWallet as WalletIcon,
+  InfoOutlined as InfoIcon,
 } from "@mui/icons-material";
 import { useAccount } from "../../../contexts/AccountContext";
 import AccountPageLayout from "../../AccountPageLayout";
@@ -49,7 +51,7 @@ const Transactions: React.FC = () => {
     };
 
     fetchIntents();
-  }, [icpSubaccount]);
+  }, [icpSubaccount, vaultCanisterId]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -66,8 +68,7 @@ const Transactions: React.FC = () => {
   };
 
   const formatAmount = (amount: bigint, token: string) => {
-    // Adjust this based on your token's decimal places
-    const formattedAmount = Number(amount) / 100000000; // Assuming 8 decimal places for ICP
+    const formattedAmount = Number(amount) / 100000000;
     return `${formattedAmount.toFixed(8)} ${token}`;
   };
 
@@ -78,6 +79,118 @@ const Transactions: React.FC = () => {
     if ("Rejected" in status) return "Rejected";
     if ("Failed" in status) return "Failed";
     return "Unknown";
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <Typography sx={{ color: "white" }}>Loading...</Typography>;
+    }
+
+    if (intents.length === 0) {
+      return (
+        <Paper
+          sx={{
+            p: 3,
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <InfoIcon sx={{ fontSize: 48, color: "primary.main" }} />
+            <Typography
+              variant="h6"
+              sx={{ color: "white", textAlign: "center" }}
+            >
+              No transactions found
+            </Typography>
+          </Box>
+        </Paper>
+      );
+    }
+
+    return (
+      <List>
+        {intents.map((intent, index) => (
+          <React.Fragment key={index.toString()}>
+            {index > 0 && (
+              <Divider
+                component="li"
+                sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }}
+              />
+            )}
+            <ListItem alignItems="flex-start" sx={{ py: 2 }}>
+              <ListItemIcon>
+                {renderIntentIcon(intent.intent_type)}
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography variant="body1" sx={{ color: "white" }}>
+                      {Object.keys(intent.intent_type)[0]}
+                    </Typography>
+                    <Typography component="span" sx={{ color: "white" }}>
+                      {formatAmount(intent.amount, intent.token)}
+                    </Typography>
+                  </Box>
+                }
+                secondary={
+                  <React.Fragment>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255, 255, 255, 0.7)" }}
+                    >
+                      From: {intent.from}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "rgba(255, 255, 255, 0.7)" }}
+                    >
+                      To: {intent.to}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 1,
+                      }}
+                    >
+                      <Chip
+                        label={Object.keys(intent.network)[0]}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          color: "white",
+                        }}
+                      />
+                      <Chip
+                        label={getIntentStatus(intent.status)}
+                        size="small"
+                        sx={{
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          color: "white",
+                        }}
+                      />
+                    </Box>
+                  </React.Fragment>
+                }
+              />
+            </ListItem>
+          </React.Fragment>
+        ))}
+      </List>
+    );
   };
 
   return (
@@ -106,85 +219,7 @@ const Transactions: React.FC = () => {
             <Tab label="History" />
           </Tabs>
         </Box>
-        {isLoading ? (
-          <Typography sx={{ color: "white" }}>Loading...</Typography>
-        ) : (
-          <List>
-            {intents.map((intent, index) => (
-              <React.Fragment key={intent.id.toString()}>
-                {index > 0 && (
-                  <Divider
-                    component="li"
-                    sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }}
-                  />
-                )}
-                <ListItem alignItems="flex-start" sx={{ py: 2 }}>
-                  <ListItemIcon>
-                    {renderIntentIcon(intent.intent_type)}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Typography variant="body1" sx={{ color: "white" }}>
-                          {Object.keys(intent.intent_type)[0]}
-                        </Typography>
-                        <Typography component="span" sx={{ color: "white" }}>
-                          {formatAmount(intent.amount, intent.token)}
-                        </Typography>
-                      </Box>
-                    }
-                    secondary={
-                      <React.Fragment>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-                        >
-                          From: {intent.from}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-                        >
-                          To: {intent.to}
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            mt: 1,
-                          }}
-                        >
-                          <Chip
-                            label={Object.keys(intent.network)[0]}
-                            size="small"
-                            sx={{
-                              backgroundColor: "rgba(255, 255, 255, 0.1)",
-                              color: "white",
-                            }}
-                          />
-                          <Chip
-                            label={getIntentStatus(intent.status)}
-                            size="small"
-                            sx={{
-                              backgroundColor: "rgba(255, 255, 255, 0.1)",
-                              color: "white",
-                            }}
-                          />
-                        </Box>
-                      </React.Fragment>
-                    }
-                  />
-                </ListItem>
-              </React.Fragment>
-            ))}
-          </List>
-        )}
+        {renderContent()}
       </Box>
     </AccountPageLayout>
   );

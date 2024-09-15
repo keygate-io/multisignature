@@ -1,4 +1,4 @@
-use std::{borrow::BorrowMut, collections::HashMap, future::Future, pin::Pin, sync::Arc};
+use std::{collections::HashMap, future::Future, pin::Pin};
 
 use dyn_clone::DynClone;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
@@ -120,4 +120,3 @@ impl ICPNativeTransferAdapter {
         }
     }
 }
-

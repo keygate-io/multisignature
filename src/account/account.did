@@ -6,7 +6,6 @@ type Decision = record {
 };
 type Error = record { message : text };
 type Intent = record {
-  id : nat64;
   to : text;
   status : IntentStatus;
   token : text;
