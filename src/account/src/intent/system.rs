@@ -1,15 +1,11 @@
-use std::{borrow::Cow, cell::RefCell, collections::{HashMap, LinkedList}};
+use std::{borrow::Cow, collections::{LinkedList}};
 
 use candid::{CandidType, Principal};
 use ic_cdk::{query, update};
-use ic_ledger_types::Subaccount;
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{ADAPTERS, DECISIONS, INTENTS, INTENT_ID};
-
-use super::{BlockchainAdapter};
-
+use crate::{ADAPTERS, DECISIONS, INTENTS};
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
 pub enum IntentType {
@@ -35,7 +31,6 @@ pub enum SupportedNetwork {
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Intent {
-    id: u64,
     intent_type: IntentType,
     amount: u64,
     token: String,
@@ -46,9 +41,6 @@ pub struct Intent {
 }
 
 impl Intent {
-    pub fn id(&self) -> u64 {
-        self.id
-    }
 
     pub fn network(&self) -> SupportedNetwork {
         self.network.clone()
@@ -87,12 +79,12 @@ impl Storable for Intent {
     };
 
     fn to_bytes(&self) -> Cow<[u8]> {
-        let serialized = minicbor::to_vec(self).unwrap();
-        Cow::Borrowed(&serialized)
+        let serialized = serde_cbor::to_vec(self).expect("Serialization failed");
+        Cow::Owned(serialized)
     }
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        let deserialized: Intent = minicbor::from_slice(&bytes.to_vec()).unwrap();
+        let deserialized: Intent = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
         deserialized
     }
 }
@@ -132,22 +124,16 @@ pub fn get_adapters() -> Vec<String> {
 }
 
 #[update]
-pub fn add_intent(subaccount: Subaccount, mut intent: Intent) -> u64 {
-    let new_id = INTENT_ID.with(|id| {
-        let mut id = id.borrow_mut();
-        *id += 1;
-        *id
-    });
-
-    intent.id = new_id;
+pub fn add_intent(intent: Intent) -> u64 {
+    let mut id = 0;
 
     INTENTS.with(|intents| {
-        let mut intents = intents.borrow_mut();
-        let intent_list = intents.entry(subaccount).or_insert(LinkedList::new());
-        intent_list.push_back(intent);
+        id = intents.borrow().len();
+        let intents = intents.borrow_mut();
+        intents.append(&intent).expect("Failed to add intent");
     });
 
-    new_id
+    id
 }
 
 #[update]
@@ -161,13 +147,10 @@ pub fn add_decision(decision: Decision) {
 }
 
 #[query]
-pub fn get_intents(subaccount: Subaccount) -> LinkedList<Intent> {
+pub fn get_intents() -> Vec<Intent> {
     INTENTS.with(|intents| {
         let intents = intents.borrow();
-        match intents.get(&subaccount) {
-            Some(intent_list) => intent_list.clone(),
-            None => LinkedList::new()
-        }
+        intents.iter().collect()
     })
 }
 
@@ -186,10 +169,7 @@ pub fn get_decisions(intent_id: u64) -> LinkedList<Decision> {
 pub async fn execute_intent(intent_id: u64) -> IntentStatus {
     let intent_option = INTENTS.with(|intents| {
         let intents = intents.borrow();
-        intents.values()
-            .flat_map(|list| list.iter())
-            .find(|intent| intent.id() == intent_id)
-            .cloned()
+        intents.get(intent_id)
     });
 
     match intent_option {
@@ -209,11 +189,14 @@ pub async fn execute_intent(intent_id: u64) -> IntentStatus {
 // Helper function to update intent status
 fn update_intent_status(intent_id: u64, new_status: IntentStatus) {
     INTENTS.with(|intents| {
-        let mut intents = intents.borrow_mut();
-        for intent_list in intents.values_mut() {
-            if let Some(intent) = intent_list.iter_mut().find(|i| i.id() == intent_id) {
+        let intents = intents.borrow_mut();
+        let intent = intents.get(intent_id);    
+        match intent {
+            Some(mut intent) => {
                 intent.status = new_status;
-                break;
+            }
+            None => {
+                panic!("Intent not found");
             }
         }
     });

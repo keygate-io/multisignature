@@ -55,7 +55,6 @@ thread_local! {
     );
     
     pub static DECISIONS: RefCell<HashMap<u64, LinkedList<Decision>>> = RefCell::default();
-    pub static INTENT_ID: RefCell<u64> = RefCell::new(0);
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
 

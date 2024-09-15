@@ -17,7 +17,6 @@ dependencies = [
  "ic-stable-structures",
  "icrc-ledger-types",
  "lazy_static",
- "minicbor-serde",
  "once_cell",
  "serde",
  "serde_bytes",
@@ -593,22 +592,6 @@ name = "memchr"
 version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
-
-[[package]]
-name = "minicbor"
-version = "0.25.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0452a60c1863c1f50b5f77cd295e8d2786849f35883f0b9e18e7e6e1b5691b0"
-
-[[package]]
-name = "minicbor-serde"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2db2f09b7cc91ba3c142e66659538c8a9fe7fe65b4cec50c1d141243c8d2430"
-dependencies = [
- "minicbor",
- "serde",
-]
 
 [[package]]
 name = "miniz_oxide"

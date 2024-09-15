@@ -1,11 +1,10 @@
 import { Principal } from "@dfinity/principal";
 import { registration } from "../../../declarations/registration";
-import { account, createActor } from "../../../declarations/account";
+import { createActor } from "../../../declarations/account";
 import {
   Intent,
   IntentStatus,
 } from "../../../declarations/account/account.did"; // Make sure this path is correct
-
 
 export function deployAccount(principal: Principal, vault_name: string) {
   return registration.deploy_account(principal, vault_name);
@@ -22,12 +21,8 @@ export function getSubaccount(account_canister_id: Principal, token: string) {
   return createActor(account_canister_id).get_subaccount(token);
 }
 
-export function addIntent(
-  account_canister_id: Principal,
-  subaccount: Uint8Array,
-  intent: Intent
-) {
-  return createActor(account_canister_id).add_intent(subaccount, intent);
+export function addIntent(account_canister_id: Principal, intent: Intent) {
+  return createActor(account_canister_id).add_intent(intent);
 }
 
 export function getAdapters(account_canister_id: Principal) {
@@ -57,4 +52,15 @@ export function createIntent(
     network: { ICP: null },
     status: { Pending: "Pending" },
   };
+}
+
+export function getIntents(account_canister_id: Principal) {
+  return createActor(account_canister_id).get_intents();
+}
+
+export function getDecisions(
+  account_canister_id: Principal,
+  intent_id: bigint
+) {
+  return createActor(account_canister_id).get_decisions(intent_id);
 }

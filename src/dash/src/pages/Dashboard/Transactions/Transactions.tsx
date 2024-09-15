@@ -18,53 +18,34 @@ import {
 } from "@mui/icons-material";
 import { useAccount } from "../../../contexts/AccountContext";
 import AccountPageLayout from "../../AccountPageLayout";
-
-interface Intent {
-  id: number;
-  intent_type: "Swap" | "Transfer";
-  amount: number;
-  token: string;
-  to: string;
-  from: string;
-  network: "ICP" | "ETH";
-  status: "Pending" | "InProgress" | "Completed" | "Rejected" | "Failed";
-}
+import { getIntents } from "../../../api/account";
+import { Principal } from "@dfinity/principal";
+import {
+  Intent,
+  IntentStatus,
+} from "../../../../../declarations/account/account.did";
 
 const Transactions: React.FC = () => {
   const [intents, setIntents] = useState<Intent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
-  const { icpSubaccount } = useAccount();
+  const { icpSubaccount, vaultCanisterId } = useAccount();
 
   useEffect(() => {
     const fetchIntents = async () => {
-      setIsLoading(true);
-      // Replace this with actual API call when available
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setIntents([
-        {
-          id: 1,
-          intent_type: "Transfer",
-          amount: 1000000, // Assuming amount is in smallest units
-          token: "ICP",
-          to: "0xA1da...102B",
-          from: "0xB2eb...304C",
-          network: "ICP",
-          status: "Pending",
-        },
-        {
-          id: 2,
-          intent_type: "Swap",
-          amount: 5000000,
-          token: "ICP",
-          to: "0xC3fc...506D",
-          from: "0xD4gd...708E",
-          network: "ICP",
-          status: "Completed",
-        },
-        // Add more mock intents as needed
-      ]);
-      setIsLoading(false);
+      if (icpSubaccount) {
+        setIsLoading(true);
+        try {
+          console.log({ icpSubaccount });
+          const fetchedIntents = await getIntents(vaultCanisterId!);
+          console.log({ fetchedIntents });
+          setIntents(fetchedIntents);
+        } catch (error) {
+          console.error("Error fetching intents:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
     };
 
     fetchIntents();
@@ -74,21 +55,29 @@ const Transactions: React.FC = () => {
     setTabValue(newValue);
   };
 
-  const renderIntentIcon = (type: "Swap" | "Transfer") => {
-    switch (type) {
-      case "Transfer":
-        return <SendIcon sx={{ color: "white" }} />;
-      case "Swap":
-        return <SwapIcon sx={{ color: "white" }} />;
-      default:
-        return <WalletIcon sx={{ color: "white" }} />;
+  const renderIntentIcon = (type: { [key: string]: null }) => {
+    if ("Transfer" in type) {
+      return <SendIcon sx={{ color: "white" }} />;
+    } else if ("Swap" in type) {
+      return <SwapIcon sx={{ color: "white" }} />;
+    } else {
+      return <WalletIcon sx={{ color: "white" }} />;
     }
   };
 
-  const formatAmount = (amount: number, token: string) => {
+  const formatAmount = (amount: bigint, token: string) => {
     // Adjust this based on your token's decimal places
-    const formattedAmount = amount / 100000000; // Assuming 8 decimal places for ICP
+    const formattedAmount = Number(amount) / 100000000; // Assuming 8 decimal places for ICP
     return `${formattedAmount.toFixed(8)} ${token}`;
+  };
+
+  const getIntentStatus = (status: IntentStatus): string => {
+    if ("Pending" in status) return "Pending";
+    if ("InProgress" in status) return "InProgress";
+    if ("Completed" in status) return "Completed";
+    if ("Rejected" in status) return "Rejected";
+    if ("Failed" in status) return "Failed";
+    return "Unknown";
   };
 
   return (
@@ -117,81 +106,85 @@ const Transactions: React.FC = () => {
             <Tab label="History" />
           </Tabs>
         </Box>
-        <List>
-          {intents.map((intent, index) => (
-            <React.Fragment key={intent.id}>
-              {index > 0 && (
-                <Divider
-                  component="li"
-                  sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }}
-                />
-              )}
-              <ListItem alignItems="flex-start" sx={{ py: 2 }}>
-                <ListItemIcon>
-                  {renderIntentIcon(intent.intent_type)}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography variant="body1" sx={{ color: "white" }}>
-                        {intent.intent_type}
-                      </Typography>
-                      <Typography component="span" sx={{ color: "white" }}>
-                        {formatAmount(intent.amount, intent.token)}
-                      </Typography>
-                    </Box>
-                  }
-                  secondary={
-                    <React.Fragment>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-                      >
-                        From: {intent.from}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-                      >
-                        To: {intent.to}
-                      </Typography>
+        {isLoading ? (
+          <Typography sx={{ color: "white" }}>Loading...</Typography>
+        ) : (
+          <List>
+            {intents.map((intent, index) => (
+              <React.Fragment key={intent.id.toString()}>
+                {index > 0 && (
+                  <Divider
+                    component="li"
+                    sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }}
+                  />
+                )}
+                <ListItem alignItems="flex-start" sx={{ py: 2 }}>
+                  <ListItemIcon>
+                    {renderIntentIcon(intent.intent_type)}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
                       <Box
                         sx={{
                           display: "flex",
                           justifyContent: "space-between",
-                          mt: 1,
+                          alignItems: "center",
                         }}
                       >
-                        <Chip
-                          label={intent.network}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255, 255, 255, 0.1)",
-                            color: "white",
-                          }}
-                        />
-                        <Chip
-                          label={intent.status}
-                          size="small"
-                          sx={{
-                            backgroundColor: "rgba(255, 255, 255, 0.1)",
-                            color: "white",
-                          }}
-                        />
+                        <Typography variant="body1" sx={{ color: "white" }}>
+                          {Object.keys(intent.intent_type)[0]}
+                        </Typography>
+                        <Typography component="span" sx={{ color: "white" }}>
+                          {formatAmount(intent.amount, intent.token)}
+                        </Typography>
                       </Box>
-                    </React.Fragment>
-                  }
-                />
-              </ListItem>
-            </React.Fragment>
-          ))}
-        </List>
+                    }
+                    secondary={
+                      <React.Fragment>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "rgba(255, 255, 255, 0.7)" }}
+                        >
+                          From: {intent.from}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "rgba(255, 255, 255, 0.7)" }}
+                        >
+                          To: {intent.to}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 1,
+                          }}
+                        >
+                          <Chip
+                            label={Object.keys(intent.network)[0]}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                              color: "white",
+                            }}
+                          />
+                          <Chip
+                            label={getIntentStatus(intent.status)}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                              color: "white",
+                            }}
+                          />
+                        </Box>
+                      </React.Fragment>
+                    }
+                  />
+                </ListItem>
+              </React.Fragment>
+            ))}
+          </List>
+        )}
       </Box>
     </AccountPageLayout>
   );

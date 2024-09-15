@@ -29,7 +29,6 @@ const SendToken: React.FC = () => {
   const {
     vaultCanisterId: account,
     icpSubaccount: icpAccount,
-    icpBalance: balance,
     isLoading: contextLoading,
     error: contextError,
   } = useAccount();
@@ -77,11 +76,7 @@ const SendToken: React.FC = () => {
     try {
       const intent = createIntent(BigInt(amount), token, recipient, icpAccount);
       console.log("Intent:", intent);
-      const intentId = await addIntent(
-        account,
-        new Uint8Array(Buffer.from(icpAccount, "hex")),
-        intent
-      );
+      const intentId = await addIntent(account, intent);
       console.log("Intent ID:", intentId);
       setCurrentStep(2);
 
