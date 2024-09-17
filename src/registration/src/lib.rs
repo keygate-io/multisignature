@@ -6,7 +6,7 @@ use std::{cell::RefCell};
 use ic_cdk::{init, query, update};
 use candid::Principal;
 use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager}, StableBTreeMap, DefaultMemoryImpl};
-use types::{Memory, Token, UserInfo};
+use types::{Memory, VaultName, UserInfo};
 
 const USERS_MEMORY: MemoryId = MemoryId::new(0);
 const VAULTS_MEMORY: MemoryId = MemoryId::new(1);
@@ -23,7 +23,7 @@ thread_local! {
         )
     );
 
-    pub static STABLE_VAULTS: RefCell<StableBTreeMap<(Principal, String), Principal, Memory>> = RefCell::new(
+    pub static STABLE_VAULTS: RefCell<StableBTreeMap<(Principal, VaultName), Principal, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
         )
@@ -49,7 +49,7 @@ fn register_user(principal: Principal, first_name: String, last_name: String) {
 fn add_account(user_principal: Principal, vault_name: String, account_canister_id: Principal) {
     STABLE_VAULTS.with(|vaults| {
         let mut vaults = vaults.borrow_mut();
-        vaults.insert((user_principal, vault_name), account_canister_id);
+        vaults.insert((user_principal, VaultName(vault_name)), account_canister_id);
     });
 }
 
@@ -58,7 +58,7 @@ async fn upgrade_account(vault_name: String) {
     let principal = ic_cdk::caller();
 
     let vault_canister_id = STABLE_VAULTS.with(|vaults| {
-        vaults.borrow().get(&(principal, vault_name))
+        vaults.borrow().get(&(principal, VaultName(vault_name)))
     }).expect("Vault not found");
 
     load_wallet_wasm();
@@ -99,7 +99,7 @@ fn get_user_vaults(principal: Principal) -> Vec<(String, Principal)> {
     STABLE_VAULTS.with(|vaults| {
         vaults.borrow().iter()
             .filter(|(key, _)| key.0 == principal)
-            .map(|(key, value)| (key.1.clone(), value.clone()))
+            .map(|(key, value)| (key.1.0.clone(), value.clone()))
             .collect()
     })
 }

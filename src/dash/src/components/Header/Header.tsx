@@ -1,14 +1,43 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Box } from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, IconButton } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useNavigate } from "react-router-dom";
+import { useInternetIdentity } from "../../hooks/use-internet-identity";
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
+  const { clear, identity } = useInternetIdentity();
+
+  const handleLogout = () => {
+    clear();
+    navigate("/");
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
-        <Box sx={{ width: "100%", maxHeight: "20vh", py: 1 }}>
+        <Box
+          sx={{
+            width: "100%",
+            maxHeight: "20vh",
+            py: 1,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Typography variant="h5" component="h1">
             Keygate
           </Typography>
+          {identity && (
+            <IconButton
+              color="inherit"
+              onClick={handleLogout}
+              aria-label="logout"
+            >
+              <LogoutIcon />
+            </IconButton>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

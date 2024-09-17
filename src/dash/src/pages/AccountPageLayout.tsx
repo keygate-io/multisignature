@@ -21,6 +21,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
 import MultipleRouteModal from "../modals/MultipleRouteModal";
 import { upgradeAccount } from "../api/account";
+import { useInternetIdentity } from "../hooks/use-internet-identity";
 
 interface MenuItemType {
   text: string;
@@ -75,6 +76,8 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
   const handleUpgradeAccount = async () => {
     console.log("Upgrade Account clicked");
+
+    console.log("Vault Name:", vaultName);
 
     const result = await upgradeAccount(vaultName!);
     console.log("Upgrade Account result:", result);

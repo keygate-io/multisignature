@@ -1,10 +1,38 @@
-import { useEffect, useState } from "react";
-import { Button, message, Progress } from "antd";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { getUser } from "../../../api/users";
-import { useNavigate } from "react-router-dom";
-import { registration } from "../../../../../declarations/registration";
-import { createSubaccount, deployAccount } from "../../../api/account";
+import { deployAccount, createSubaccount } from "../../../api/account";
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  LinearProgress,
+  Paper,
+  Grid,
+  Snackbar,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+} from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
+
+interface Signer {
+  name: string;
+  principalId: string;
+}
 
 interface Step1Props {
   accountName: string;
@@ -13,41 +41,34 @@ interface Step1Props {
   setSelectedNetwork: (network: string) => void;
 }
 
-const Step1 = ({
+const Step1: React.FC<Step1Props> = ({
   accountName,
   setAccountName,
   selectedNetwork,
   setSelectedNetwork,
-}: Step1Props) => (
-  <div className="bg-gray-700 rounded-lg p-6 mb-4">
-    <h3 className="text-lg font-semibold mb-4">
-      1. Select network and name for the account
-    </h3>
-    <div className="mb-4">
-      <input
-        type="text"
-        placeholder="Name"
-        value={accountName}
-        onChange={(e) => setAccountName(e.target.value)}
-        className="w-full bg-gray-600 p-2 rounded text-white"
-      />
-    </div>
-    <div className="mb-4">
-      <select
+}) => (
+  <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
+    <Typography variant="h6" gutterBottom>
+      1. Select network and name for the vault
+    </Typography>
+    <TextField
+      fullWidth
+      label="Name"
+      value={accountName}
+      onChange={(e) => setAccountName(e.target.value)}
+      margin="normal"
+    />
+    <FormControl fullWidth margin="normal">
+      <InputLabel>Network</InputLabel>
+      <Select
         value={selectedNetwork}
         onChange={(e) => setSelectedNetwork(e.target.value)}
-        className="w-full bg-gray-600 p-2 rounded text-white"
       >
-        <option value="ICP">ICP</option>
-      </select>
-    </div>
-  </div>
+        <MenuItem value="ICP">ICP</MenuItem>
+      </Select>
+    </FormControl>
+  </Paper>
 );
-
-interface Signer {
-  name: string;
-  principalId: string;
-}
 
 interface Step2Props {
   signers: Signer[];
@@ -56,12 +77,12 @@ interface Step2Props {
   setThreshold: (threshold: number) => void;
 }
 
-const Step2 = ({
+const Step2: React.FC<Step2Props> = ({
   signers,
   setSigners,
   threshold,
   setThreshold,
-}: Step2Props) => {
+}) => {
   const addSigner = () => {
     setSigners([...signers, { name: "", principalId: "" }]);
   };
@@ -73,60 +94,63 @@ const Step2 = ({
   };
 
   return (
-    <div className="bg-gray-700 rounded-lg p-6 mb-4">
-      <h3 className="text-lg font-semibold mb-4">
+    <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
+      <Typography variant="h6" gutterBottom>
         2. Signers and confirmations
-      </h3>
-      <p className="text-sm text-gray-300 mb-4">
+      </Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
         Set the signer wallets of your Smart Account and how many need to
         confirm to execute a valid transaction.
-      </p>
+      </Typography>
       {signers.map((signer, index) => (
-        <div key={index} className="mb-4 flex space-x-2">
-          <input
-            type="text"
-            placeholder="Signer name"
-            value={signer.name}
-            onChange={(e) => updateSigner(index, "name", e.target.value)}
-            className="flex-1 bg-gray-600 p-2 rounded text-white"
-          />
-          <input
-            type="text"
-            placeholder="Principal ID"
-            value={signer.principalId}
-            onChange={(e) => updateSigner(index, "principalId", e.target.value)}
-            className="flex-1 bg-gray-600 p-2 rounded text-white"
-          />
-        </div>
+        <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Signer name"
+              value={signer.name}
+              onChange={(e) => updateSigner(index, "name", e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Principal ID"
+              value={signer.principalId}
+              onChange={(e) =>
+                updateSigner(index, "principalId", e.target.value)
+              }
+            />
+          </Grid>
+        </Grid>
       ))}
-      <Button
-        onClick={addSigner}
-        className="mb-4"
-        style={{ backgroundColor: "#2d3748", color: "white" }}
-      >
+      <Button variant="contained" onClick={addSigner} sx={{ mb: 2 }}>
         + Add new signer
       </Button>
-      <div className="mt-6">
-        <h4 className="font-semibold mb-2">Threshold</h4>
-        <p className="text-sm text-gray-300 mb-2">
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="subtitle1" gutterBottom>
+          Threshold
+        </Typography>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
           Any transaction requires the confirmation of:
-        </p>
-        <div className="flex items-center">
-          <select
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            className="bg-gray-600 p-2 rounded text-white mr-2"
-          >
-            {signers.map((_, index) => (
-              <option key={index} value={index + 1}>
-                {index + 1}
-              </option>
-            ))}
-          </select>
-          <span>out of {signers.length} signer(s)</span>
-        </div>
-      </div>
-    </div>
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <FormControl sx={{ minWidth: 120, mr: 2 }}>
+            <Select
+              value={threshold}
+              onChange={(e) => setThreshold(Number(e.target.value))}
+            >
+              {signers.map((_, index) => (
+                <MenuItem key={index} value={index + 1}>
+                  {index + 1}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Typography>out of {signers.length} signer(s)</Typography>
+        </Box>
+      </Box>
+    </Paper>
   );
 };
 
@@ -137,42 +161,44 @@ interface ReviewProps {
   threshold: number;
 }
 
-const Review = ({
+const Review: React.FC<ReviewProps> = ({
   accountName,
   selectedNetwork,
   signers,
   threshold,
-}: ReviewProps) => (
-  <div className="bg-gray-700 rounded-lg p-6 mb-4">
-    <h3 className="text-lg font-semibold mb-4">3. Review</h3>
-    <p className="text-sm text-gray-300 mb-4">
+}) => (
+  <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
+    <Typography variant="h6" gutterBottom>
+      3. Review
+    </Typography>
+    <Typography variant="body2" color="text.secondary" gutterBottom>
       You're about to create a new Smart Account and will have to confirm the
       transaction with your connected wallet.
-    </p>
-    <div className="mb-4">
-      <p>
+    </Typography>
+    <Box sx={{ mt: 2 }}>
+      <Typography>
         <strong>Network:</strong> {selectedNetwork}
-      </p>
-      <p>
+      </Typography>
+      <Typography>
         <strong>Name:</strong> {accountName}
-      </p>
-      <p>
+      </Typography>
+      <Typography>
         <strong>Signers:</strong>
-      </p>
+      </Typography>
       {signers.map((signer, index) => (
-        <div key={index}>
+        <Typography key={index}>
           {signer.name} - {signer.principalId}
-        </div>
+        </Typography>
       ))}
-      <p>
+      <Typography>
         <strong>Threshold:</strong> {threshold} out of {signers.length}{" "}
         signer(s)
-      </p>
-    </div>
-  </div>
+      </Typography>
+    </Box>
+  </Paper>
 );
 
-const CreateAccount = () => {
+const CreateAccount: React.FC = () => {
   const [step, setStep] = useState(1);
   const [accountName, setAccountName] = useState("");
   const [selectedNetwork, setSelectedNetwork] = useState("ICP");
@@ -182,16 +208,20 @@ const CreateAccount = () => {
   const [threshold, setThreshold] = useState(1);
   const { identity, isInitializing } = useInternetIdentity();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const nextStep = () => {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      messageApi.open({
-        type: "loading",
-        content: "Creating smart account..",
-        duration: 0,
+      setSnackbar({
+        open: true,
+        message: "Creating a secure vault...",
+        severity: "info",
       });
 
       deployAccount(identity!.getPrincipal(), accountName).then(async (id) => {
@@ -199,7 +229,7 @@ const CreateAccount = () => {
         const subaccount_id = await createSubaccount(id, "ICP");
 
         console.log(`Account id: ${JSON.stringify(subaccount_id)}`);
-        messageApi.destroy();
+        setSnackbar({ open: false, message: "", severity: "info" });
         navigate("/dashboard");
       });
     }
@@ -239,15 +269,24 @@ const CreateAccount = () => {
   }, [identity]);
 
   return (
-    <div className="bg-gray-800 text-white max-h-screen w-full flex flex-col">
-      {contextHolder}
-      <main className="mt-20 flex-grow flex justify-center">
-        <div className="max-w-xl w-full">
-          <h2 className="text-2xl font-bold mb-6">Create new Smart Account</h2>
-          <Progress
-            percent={step * 33}
-            strokeColor="#4ade80"
-            className="mb-6"
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Box
+        sx={{
+          bgcolor: "background.default",
+          width: "100%",
+          py: 4,
+        }}
+      >
+        <Container maxWidth="sm">
+          <Typography variant="h4" gutterBottom>
+            Vault creation
+          </Typography>
+          <LinearProgress
+            variant="determinate"
+            color="primary"
+            value={step * 33}
+            sx={{ mb: 4 }}
           />
           {step === 1 ? (
             <Step1
@@ -271,23 +310,28 @@ const CreateAccount = () => {
               threshold={threshold}
             />
           )}
-          <div className="flex justify-between">
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             {step > 1 && (
-              <Button onClick={prevStep} className="bg-gray-600 text-white">
+              <Button onClick={prevStep} variant="outlined">
                 ← Back
               </Button>
             )}
-            <Button
-              type="primary"
-              onClick={nextStep}
-              className="bg-green-400 text-black"
-            >
+            <Button variant="contained" onClick={nextStep} sx={{ ml: "auto" }}>
               {step < 3 ? "Next" : "Create"}
             </Button>
-          </div>
-        </div>
-      </main>
-    </div>
+          </Box>
+        </Container>
+      </Box>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <MuiAlert elevation={6} variant="filled" severity={snackbar.severity}>
+          {snackbar.message}
+        </MuiAlert>
+      </Snackbar>
+    </ThemeProvider>
   );
 };
 

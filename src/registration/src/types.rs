@@ -31,9 +31,9 @@ impl Storable for UserInfo {
 
 
 #[derive(Clone, CandidType, Deserialize, Debug)]
-pub struct Token(pub String); 
+pub struct VaultName(pub String); 
 
-impl Storable for Token {
+impl Storable for VaultName {
     const BOUND: Bound = Bound::Bounded {
         /* 
          * 500 bytes is the max size for a token name.
@@ -52,21 +52,21 @@ impl Storable for Token {
     }
 }
 
-impl PartialEq for Token {
+impl PartialEq for VaultName {
     fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
+        self.0.to_lowercase() == other.0.to_lowercase()
     }
 }
 
-impl Eq for Token {}
+impl Eq for VaultName { }
 
-impl PartialOrd for Token {
+impl PartialOrd for VaultName {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for Token {
+impl Ord for VaultName {
     fn cmp(&self, other: &Self) -> Ordering {
         self.0.cmp(&other.0)
     }
