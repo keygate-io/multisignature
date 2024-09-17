@@ -8,7 +8,6 @@ use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
 use ic_ledger_types::{AccountIdentifier, Subaccount};
 use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog, StableCell};
-use icrc_ledger_types::icrc1::account::Account;
 use intent::*;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -21,6 +20,7 @@ const PRINCIPAL_MEMORY: MemoryId = MemoryId::new(0);
 const LAST_SUBACCOUNT_NONCE_MEMORY: MemoryId = MemoryId::new(1);
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
+const LAST_ACCOUNT_MEMORY: MemoryId = MemoryId::new(4);
 
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
@@ -29,7 +29,7 @@ thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
     static LIST_OF_SUBACCOUNTS: RefCell<HashMap<u64, Subaccount>> = RefCell::default();
     static TOKEN_SUBACCOUNTS: RefCell<HashMap<String, Subaccount>> = RefCell::default();
-    static TOKEN_ACCOUNTS: RefCell<HashMap<String, Account>> = RefCell::default();
+    static TOKEN_ACCOUNTS: RefCell<HashMap<String, [u8; 32]>> = RefCell::default();
 
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
@@ -47,6 +47,13 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(LAST_SUBACCOUNT_NONCE_MEMORY)),
             0
         ).expect("Initializing LAST_SUBACCOUNT_NONCE StableCell failed")
+    );
+
+    pub static LAST_ACCOUNT: RefCell<StableCell<[u8; 32], VM>> = RefCell::new(
+        StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(LAST_ACCOUNT_MEMORY)),
+            [0; 32]
+        ).expect("Initializing LAST_ACCOUNT StableCell failed")
     );
 
     pub static INTENTS: RefCell<StableLog<Intent, VM, VM>> = RefCell::new(
@@ -120,6 +127,39 @@ fn get_signees() -> Vec<Principal> {
     SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
         signees.borrow().clone()
     })
+}
+
+#[update]
+fn add_icrc_account(token: String) -> Result<String, Error> {
+    let already_exists = TOKEN_ACCOUNTS.with(|token_ref| token_ref.borrow().contains_key(&token));
+
+    if already_exists {
+        return Err(Error {
+            message: "Account for token already exists".to_string(),
+        });
+    }
+
+    let last_account: [u8; 32] = LAST_ACCOUNT.with(|last_account_ref| last_account_ref.borrow().get().clone());
+    let mut new_account = last_account.clone();
+
+    for i in (0..32).rev() {
+        if new_account[i] == 255 {
+            new_account[i] = 0;
+        } else {
+            new_account[i] += 1;
+            break;
+        }
+    }
+
+    LAST_ACCOUNT.with(|last_account_ref| {
+        last_account_ref.borrow_mut().set(new_account).expect("Failed to set new account");
+    });
+
+    TOKEN_ACCOUNTS.with(|token_ref| {
+        token_ref.borrow_mut().insert(token, new_account);
+    });
+    
+    Ok(hex::encode(new_account))
 }
 
 #[update]

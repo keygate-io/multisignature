@@ -76,3 +76,30 @@ pub async fn deploy(bytecode: Vec<u8>) -> Result<Principal, String> {
     Ok(id)
 } 
 
+pub async fn upgrade(canister_id: Principal, bytecode: Vec<u8>) -> Result<(), String> {
+    let install_config = CanisterInstall {
+        mode: InstallMode::Upgrade,
+        canister_id: canister_id,
+        wasm_module: bytecode.clone(),
+        arg: b" ".to_vec(),
+    };
+
+    match api::call::call(
+            Principal::management_canister(),
+            "install_code",
+            (install_config,),
+        )
+        .await
+        {
+            Ok(x) => x,
+            Err((code, msg)) => {
+                return Err(format!(
+                    "An error happened during the call: {}: {}",
+                    code as u8, msg
+                ))
+            }
+        };
+
+    Ok(())
+}
+

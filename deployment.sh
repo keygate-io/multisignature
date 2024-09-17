@@ -102,10 +102,17 @@ deploy_output=$(dfx deploy 2>&1)
 if echo "$deploy_output" | grep -q "Deployed canisters"; then
   echo "You can now interact with the ledger canisters using CLI commands or the Candid UI."
 else
+  echo "$deploy_output"
   echo "Deployment failed. Please check the error messages above."
 fi
 
-# Create .debug file with exported variables
+# Capture canister IDs
+LEDGER_CANISTER_ID=$(dfx canister id ledger)
+ICRC1_LEDGER_CANISTER_ID=$(dfx canister id icrc1_ledger_canister)
+DASHBOARD_CANISTER_ID=$(dfx canister id dash)
+ACCOUNT_CANISTER_ID=$(dfx canister id account)
+
+# Create .debug file with exported variables and canister IDs
 cat << EOF > .debug
 Exported variables:
 REVISION=$REVISION
@@ -123,6 +130,12 @@ Test Identities Account IDs:
 TEST_ACCOUNT_ID_1=$TEST_ACCOUNT_ID_1
 TEST_ACCOUNT_ID_2=$TEST_ACCOUNT_ID_2
 TEST_ACCOUNT_ID_3=$TEST_ACCOUNT_ID_3
+
+Canister Principal IDs:
+LEDGER_CANISTER_ID=$LEDGER_CANISTER_ID
+ICRC1_LEDGER_CANISTER_ID=$ICRC1_LEDGER_CANISTER_ID
+DASHBOARD_CANISTER_ID=$DASHBOARD_CANISTER_ID
+ACCOUNT_CANISTER_ID=$ACCOUNT_CANISTER_ID
 EOF
 
 echo "Debug information has been written to .debug file"

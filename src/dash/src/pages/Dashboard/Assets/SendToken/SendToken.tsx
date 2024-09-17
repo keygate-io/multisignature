@@ -83,6 +83,11 @@ const SendToken: React.FC = () => {
       const adapters = await getAdapters(account);
       console.log("Adapters:", adapters);
 
+      if (!intentId) {
+        setError("Could not create intent");
+        return;
+      }
+
       const result = await executeIntent(account, intentId);
 
       if ("Completed" in result) {

@@ -89,7 +89,6 @@ pub struct Intent {
 }
 
 impl Intent {
-
     pub fn network(&self) -> SupportedNetwork {
         self.network.clone()
     }

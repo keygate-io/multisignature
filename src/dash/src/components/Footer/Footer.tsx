@@ -1,12 +1,25 @@
 import React from "react";
+import { Box, Typography } from "@mui/material";
 
 const Footer: React.FC = () => {
   return (
-    <div className="w-full bg-gray-300 h-[100px]">
-      <p className="pt-4 p-12">
-        &copy; {new Date().getFullYear()} Polysign Labs
-      </p>
-    </div>
+    <Box
+      component="footer"
+      sx={{
+        width: "100%",
+        bgcolor: "primary.dark",
+        color: "primary.contrastText",
+        maxHeight: "10vh",
+        display: "flex",
+        alignItems: "center",
+        px: 3,
+        py: 2,
+      }}
+    >
+      <Typography variant="body2">
+        &copy; {new Date().getFullYear()} Keygate Vault
+      </Typography>
+    </Box>
   );
 };
 

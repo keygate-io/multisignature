@@ -28,6 +28,7 @@ service : () -> {
   add_decision : (Decision) -> ();
   add_intent : (Intent) -> (nat64);
   add_subaccount : (text) -> (Result);
+  add_icrc_account : (text) -> (Result);
   execute_intent : (nat64) -> (IntentStatus);
   get_adapters : () -> (vec text) query;
   get_decisions : (nat64) -> (vec Decision) query;

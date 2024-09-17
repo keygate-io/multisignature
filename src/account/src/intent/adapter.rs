@@ -157,7 +157,7 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
                 amount: Nat::from(intent.amount()),
                 fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
                 memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
-                from_subaccount: Some(icrc_account.effective_subaccount().clone()),
+                from_subaccount: Some(icrc_account),
                 created_at_time: None,
             };
 

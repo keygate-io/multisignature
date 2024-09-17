@@ -41,7 +41,7 @@ const Transactions: React.FC = () => {
           console.log({ icpSubaccount });
           const fetchedIntents = await getIntents(vaultCanisterId!);
           console.log({ fetchedIntents });
-          setIntents(fetchedIntents);
+          setIntents(fetchedIntents || []);
         } catch (error) {
           console.error("Error fetching intents:", error);
         } finally {

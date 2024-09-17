@@ -23,7 +23,7 @@ thread_local! {
         )
     );
 
-    pub static STABLE_VAULTS: RefCell<StableBTreeMap<(Principal, Token), Principal, Memory>> = RefCell::new(
+    pub static STABLE_VAULTS: RefCell<StableBTreeMap<(Principal, String), Principal, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
         )
@@ -49,8 +49,21 @@ fn register_user(principal: Principal, first_name: String, last_name: String) {
 fn add_account(user_principal: Principal, vault_name: String, account_canister_id: Principal) {
     STABLE_VAULTS.with(|vaults| {
         let mut vaults = vaults.borrow_mut();
-        vaults.insert((user_principal, Token(vault_name)), account_canister_id);
+        vaults.insert((user_principal, vault_name), account_canister_id);
     });
+}
+
+#[update]
+async fn upgrade_account(vault_name: String) {
+    let principal = ic_cdk::caller();
+
+    let vault_canister_id = STABLE_VAULTS.with(|vaults| {
+        vaults.borrow().get(&(principal, vault_name))
+    }).expect("Vault not found");
+
+    load_wallet_wasm();
+
+    deployer::upgrade(vault_canister_id, WALLET_WASM.with(|wasm| wasm.borrow().clone().unwrap())).await.expect("Failed to upgrade account");
 }
 
 #[update]
@@ -58,7 +71,7 @@ async fn deploy_account(principal: Principal, vault_name: String) -> Principal {
     let wallet_wasm = WALLET_WASM.with(|wasm| {
         wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded"))
     });
-    
+
     match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
             add_account(principal, vault_name, canister_id);
@@ -86,7 +99,7 @@ fn get_user_vaults(principal: Principal) -> Vec<(String, Principal)> {
     STABLE_VAULTS.with(|vaults| {
         vaults.borrow().iter()
             .filter(|(key, _)| key.0 == principal)
-            .map(|(key, value)| (key.1.0.clone(), value.clone()))
+            .map(|(key, value)| (key.1.clone(), value.clone()))
             .collect()
     })
 }

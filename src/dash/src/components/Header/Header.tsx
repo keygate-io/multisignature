@@ -1,10 +1,17 @@
 import React from "react";
+import { AppBar, Toolbar, Typography, Box } from "@mui/material";
 
 const Header: React.FC = () => {
   return (
-    <div className="w-full bg-[#1976d2] h-[100px]">
-      <h1 className="text-white font-bold text-2xl p-4">Keygate</h1>
-    </div>
+    <AppBar position="static">
+      <Toolbar>
+        <Box sx={{ width: "100%", maxHeight: "20vh", py: 1 }}>
+          <Typography variant="h5" component="h1">
+            Keygate
+          </Typography>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 

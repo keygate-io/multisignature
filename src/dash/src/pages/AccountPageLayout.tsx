@@ -15,10 +15,12 @@ import {
   AccountBalanceWalletOutlined,
   HomeOutlined,
   ReceiptOutlined,
+  ArrowUpward,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
 import MultipleRouteModal from "../modals/MultipleRouteModal";
+import { upgradeAccount } from "../api/account";
 
 interface MenuItemType {
   text: string;
@@ -71,6 +73,14 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     handleMultipleRouteModalClose();
   };
 
+  const handleUpgradeAccount = async () => {
+    console.log("Upgrade Account clicked");
+
+    const result = await upgradeAccount(vaultName!);
+    console.log("Upgrade Account result:", result);
+    // Add your upgrade account logic here
+  };
+
   const renderMenuItem = (item: MenuItemType) => (
     <ListItem
       button
@@ -108,7 +118,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", width: "100%" }}>
+    <Box sx={{ display: "flex", minHeight: "70vh", width: "100%" }}>
       <CssBaseline />
       <Box
         component="nav"
@@ -119,45 +129,58 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
           p: 2,
           display: "flex",
           flexDirection: "column",
+          justifyContent: "space-between", // This ensures space between content and footer
         }}
       >
-        <Typography variant="h6" sx={{ mb: 2, px: 2 }}>
-          Smart Account
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
-          <Tooltip title={icpAccount || "Fetching account"}>
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, px: 2 }}>
+            Vault
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
+            <Tooltip title={icpAccount || "Fetching account"}>
+              <Typography
+                variant="subtitle2"
+                sx={{ textAlign: "center", fontWeight: "bold" }}
+              >
+                {vaultName || "Fetching name"}
+              </Typography>
+            </Tooltip>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
             <Typography
               variant="subtitle2"
-              sx={{ textAlign: "center", fontWeight: "bold" }}
+              sx={{
+                flexGrow: 1,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textAlign: "left",
+              }}
             >
-              {vaultName || "Fetching name"}
+              {vaultCanisterId
+                ? `${vaultCanisterId.toString()}`
+                : "Fetching account"}
             </Typography>
-          </Tooltip>
-        </Box>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              flexGrow: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              textAlign: "left",
-            }}
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mb: 2, mx: 2 }}
+            onClick={handleMultipleRouteModalOpen}
           >
-            {vaultCanisterId
-              ? `${vaultCanisterId.toString()}`
-              : "Fetching account"}
-          </Typography>
+            New transaction
+          </Button>
+          <List>{menuItems.map(renderMenuItem)}</List>
         </Box>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mb: 2, mx: 2 }}
-          onClick={handleMultipleRouteModalOpen}
-        >
-          New transaction
-        </Button>
-        <List>{menuItems.map(renderMenuItem)}</List>
+        <Box sx={{ mt: "auto", pt: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowUpward />}
+            fullWidth
+            onClick={handleUpgradeAccount}
+          >
+            Upgrade Account
+          </Button>
+        </Box>
       </Box>
       <Box
         component="main"
