@@ -81,19 +81,20 @@ dfx canister install ledger --argument "(variant {
 # Step 10: Deploy the ICRC-1 ledger canister
 dfx canister create icrc1_ledger_canister
 dfx build icrc1_ledger_canister
-dfx canister install icrc1_ledger_canister --argument "(record {
-  minting_account = opt record { owner = principal \"$LEDGER_ACC\"; subaccount = null };
-  transfer_fee = 1_000_000 : nat;
+dfx canister install icrc1_ledger_canister --argument "(variant { Init = record {
   token_symbol = \"MCK\";
   token_name = \"Mock Token\";
-  decimals = 8 : nat8;
+  minting_account = record { owner = principal \"$LEDGER_ACC\"; subaccount = null };
+  transfer_fee = 1_000_000 : nat;
+  metadata = vec {};
   initial_balances = vec { record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat } };
   archive_options = record {
     num_blocks_to_archive = 10 : nat64;
     trigger_threshold = 5 : nat64;
     controller_id = principal \"$ARCHIVE_CONTROLLER\";
   };
-})"
+  feature_flags = null;
+}})"
 
 # Step 11: Deploy the remaining canisters
 deploy_output=$(dfx deploy 2>&1)
