@@ -41,15 +41,51 @@ impl Display for Token {
     }
 }
 
+
+/// Represents an intent for a blockchain transaction.
+///
+/// An `Intent` encapsulates all the necessary information for executing
+/// a transaction on a supported blockchain network.
+///
+/// # Fields
+///
+/// * `intent_type` - The type of the intent (e.g., transfer, swap).
+/// * `amount` - The amount of tokens involved in the transaction.
+/// * `token` - The token identifier for the transaction. For native ICP, it's "ICP:native". For ICRC-1 tokens, it's "ICP:<icrc_standard>:<principal_id>". For ETH, it's "eth:<token_standard>:<token_address>".
+/// * `to` - The recipient's address or identifier. For ICP and ICRC-1 tokens, it's in the format <principal_id>.<subaccount_id>, where subaccount_id is Base32 encoded. For ETH, it's the address of the recipient.
+/// * `from` - The sender's address or identifier. For ICP and ICRC-1 tokens, it's in the format <principal_id>.<subaccount_id>, where subaccount_id is Base32 encoded. For ETH, it's the address of the sender.
+/// * `network` - The blockchain network on which the transaction should occur.
+/// * `status` - The current status of the intent.
+///
+/// # Examples
+///
+/// ```
+/// use intent::{Intent, IntentType, Token, SupportedNetwork, IntentStatus};
+/// use ic_cdk::export::Principal;
+///
+/// let principal = Principal::from_text("l4sux-ovcbh-qjlir-sij5b-xffaa-uydtf-zlwgz-ezskj-zlar3-4ap3v-2qe").unwrap();
+/// let subaccount = [0u8; 32];  // Example subaccount
+/// let to_address = account_to_string(&principal, Some(&subaccount));
+///
+/// let intent = Intent {
+///     intent_type: IntentType::Transfer,
+///     amount: 1000000,
+///     token: Token("icp:icrc1:z3hc7-f3wle-sfb34-ftgza-o7idl-vopan-733dp-5s6vi-wy4zo-tzwmv-4ae".to_string()),
+///     to: to_address,
+///     from: "from_address_here".to_string(),
+///     network: SupportedNetwork::ICP,
+///     status: IntentStatus::Pending,
+/// };
+/// ```
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Intent {
-    intent_type: IntentType,
-    amount: u64,
-    token: Token,
-    to: String,
-    from: String,
-    network: SupportedNetwork,
-    status: IntentStatus
+    pub intent_type: IntentType,
+    pub amount: u64,
+    pub token: Token,
+    pub to: String,
+    pub from: String,
+    pub network: SupportedNetwork,
+    pub status: IntentStatus
 }
 
 impl Intent {

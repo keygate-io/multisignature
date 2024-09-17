@@ -4,7 +4,7 @@ use candid::{Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
 use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
-use icrc_ledger_types::icrc1::{account::{Account}, transfer::{BlockIndex, TransferArg as ICRC1TransferArgs, TransferError}};
+use icrc_ledger_types::icrc1::{account::Account, transfer::{TransferArg as ICRC1TransferArgs, TransferError}};
 use serde_bytes::ByteBuf;
 
 use crate::{ADAPTERS, TOKEN_ACCOUNTS, TOKEN_SUBACCOUNTS};
@@ -151,7 +151,6 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
             let icrc_account = TOKEN_ACCOUNTS.with(|list_ref| {
                 list_ref.borrow().get(&intent.token().0).unwrap().clone()
             });
-            
 
             let args = ICRC1TransferArgs {
                 to: ICRC1TransferAdapter::extract_owner_and_subaccount(intent.to().as_str()),
@@ -163,7 +162,8 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
             };
 
             match self.transfer(args).await {
-                Ok(_) => Ok(IntentStatus::Completed("Successfully transferred native ICP.".to_string())),
+                // TODO: include the name or symbol of the token
+                Ok(_) => Ok(IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())),
                 Err(e) => Err(e.to_string()),
             }
         })

@@ -5,6 +5,11 @@ REVISION="1ac5439c6da1aafe8156c667c313344c0245fea3"
 LEDGER_WASM_URL="https://download.dfinity.systems/ic/$REVISION/canisters/ledger-canister.wasm.gz"
 LEDGER_DID_URL="https://raw.githubusercontent.com/dfinity/ic/$REVISION/rs/rosetta-api/icp_ledger/ledger.did"
 
+# ICRC-1 Ledger canister URLs
+ICRC1_REVISION="d87954601e4b22972899e9957e800406a0a6b929"
+ICRC1_WASM_URL="https://download.dfinity.systems/ic/$ICRC1_REVISION/canisters/ic-icrc1-ledger.wasm.gz"
+ICRC1_DID_URL="https://raw.githubusercontent.com/dfinity/ic/$ICRC1_REVISION/rs/rosetta-api/icrc1/ledger/ledger.did"
+
 dfx stop
 
 # Step 5: Start a local replica
@@ -32,7 +37,7 @@ export LEDGER_ACC=$(dfx identity get-principal)
 # Step 8: Obtain the principal of the identity you use for development
 export ARCHIVE_CONTROLLER=$(dfx identity get-principal)
 
-# Step 9: Deploy the ledger canister with archiving options
+# Step 9: Deploy the ICP ledger canister with archiving options
 dfx canister create ledger --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai
 dfx build ledger
 dfx canister install ledger --argument "(variant {
@@ -73,11 +78,28 @@ dfx canister install ledger --argument "(variant {
     token_name = opt \"NAME\";
   }})";
 
-# Step 10: Deploy the canister
+# Step 10: Deploy the ICRC-1 ledger canister
+dfx canister create icrc1_ledger_canister
+dfx build icrc1_ledger_canister
+dfx canister install icrc1_ledger_canister --argument "(record {
+  minting_account = opt record { owner = principal \"$LEDGER_ACC\"; subaccount = null };
+  transfer_fee = 1_000_000 : nat;
+  token_symbol = \"MCK\";
+  token_name = \"Mock Token\";
+  decimals = 8 : nat8;
+  initial_balances = vec { record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat } };
+  archive_options = record {
+    num_blocks_to_archive = 10 : nat64;
+    trigger_threshold = 5 : nat64;
+    controller_id = principal \"$ARCHIVE_CONTROLLER\";
+  };
+})"
+
+# Step 11: Deploy the remaining canisters
 deploy_output=$(dfx deploy 2>&1)
 
 if echo "$deploy_output" | grep -q "Deployed canisters"; then
-  echo "You can now interact with the ledger canister using CLI commands or the Candid UI."
+  echo "You can now interact with the ledger canisters using CLI commands or the Candid UI."
 else
   echo "Deployment failed. Please check the error messages above."
 fi
@@ -88,6 +110,9 @@ Exported variables:
 REVISION=$REVISION
 LEDGER_WASM_URL=$LEDGER_WASM_URL
 LEDGER_DID_URL=$LEDGER_DID_URL
+ICRC1_REVISION=$ICRC1_REVISION
+ICRC1_WASM_URL=$ICRC1_WASM_URL
+ICRC1_DID_URL=$ICRC1_DID_URL
 MINT_ACC=$MINT_ACC
 ACCOUNT_ID=$ACCOUNT_ID 
 LEDGER_ACC=$LEDGER_ACC
