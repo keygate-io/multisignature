@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::{LinkedList}};
+use std::{borrow::Cow, collections::LinkedList, fmt::{self, Display}};
 
 use candid::{CandidType, Principal};
 use ic_cdk::{query, update};
@@ -28,12 +28,24 @@ pub enum SupportedNetwork {
     ETH
 }
 
+// Formats for tokens:
+// icp:native
+// icp:icrc1:<principal_id>
+// eth:{erc20}:{0x0000000000000000000000000000000000000000}
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct Token(pub String);
+
+impl Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Intent {
     intent_type: IntentType,
     amount: u64,
-    token: String,
+    token: Token,
     to: String,
     from: String,
     network: SupportedNetwork,
@@ -46,7 +58,7 @@ impl Intent {
         self.network.clone()
     }
 
-    pub fn token(&self) -> String {
+    pub fn token(&self) -> Token {
         self.token.clone()
     }
 

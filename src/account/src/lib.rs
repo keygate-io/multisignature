@@ -8,6 +8,7 @@ use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
 use ic_ledger_types::{AccountIdentifier, Subaccount};
 use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog, StableCell};
+use icrc_ledger_types::icrc1::account::Account;
 use intent::*;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -28,6 +29,7 @@ thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
     static LIST_OF_SUBACCOUNTS: RefCell<HashMap<u64, Subaccount>> = RefCell::default();
     static TOKEN_SUBACCOUNTS: RefCell<HashMap<String, Subaccount>> = RefCell::default();
+    static TOKEN_ACCOUNTS: RefCell<HashMap<String, Account>> = RefCell::default();
 
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
