@@ -42,6 +42,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     vaultName,
     icpSubaccount: icpAccount,
   } = useAccount();
+  const { identity } = useInternetIdentity();
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [multipleRouteModalOpen, setMultipleRouteModalOpen] = useState(false);
 
@@ -79,7 +80,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
     console.log("Vault Name:", vaultName);
 
-    const result = await upgradeAccount(vaultCanisterId!);
+    const result = await upgradeAccount(vaultCanisterId!, identity!);
     console.log("Upgrade Account result:", result);
     // Add your upgrade account logic here
   };

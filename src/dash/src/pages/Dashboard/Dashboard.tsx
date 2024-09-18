@@ -9,6 +9,8 @@ import {
 import { ContentCopy } from "@mui/icons-material";
 import AccountPageLayout from "../AccountPageLayout";
 import { useAccount } from "../../contexts/AccountContext";
+import { ICP_DECIMALS } from "../../util/constants";
+import { formatIcp } from "../../util/units";
 
 const Dashboard = () => {
   const {
@@ -34,7 +36,7 @@ const Dashboard = () => {
           <Typography color="error">{error}</Typography>
         ) : (
           <Typography variant="h3" fontWeight="bold">
-            {balance.toLocaleString()} ICP
+            {formatIcp(balance)} ICP
           </Typography>
         )}
       </Box>

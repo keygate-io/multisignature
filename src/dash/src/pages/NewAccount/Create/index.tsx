@@ -12,7 +12,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   LinearProgress,
   Paper,
   Grid,
@@ -20,8 +19,9 @@ import {
   ThemeProvider,
   createTheme,
   CssBaseline,
+  Alert,
 } from "@mui/material";
-import MuiAlert from "@mui/material/Alert";
+import MuiAlert, { AlertColor } from "@mui/material/Alert";
 
 const darkTheme = createTheme({
   palette: {
@@ -215,9 +215,9 @@ const CreateAccount: React.FC = () => {
         severity: "info",
       });
 
-      deployAccount().then(async (id) => {
+      deployAccount(identity!).then(async (id) => {
         console.log(`Account id: ${JSON.stringify(id)}`);
-        const subaccount_id = await createSubaccount(id, "ICP");
+        const subaccount_id = await createSubaccount(id, "ICP", identity!);
 
         console.log(`Account id: ${JSON.stringify(subaccount_id)}`);
         setSnackbar({ open: false, message: "", severity: "info" });
@@ -233,6 +233,8 @@ const CreateAccount: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log("identity", identity?.getPrincipal().toString());
+
     async function loadUser() {
       if (!identity) {
         if (isInitializing) {
@@ -313,14 +315,13 @@ const CreateAccount: React.FC = () => {
           </Box>
         </Container>
       </Box>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <MuiAlert elevation={6} variant="filled">
+      <Snackbar open={snackbar.open} autoHideDuration={6000}>
+        <Alert
+          severity={snackbar.severity as AlertColor}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
-        </MuiAlert>
+        </Alert>
       </Snackbar>
     </ThemeProvider>
   );

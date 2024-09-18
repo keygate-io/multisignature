@@ -7,10 +7,10 @@ import React, {
 } from "react";
 import { Principal } from "@dfinity/principal";
 import { balanceOf } from "../api/ledger";
-import { getSubaccount } from "../api/account";
 import { getUser, getUserVaults } from "../api/users";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
 import { useNavigate } from "react-router-dom";
+import { getSubaccount } from "../api/account";
 
 interface AccountContextType {
   vaultCanisterId: Principal | undefined;
@@ -66,7 +66,7 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 
         if (user && vaults.length > 0) {
           console.log("vaults", vaults);
-          setVaultCanisterId(vaultCanisterId);
+          setVaultCanisterId(vaults[0]);
           console.log("vaults[0][0]", vaultCanisterId);
           setVaultName("Funding");
         } else if (user && vaults.length === 0) {
@@ -88,7 +88,7 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
       if (!vaultCanisterId) return;
 
       try {
-        const result = await getSubaccount(vaultCanisterId, "ICP");
+        const result = await getSubaccount(vaultCanisterId, "ICP", identity!);
 
         if (!result) {
           throw new Error("Failed to get ICP subaccount");
@@ -112,6 +112,7 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
       if (!icpSubaccount) return;
 
       try {
+        console.log("icpSubaccount", icpSubaccount);
         const result = await balanceOf(icpSubaccount);
         setIcpBalance(result.e8s);
         setError("");

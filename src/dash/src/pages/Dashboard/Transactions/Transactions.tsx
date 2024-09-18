@@ -26,12 +26,14 @@ import {
   Intent,
   IntentStatus,
 } from "../../../../../declarations/account/account.did";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 
 const Transactions: React.FC = () => {
   const [intents, setIntents] = useState<Intent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const { icpSubaccount, vaultCanisterId } = useAccount();
+  const { identity } = useInternetIdentity();
 
   useEffect(() => {
     const fetchIntents = async () => {
@@ -39,7 +41,7 @@ const Transactions: React.FC = () => {
         setIsLoading(true);
         try {
           console.log({ icpSubaccount });
-          const fetchedIntents = await getIntents(vaultCanisterId!);
+          const fetchedIntents = await getIntents(vaultCanisterId!, identity!);
           console.log({ fetchedIntents });
           setIntents(fetchedIntents || []);
         } catch (error) {

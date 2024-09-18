@@ -16,7 +16,6 @@ import {
   getTokenMetadata,
   getTokenFee,
 } from "../../../api/icrc";
-import { createSubaccount } from "../../../api/account";
 
 const style = {
   position: "absolute",

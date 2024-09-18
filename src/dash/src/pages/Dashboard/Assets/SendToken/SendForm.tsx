@@ -1,15 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Typography,
   TextField,
   Button,
   Select,
   MenuItem,
-  InputAdornment,
-  SelectChangeEvent,
+  FormControl,
+  InputLabel,
+  Box,
+  CircularProgress,
 } from "@mui/material";
-import { Send as SendIcon } from "@mui/icons-material";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { useAccount } from "../../../../contexts/AccountContext";
+import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
+import { getTokens } from "../../../../api/account";
 
 interface SendFormProps {
   recipient: string;
@@ -29,72 +32,84 @@ const SendForm: React.FC<SendFormProps> = ({
   handleAmountChange,
   handleTokenChange,
   handleNext,
-}) => (
-  <>
-    <Typography
-      variant="h6"
-      sx={{ display: "flex", alignItems: "center", mb: 2 }}
-    >
-      <SendIcon sx={{ mr: 1 }} /> Send tokens
-    </Typography>
+}) => {
+  const [tokenOptions, setTokenOptions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { vaultCanisterId } = useAccount();
+  const { identity } = useInternetIdentity();
 
-    <TextField
-      fullWidth
-      label="Account ID"
-      variant="outlined"
-      value={recipient}
-      onChange={handleRecipientChange}
-      sx={{
-        mb: 2,
-        "& .MuiInputAdornment-root": {
-          mr: 1,
-        },
-      }}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <Typography>ICP</Typography>
-          </InputAdornment>
-        ),
-      }}
-    />
-    <Box sx={{ display: "flex", mb: 2 }}>
+  useEffect(() => {
+    const fetchTokens = async () => {
+      if (vaultCanisterId && identity) {
+        try {
+          const tokens = await getTokens(vaultCanisterId, identity);
+          setTokenOptions(tokens);
+        } catch (error) {
+          console.error("Error fetching tokens:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchTokens();
+  }, [vaultCanisterId, identity]);
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100%"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      component="form"
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+    >
       <TextField
+        label="Recipient"
+        value={recipient}
+        onChange={handleRecipientChange}
         fullWidth
+      />
+      <TextField
         label="Amount"
-        variant="outlined"
+        type="number"
         value={amount}
         onChange={handleAmountChange}
-        sx={{
-          mr: 2,
-          "& .MuiOutlinedInput-root": {
-            "& fieldset": { borderColor: "grey.500" },
-          },
-        }}
+        fullWidth
       />
-      <Select
-        value={token}
-        onChange={handleTokenChange}
-        sx={{
-          minWidth: 150,
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "grey.500",
-          },
-        }}
-        defaultValue="ICP"
+      <FormControl fullWidth>
+        <InputLabel id="token-select-label">Token</InputLabel>
+        <Select
+          labelId="token-select-label"
+          value={token}
+          label="Token"
+          onChange={handleTokenChange}
+        >
+          {tokenOptions.map((tokenOption) => (
+            <MenuItem key={tokenOption} value={tokenOption}>
+              {tokenOption}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Button
+        variant="contained"
+        onClick={handleNext}
+        disabled={!recipient || !amount || !token}
       >
-        <MenuItem value="ICP" defaultChecked>
-          ICP
-        </MenuItem>
-      </Select>
-    </Box>
-
-    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-      <Button variant="contained" color="primary" onClick={handleNext}>
         Next
       </Button>
     </Box>
-  </>
-);
+  );
+};
 
 export default SendForm;

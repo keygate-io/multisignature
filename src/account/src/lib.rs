@@ -7,7 +7,7 @@ use std::{cell::RefCell, collections::{HashMap, LinkedList}, hash::DefaultHasher
 use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
 use ic_ledger_types::{AccountIdentifier, Subaccount};
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog, StableCell};
+use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, BTreeMap, DefaultMemoryImpl, StableCell, StableLog, Storable};
 use intent::*;
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -15,22 +15,32 @@ use types::*;
 
 use ledger::*;
 
-
 const PRINCIPAL_MEMORY: MemoryId = MemoryId::new(0);
 const LAST_SUBACCOUNT_NONCE_MEMORY: MemoryId = MemoryId::new(1);
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
 const LAST_ACCOUNT_MEMORY: MemoryId = MemoryId::new(4);
+const TOKEN_SUBACCOUNTS_MEMORY: MemoryId = MemoryId::new(5);
+const TOKEN_ACCOUNTS_MEMORY: MemoryId = MemoryId::new(6);
 
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
 // Thread-local storage
 thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
-    static LIST_OF_SUBACCOUNTS: RefCell<HashMap<u64, Subaccount>> = RefCell::default();
-    static TOKEN_SUBACCOUNTS: RefCell<HashMap<String, Subaccount>> = RefCell::default();
-    static TOKEN_ACCOUNTS: RefCell<HashMap<String, [u8; 32]>> = RefCell::default();
 
+    static TOKEN_SUBACCOUNTS: RefCell<BTreeMap<String, [u8; 32], VM>> = RefCell::new(
+        BTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(TOKEN_SUBACCOUNTS_MEMORY))
+        )
+    );
+
+    static TOKEN_ACCOUNTS: RefCell<BTreeMap<String, [u8; 32], VM>> = RefCell::new(
+        BTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(TOKEN_ACCOUNTS_MEMORY))
+        )
+    );
+    
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
@@ -129,37 +139,40 @@ fn get_signees() -> Vec<Principal> {
     })
 }
 
+#[query]
+fn get_tokens() -> Vec<String> {
+    TOKEN_ACCOUNTS.with(|token_ref| token_ref.borrow().iter().map(|(key, _)| key.clone()).collect())
+}
+
 #[update]
 fn add_icrc_account(token: String) -> Result<String, Error> {
-    let already_exists = TOKEN_ACCOUNTS.with(|token_ref| token_ref.borrow().contains_key(&token));
-
-    if already_exists {
-        return Err(Error {
-            message: "Account for token already exists".to_string(),
-        });
-    }
-
-    let last_account: [u8; 32] = LAST_ACCOUNT.with(|last_account_ref| last_account_ref.borrow().get().clone());
-    let mut new_account = last_account.clone();
-
-    for i in (0..32).rev() {
-        if new_account[i] == 255 {
-            new_account[i] = 0;
-        } else {
-            new_account[i] += 1;
-            break;
-        }
-    }
-
-    LAST_ACCOUNT.with(|last_account_ref| {
-        last_account_ref.borrow_mut().set(new_account).expect("Failed to set new account");
-    });
-
     TOKEN_ACCOUNTS.with(|token_ref| {
-        token_ref.borrow_mut().insert(token, new_account);
-    });
-    
-    Ok(hex::encode(new_account))
+        let mut accounts = token_ref.borrow_mut();
+        if accounts.contains_key(&token) {
+            return Err(Error {
+                message: "Account for token already exists".to_string(),
+            });
+        }
+
+        let last_account: [u8; 32] = LAST_ACCOUNT.with(|last_account_ref| last_account_ref.borrow().get().clone());
+        let mut new_account = last_account.clone();
+
+        for i in (0..32).rev() {
+            if new_account[i] == 255 {
+                new_account[i] = 0;
+            } else {
+                new_account[i] += 1;
+                break;
+            }
+        }
+
+        LAST_ACCOUNT.with(|last_account_ref| {
+            last_account_ref.borrow_mut().set(new_account).expect("Failed to set new account");
+        });
+
+        accounts.insert(token, new_account);
+        Ok(hex::encode(new_account))
+    })
 }
 
 #[update]
@@ -169,16 +182,12 @@ fn add_subaccount(token: String) -> Result<String, Error> {
     let subaccountid: AccountIdentifier = to_subaccount_id(subaccount);
     let account_id_hash = subaccountid.to_u64_hash();
 
-    LIST_OF_SUBACCOUNTS.with(|list_ref| {
-        list_ref.borrow_mut().insert(account_id_hash, subaccount);
+    TOKEN_SUBACCOUNTS.with(|token_ref| {
+        token_ref.borrow_mut().insert(token, subaccount.0);
     });
 
     LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
         let _ = nonce_ref.borrow_mut().set(nonce + 1);
-    });
-
-    TOKEN_SUBACCOUNTS.with(|token_ref| {
-        token_ref.borrow_mut().insert(token, subaccount);
     });
 
     Ok(subaccountid.to_hex())
@@ -188,7 +197,7 @@ fn add_subaccount(token: String) -> Result<String, Error> {
 fn get_subaccount(token: String) -> Result<String, Error> {
     TOKEN_SUBACCOUNTS.with(|token_ref| {
         match token_ref.borrow().get(&token) {
-            Some(subaccount) => Ok(to_subaccount_id(*subaccount).to_hex()),
+            Some(subaccount) => Ok(hex::encode(subaccount)),
             None => Err(Error {
                 message: "Subaccount not found".to_string(),
             }),

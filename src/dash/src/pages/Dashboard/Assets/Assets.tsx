@@ -18,6 +18,7 @@ import { VisibilityOff, Add } from "@mui/icons-material";
 import AddTokenModal from "./AddTokenModal";
 import { createIcrcAccount, createSubaccount } from "../../../api/account";
 import { useAccount } from "../../../contexts/AccountContext";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 
 interface Asset {
   name: string;
@@ -36,6 +37,7 @@ const Assets: React.FC = () => {
   ]);
   const [modalOpen, setModalOpen] = useState(false);
   const { vaultCanisterId } = useAccount();
+  const { identity } = useInternetIdentity();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -65,7 +67,8 @@ const Assets: React.FC = () => {
 
     const icrcAccount = await createIcrcAccount(
       vaultCanisterId!,
-      tokenData.name
+      tokenData.name,
+      identity!
     );
     console.log(icrcAccount);
   };

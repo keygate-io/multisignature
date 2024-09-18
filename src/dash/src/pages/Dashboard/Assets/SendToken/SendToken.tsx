@@ -12,14 +12,15 @@ import {
 } from "@mui/material";
 import SendForm from "./SendForm";
 import ConfirmationView from "./ConfirmationView";
+import { useAccount } from "../../../../contexts/AccountContext";
+import { Buffer } from "buffer";
 import {
-  createIntent,
   addIntent,
+  createIntent,
   executeIntent,
   getAdapters,
 } from "../../../../api/account";
-import { useAccount } from "../../../../contexts/AccountContext";
-import { Buffer } from "buffer";
+import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
 
 if (typeof window !== "undefined") {
   window.Buffer = Buffer;
@@ -39,6 +40,7 @@ const SendToken: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const { identity } = useInternetIdentity();
 
   const handleRecipientChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -76,11 +78,11 @@ const SendToken: React.FC = () => {
     try {
       const intent = createIntent(BigInt(amount), token, recipient, icpAccount);
       console.log("Intent:", intent);
-      const intentId = await addIntent(account, intent);
+      const intentId = await addIntent(account, intent, identity!);
       console.log("Intent ID:", intentId);
       setCurrentStep(2);
 
-      const adapters = await getAdapters(account);
+      const adapters = await getAdapters(account, identity!);
       console.log("Adapters:", adapters);
 
       if (!intentId) {
@@ -88,7 +90,7 @@ const SendToken: React.FC = () => {
         return;
       }
 
-      const result = await executeIntent(account, intentId);
+      const result = await executeIntent(account, intentId, identity!);
 
       if ("Completed" in result) {
         setCurrentStep(3);

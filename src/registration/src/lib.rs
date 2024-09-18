@@ -98,7 +98,7 @@ async fn deploy_account() -> Principal {
                         user.vaults.push(canister_id);
                         users.insert(owner_principal, user);
                     },
-                    None => ic_cdk::trap(&format!("User with principal {} not found 11", owner_principal)),
+                    None => ic_cdk::trap(&format!("User with principal {} not found", owner_principal)),
                 }
             });
 
@@ -124,7 +124,7 @@ fn get_user(principal: Principal) -> Option<UserInfo> {
 #[query]
 fn get_user_vaults(owner_principal: Principal) -> Vec<Principal> {
     if !user_exists(owner_principal) {
-        ic_cdk::trap(&format!("User with principal {} not found 11", owner_principal));
+        ic_cdk::trap(&format!("User with principal {} not found", owner_principal));
     }
 
     let mut user_vaults = vec![];

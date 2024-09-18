@@ -34,6 +34,7 @@ service : () -> {
   get_decisions : (nat64) -> (vec Decision) query;
   get_intents : () -> (vec Intent) query;
   get_signees : () -> (vec principal) query;
+  get_tokens : () -> (vec text) query;
   get_subaccount : (text) -> (Result) query;
   include_signee : (text) -> ();
 }
