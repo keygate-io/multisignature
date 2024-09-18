@@ -79,7 +79,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
     console.log("Vault Name:", vaultName);
 
-    const result = await upgradeAccount(vaultName!);
+    const result = await upgradeAccount(vaultCanisterId!);
     console.log("Upgrade Account result:", result);
     // Add your upgrade account logic here
   };

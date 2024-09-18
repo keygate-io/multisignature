@@ -55,19 +55,27 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
 
       try {
         const user = await getUser(identity.getPrincipal());
+
+        if (!user) {
+          navigate("/new-profile/create");
+          return;
+        }
+
         const vaults = await getUserVaults(identity.getPrincipal());
+        console.log("vaults", vaults);
 
         if (user && vaults.length > 0) {
           console.log("vaults", vaults);
-          setVaultCanisterId(vaults[0][1]);
-          console.log("vaults[0][0]", vaults[0][0]);
-          setVaultName(vaults[0][0]);
+          setVaultCanisterId(vaultCanisterId);
+          console.log("vaults[0][0]", vaultCanisterId);
+          setVaultName("Funding");
         } else if (user && vaults.length === 0) {
           navigate("/new-account/create");
         } else {
           navigate("/new-profile/create");
         }
       } catch (err) {
+        console.log("error", err);
         setError("Failed to fetch user account");
       }
     };

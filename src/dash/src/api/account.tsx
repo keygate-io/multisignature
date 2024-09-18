@@ -17,12 +17,12 @@ function getAccountActor(account_canister_id: Principal) {
   return accountActorMap.get(account_canister_id);
 }
 
-export function deployAccount(principal: Principal, vault_name: string) {
-  return registration.deploy_account(principal, vault_name);
+export function deployAccount() {
+  return registration.deploy_account();
 }
 
-export function upgradeAccount(vault_name: string) {
-  return registration.upgrade_account(vault_name);
+export function upgradeAccount(canister_id: Principal) {
+  return registration.upgrade_account(canister_id);
 }
 
 export function createSubaccount(

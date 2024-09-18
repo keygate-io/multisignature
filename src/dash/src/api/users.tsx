@@ -23,16 +23,13 @@ export async function getUser(principal: Principal): Promise<UserInfo | null> {
   return result[0] ?? null;
 }
 
-export async function deployAccount(
-  principal: Principal,
-  tokenName: string
-): Promise<Principal> {
-  return registration.deploy_account(principal, tokenName);
+export async function deployAccount(): Promise<Principal> {
+  return registration.deploy_account();
 }
 
 export async function getUserVaults(
   principal: Principal
-): Promise<[string, Principal][]> {
+): Promise<Principal[]> {
   return registration.get_user_vaults(principal);
 }
 
@@ -49,5 +46,5 @@ export async function hasAnAccount(principal: Principal): Promise<boolean> {
 
 export async function getAccounts(principal: Principal): Promise<Principal[]> {
   const vaults = await getUserVaults(principal);
-  return vaults.map(([_, accountPrincipal]) => accountPrincipal);
+  return vaults;
 }

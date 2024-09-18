@@ -1,10 +1,15 @@
-type UserInfo = record { first_name : text; last_name : text };
-service : () -> {
-  deploy_account : (principal, text) -> (principal);
-  get_user : (principal) -> (opt UserInfo) query;
-  get_user_vaults : (principal) -> (vec record { text; principal }) query;
-  load_wallet_wasm : () -> ();
-  register_user : (principal, text, text) -> ();
-  user_exists : (principal) -> (bool) query;
-  upgrade_account : (text) -> ();
+type UserInfo = record {
+    first_name : text;
+    last_name : text;
+    vaults : vec principal;
+};
+
+service : {
+    deploy_account : () -> (principal);
+    get_user : (principal) -> (opt UserInfo) query;
+    get_user_vaults : (principal) -> (vec principal) query;
+    load_wallet_wasm : () -> ();
+    register_user : (principal, text, text) -> ();
+    user_exists : (principal) -> (bool) query;
+    upgrade_account : (principal) -> (variant { Ok : null; Err : text });
 }

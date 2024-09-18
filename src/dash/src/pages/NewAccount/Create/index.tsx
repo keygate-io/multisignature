@@ -49,7 +49,7 @@ const Step1: React.FC<Step1Props> = ({
 }) => (
   <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
     <Typography variant="h6" gutterBottom>
-      1. Select network and name for the vault
+      1. Select a name for the vault
     </Typography>
     <TextField
       fullWidth
@@ -58,15 +58,6 @@ const Step1: React.FC<Step1Props> = ({
       onChange={(e) => setAccountName(e.target.value)}
       margin="normal"
     />
-    <FormControl fullWidth margin="normal">
-      <InputLabel>Network</InputLabel>
-      <Select
-        value={selectedNetwork}
-        onChange={(e) => setSelectedNetwork(e.target.value)}
-      >
-        <MenuItem value="ICP">ICP</MenuItem>
-      </Select>
-    </FormControl>
   </Paper>
 );
 
@@ -99,8 +90,8 @@ const Step2: React.FC<Step2Props> = ({
         2. Signers and confirmations
       </Typography>
       <Typography variant="body2" color="text.secondary" gutterBottom>
-        Set the signer wallets of your Smart Account and how many need to
-        confirm to execute a valid transaction.
+        Set the signer wallets of your vault and how many need to confirm to
+        execute a valid transaction.
       </Typography>
       {signers.map((signer, index) => (
         <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
@@ -224,7 +215,7 @@ const CreateAccount: React.FC = () => {
         severity: "info",
       });
 
-      deployAccount(identity!.getPrincipal(), accountName).then(async (id) => {
+      deployAccount().then(async (id) => {
         console.log(`Account id: ${JSON.stringify(id)}`);
         const subaccount_id = await createSubaccount(id, "ICP");
 
@@ -327,7 +318,7 @@ const CreateAccount: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
       >
-        <MuiAlert elevation={6} variant="filled" severity={snackbar.severity}>
+        <MuiAlert elevation={6} variant="filled">
           {snackbar.message}
         </MuiAlert>
       </Snackbar>
