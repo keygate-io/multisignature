@@ -205,7 +205,6 @@ fn add_subaccount(token: String) -> Result<String, Error> {
     let nonce = nonce();
     let subaccount = to_subaccount(nonce);
     let subaccountid: AccountIdentifier = to_subaccount_id(subaccount);
-    let account_id_hash = subaccountid.to_u64_hash();
 
     TOKEN_SUBACCOUNTS.with(|token_ref| {
         token_ref.borrow_mut().insert(token, CborSubaccount(subaccount));
