@@ -20,8 +20,6 @@ const accountActorMap = new Map<
 function getRegistrationActor(identity: Identity) {
   const key = identity.getPrincipal().toString();
   if (!registrationActorMap.has(key)) {
-    console.log("Creating registration actor");
-    console.log(process.env.CANISTER_ID_REGISTRATION);
     const actor = createRegistrationActor(
       process.env.CANISTER_ID_REGISTRATION as string,
       {
@@ -138,4 +136,21 @@ export async function createIcrcAccount(
   return getAccountActor(principal_id, identity).add_icrc_account(
     `icp:icrc1:${token_principal_id}`
   );
+}
+
+export async function getIcrcAccount(
+  account_canister_id: Principal,
+  token_principal_id: Principal,
+  identity: Identity
+) {
+  return getAccountActor(account_canister_id, identity).get_icrc_account(
+    `icp:icrc1:${token_principal_id}`
+  );
+}
+
+export function getDebugInfo(
+  account_canister_id: Principal,
+  identity: Identity
+) {
+  return getAccountActor(account_canister_id, identity).get_debug_info();
 }

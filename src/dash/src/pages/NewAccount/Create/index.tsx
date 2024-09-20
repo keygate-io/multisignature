@@ -16,18 +16,11 @@ import {
   Paper,
   Grid,
   Snackbar,
-  ThemeProvider,
   createTheme,
   CssBaseline,
   Alert,
 } from "@mui/material";
 import MuiAlert, { AlertColor } from "@mui/material/Alert";
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-});
 
 interface Signer {
   name: string;
@@ -163,7 +156,7 @@ const Review: React.FC<ReviewProps> = ({
       3. Review
     </Typography>
     <Typography variant="body2" color="text.secondary" gutterBottom>
-      You're about to create a new Smart Account and will have to confirm the
+      You're about to create a new vault and will have to confirm the
       transaction with your connected wallet.
     </Typography>
     <Box sx={{ mt: 2 }}>
@@ -216,10 +209,8 @@ const CreateAccount: React.FC = () => {
       });
 
       deployAccount(identity!).then(async (id) => {
-        console.log(`Account id: ${JSON.stringify(id)}`);
         const subaccount_id = await createSubaccount(id, "ICP", identity!);
 
-        console.log(`Account id: ${JSON.stringify(subaccount_id)}`);
         setSnackbar({ open: false, message: "", severity: "info" });
         navigate("/dashboard");
       });
@@ -233,8 +224,6 @@ const CreateAccount: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log("identity", identity?.getPrincipal().toString());
-
     async function loadUser() {
       if (!identity) {
         if (isInitializing) {
@@ -262,7 +251,7 @@ const CreateAccount: React.FC = () => {
   }, [identity]);
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <>
       <CssBaseline />
       <Box
         sx={{
@@ -323,7 +312,7 @@ const CreateAccount: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </ThemeProvider>
+    </>
   );
 };
 

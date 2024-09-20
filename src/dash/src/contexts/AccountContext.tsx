@@ -62,12 +62,9 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
         }
 
         const vaults = await getUserVaults(identity.getPrincipal());
-        console.log("vaults", vaults);
 
         if (user && vaults.length > 0) {
-          console.log("vaults", vaults);
           setVaultCanisterId(vaults[0]);
-          console.log("vaults[0][0]", vaultCanisterId);
           setVaultName("Funding");
         } else if (user && vaults.length === 0) {
           navigate("/new-account/create");
@@ -75,7 +72,6 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
           navigate("/new-profile/create");
         }
       } catch (err) {
-        console.log("error", err);
         setError("Failed to fetch user account");
       }
     };
@@ -112,7 +108,6 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
       if (!icpSubaccount) return;
 
       try {
-        console.log("icpSubaccount", icpSubaccount);
         const result = await balanceOf(icpSubaccount);
         setIcpBalance(result.e8s);
         setError("");

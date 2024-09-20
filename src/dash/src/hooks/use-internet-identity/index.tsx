@@ -84,7 +84,6 @@ export function InternetIdentityProvider({
 
       const authClient = await AuthClient.create(options);
       const isAuthenticated = await authClient.isAuthenticated();
-      console.log("isAuthenticated", isAuthenticated);
 
       setState((prevState) => ({
         ...prevState,

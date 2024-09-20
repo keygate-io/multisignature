@@ -20,7 +20,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
 import MultipleRouteModal from "../modals/MultipleRouteModal";
-import { upgradeAccount } from "../api/account";
+import { getDebugInfo, upgradeAccount } from "../api/account";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
 
 interface MenuItemType {
@@ -68,7 +68,6 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const handleMultipleRouteModalClose = () => setMultipleRouteModalOpen(false);
 
   const handleMultipleRouteOptionSelect = (option: string) => {
-    console.log(`Selected option: ${option}`);
     if (option === "send-token") {
       navigate("/assets/send-token");
     }
@@ -76,13 +75,12 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   };
 
   const handleUpgradeAccount = async () => {
-    console.log("Upgrade Account clicked");
-
-    console.log("Vault Name:", vaultName);
-
     const result = await upgradeAccount(vaultCanisterId!, identity!);
-    console.log("Upgrade Account result:", result);
-    // Add your upgrade account logic here
+    console.log("Upgrade result", result);
+  };
+
+  const handleGetDebugInfo = async () => {
+    const result = await getDebugInfo(vaultCanisterId!, identity!);
   };
 
   const renderMenuItem = (item: MenuItemType) => (

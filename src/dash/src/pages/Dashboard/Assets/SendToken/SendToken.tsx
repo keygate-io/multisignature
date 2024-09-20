@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import AccountPageLayout from "../../../AccountPageLayout";
 import {
   Box,
@@ -19,6 +19,7 @@ import {
   createIntent,
   executeIntent,
   getAdapters,
+  getTokens,
 } from "../../../../api/account";
 import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
 
@@ -77,13 +78,10 @@ const SendToken: React.FC = () => {
 
     try {
       const intent = createIntent(BigInt(amount), token, recipient, icpAccount);
-      console.log("Intent:", intent);
       const intentId = await addIntent(account, intent, identity!);
-      console.log("Intent ID:", intentId);
       setCurrentStep(2);
 
       const adapters = await getAdapters(account, identity!);
-      console.log("Adapters:", adapters);
 
       if (!intentId) {
         setError("Could not create intent");
@@ -105,6 +103,15 @@ const SendToken: React.FC = () => {
       setIsLoading(false);
     }
   }, [account, icpAccount, amount, token, recipient]);
+
+  useEffect(() => {
+    async function fetchTokens() {
+      if (account && identity) {
+        const tokens = await getTokens(account, identity!);
+      }
+    }
+    fetchTokens();
+  }, [account, identity]);
 
   if (contextLoading) {
     return (

@@ -67,7 +67,6 @@ async fn upgrade_account(canister_id: Principal) -> Result<(), String> {
     }
 }
 
-
 /**
  * TODO: Add vault name to init args of the vault canister.
  */
@@ -141,6 +140,7 @@ fn get_user_vaults(owner_principal: Principal) -> Vec<Principal> {
 
     user_vaults
 }
+
 
 #[query]
 fn user_exists(principal: Principal) -> bool {

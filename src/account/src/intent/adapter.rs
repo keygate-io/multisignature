@@ -3,7 +3,7 @@ use std::{collections::HashMap, future::Future, pin::Pin, str::FromStr};
 use candid::{Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
-use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
+use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Subaccount, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
 use icrc_ledger_types::icrc1::{account::Account, transfer::{TransferArg as ICRC1TransferArgs, TransferError}};
 use serde_bytes::ByteBuf;
 
@@ -81,7 +81,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
         Box::pin(async move {
             println!("Executing ICPAdapter");
             let subaccount = TOKEN_SUBACCOUNTS.with(|list_ref| {
-                list_ref.borrow().get(&intent.token().0).unwrap().clone()
+                list_ref.borrow().get(&intent.token().0).unwrap()
             });
 
             let args = ICPNativeTransferArgs {
@@ -89,7 +89,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
                 amount: Tokens::from_e8s(intent.amount()),
                 fee: Tokens::from_e8s(RECOMMENDED_TRANSACTION_FEE),
                 memo: Memo(0),
-                from_subaccount: Some(subaccount),
+                from_subaccount: Some(subaccount.0),
                 created_at_time: None,
             };
 

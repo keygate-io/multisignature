@@ -7,8 +7,6 @@ const Footer: React.FC = () => {
       component="footer"
       sx={{
         width: "100%",
-        bgcolor: "primary.dark",
-        color: "primary.contrastText",
         maxHeight: "10vh",
         display: "flex",
         alignItems: "center",

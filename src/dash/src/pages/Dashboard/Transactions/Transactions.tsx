@@ -40,9 +40,7 @@ const Transactions: React.FC = () => {
       if (icpSubaccount) {
         setIsLoading(true);
         try {
-          console.log({ icpSubaccount });
           const fetchedIntents = await getIntents(vaultCanisterId!, identity!);
-          console.log({ fetchedIntents });
           setIntents(fetchedIntents || []);
         } catch (error) {
           console.error("Error fetching intents:", error);
@@ -85,7 +83,7 @@ const Transactions: React.FC = () => {
 
   const renderContent = () => {
     if (isLoading) {
-      return <Typography sx={{ color: "white" }}>Loading...</Typography>;
+      return <Typography>Loading...</Typography>;
     }
 
     if (intents.length === 0) {
@@ -93,7 +91,6 @@ const Transactions: React.FC = () => {
         <Paper
           sx={{
             p: 3,
-            backgroundColor: "rgba(255, 255, 255, 0.05)",
           }}
         >
           <Box
@@ -104,13 +101,8 @@ const Transactions: React.FC = () => {
               gap: 2,
             }}
           >
-            <InfoIcon sx={{ fontSize: 48, color: "primary.main" }} />
-            <Typography
-              variant="h6"
-              sx={{ color: "white", textAlign: "center" }}
-            >
-              No transactions found
-            </Typography>
+            <InfoIcon sx={{ fontSize: 48 }} />
+            <Typography variant="h6">No transactions found</Typography>
           </Box>
         </Paper>
       );
@@ -120,12 +112,7 @@ const Transactions: React.FC = () => {
       <List>
         {intents.map((intent, index) => (
           <React.Fragment key={index.toString()}>
-            {index > 0 && (
-              <Divider
-                component="li"
-                sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }}
-              />
-            )}
+            {index > 0 && <Divider component="li" />}
             <ListItem alignItems="flex-start" sx={{ py: 2 }}>
               <ListItemIcon>
                 {renderIntentIcon(intent.intent_type)}
@@ -149,18 +136,8 @@ const Transactions: React.FC = () => {
                 }
                 secondary={
                   <React.Fragment>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-                    >
-                      From: {intent.from}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-                    >
-                      To: {intent.to}
-                    </Typography>
+                    <Typography variant="body2">From: {intent.from}</Typography>
+                    <Typography variant="body2">To: {intent.to}</Typography>
                     <Box
                       sx={{
                         display: "flex",
@@ -171,18 +148,10 @@ const Transactions: React.FC = () => {
                       <Chip
                         label={Object.keys(intent.network)[0]}
                         size="small"
-                        sx={{
-                          backgroundColor: "rgba(255, 255, 255, 0.1)",
-                          color: "white",
-                        }}
                       />
                       <Chip
                         label={getIntentStatus(intent.status)}
                         size="small"
-                        sx={{
-                          backgroundColor: "rgba(255, 255, 255, 0.1)",
-                          color: "white",
-                        }}
                       />
                     </Box>
                   </React.Fragment>

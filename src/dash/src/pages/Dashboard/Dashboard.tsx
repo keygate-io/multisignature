@@ -47,11 +47,6 @@ const Dashboard = () => {
             value={icpAccount || ""}
             InputProps={{
               readOnly: true,
-              style: {
-                fontFamily: "monospace",
-                fontSize: "0.8rem",
-                backgroundColor: "#f0f0f0",
-              },
             }}
             fullWidth
             variant="outlined"

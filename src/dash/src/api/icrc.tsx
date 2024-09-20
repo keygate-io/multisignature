@@ -3,6 +3,7 @@ import {
   createActor,
   icrc1_ledger_canister,
 } from "../../../declarations/icrc1_ledger_canister";
+import { Subaccount } from "../../../declarations/icrc1_ledger_canister/icrc1_ledger_canister.did";
 
 // create a map of the principal_id to the actor
 const actorMap = new Map<Principal, ReturnType<typeof createActor>>();
@@ -37,4 +38,14 @@ export async function getTokenMetadata(principal_id: Principal) {
 
 export async function getTokenFee(principal_id: Principal) {
   return getActor(principal_id)?.icrc1_fee();
+}
+
+export async function getTokenBalance(
+  principal_id: Principal,
+  subaccount: Subaccount
+) {
+  return getActor(principal_id)?.icrc1_balance_of({
+    owner: principal_id,
+    subaccount: [subaccount],
+  });
 }

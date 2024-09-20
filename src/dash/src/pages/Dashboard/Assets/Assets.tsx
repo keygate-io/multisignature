@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AccountPageLayout from "../../AccountPageLayout";
 import {
   Box,
@@ -13,31 +13,159 @@ import {
   Tabs,
   Tab,
   Button,
+  CircularProgress,
+  Chip,
 } from "@mui/material";
 import { VisibilityOff, Add } from "@mui/icons-material";
 import AddTokenModal from "./AddTokenModal";
-import { createIcrcAccount, createSubaccount } from "../../../api/account";
+import {
+  getTokens,
+  createIcrcAccount,
+  getIcrcAccount,
+} from "../../../api/account";
 import { useAccount } from "../../../contexts/AccountContext";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
+import { TokenData } from "../../../types/assets";
+import { Principal } from "@dfinity/principal";
+import { extractTokenData } from "../../../util/token";
+import { getTokenBalance, getTokenSymbol } from "../../../api/icrc";
+import { base32ToBlob, hexToBytes } from "../../../util/conversion";
 
 interface Asset {
   name: string;
   icon: string;
   balance: string;
   value: string;
+  isIcrc: boolean;
+}
+
+interface TokenInfo {
+  network: string;
+  standard: string;
+  principalId: string;
 }
 
 const Assets: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [showTokens, setShowTokens] = useState(true);
-  const [tokenList, setTokenList] = useState("Default tokens");
-  const [currency, setCurrency] = useState("USD");
-  const [assets, setAssets] = useState<Asset[]>([
-    { name: "ICP", icon: "🔹", balance: "0,5 ICP", value: "$ 0" },
-  ]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const { vaultCanisterId } = useAccount();
+  const [loading, setLoading] = useState(true);
+  const { vaultCanisterId, icpBalance } = useAccount();
   const { identity } = useInternetIdentity();
+
+  const icrcTokenInfo = async (
+    token: string,
+    tokenInfo: TokenInfo
+  ): Promise<Asset> => {
+    const { network, standard, principalId } = tokenInfo;
+    let balance = "Unknown";
+
+    console.log("Token", token);
+
+    const subaccountResult = await getIcrcAccount(
+      vaultCanisterId!,
+      Principal.fromText(principalId),
+      identity!
+    );
+
+    if (!("Ok" in subaccountResult)) {
+      throw new Error(
+        `Error fetching subaccount for string ${principalId} : ${JSON.stringify(
+          subaccountResult.Err
+        )}`
+      );
+    }
+
+    console.log("Subaccount", subaccountResult.Ok);
+
+    const subaccountBytes = hexToBytes(subaccountResult.Ok);
+
+    console.log("Subaccount bytes", subaccountBytes);
+    const rawBalance = await getTokenBalance(
+      Principal.fromText(principalId),
+      subaccountBytes
+    );
+
+    console.log("Raw balance", rawBalance);
+
+    if (rawBalance === undefined) {
+      throw new Error(`Error fetching balance for ${token}:`);
+    }
+
+    balance = rawBalance.toString();
+
+    const symbol = await getTokenSymbol(Principal.fromText(principalId));
+
+    return {
+      name: `${symbol}`,
+      icon: "🔸",
+      balance,
+      value: "N/A",
+      isIcrc: true,
+    };
+  };
+
+  const icTokenInfo = async (token: string): Promise<Asset> => {
+    const balance = icpBalance?.toString() || "Unknown";
+
+    return {
+      name: "ICP",
+      icon: "🔹",
+      balance,
+      value: "N/A",
+      isIcrc: false,
+    };
+  };
+
+  const fetchAssetInfo = async (
+    token: string,
+    tokenInfo: TokenInfo
+  ): Promise<Asset> => {
+    const { network, standard } = tokenInfo;
+
+    try {
+      if (network.toLowerCase().includes("icp") && !standard) {
+        return await icTokenInfo(token);
+      } else {
+        return await icrcTokenInfo(token, tokenInfo);
+      }
+    } catch (error) {
+      console.error(`Error fetching asset info for ${token}:`, error);
+      return {
+        name: network === "ICP" ? "ICP" : `${standard.toUpperCase()}`,
+        icon: network.toLowerCase() === "icp" ? "🔹" : "🔸",
+        balance: "Error",
+        value: "N/A",
+        isIcrc: network !== "ICP",
+      };
+    }
+  };
+
+  const fetchAssets = async () => {
+    if (vaultCanisterId && identity) {
+      try {
+        setLoading(true);
+        const tokens = await getTokens(vaultCanisterId, identity);
+        console.log("Tokens", tokens);
+        const formattedAssets = await Promise.all(
+          tokens.map(async (token) => {
+            const tokenInfo = extractTokenData(token);
+            return fetchAssetInfo(token, tokenInfo);
+          })
+        );
+        setAssets(formattedAssets);
+      } catch (error) {
+        console.error("Error fetching tokens:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchAssets();
+  }, [vaultCanisterId, identity, icpBalance]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -55,27 +183,41 @@ const Assets: React.FC = () => {
     setModalOpen(false);
   };
 
-  const handleAddToken = async (tokenData: any) => {
-    const newAsset: Asset = {
-      name: tokenData.name,
-      icon: "🔸", // You might want to use a different icon for custom tokens
-      balance: "0 " + tokenData.symbol,
-      value: "$ 0",
-    };
-
-    setAssets([...assets, newAsset]);
-
-    const icrcAccount = await createIcrcAccount(
-      vaultCanisterId!,
-      tokenData.name,
-      identity!
-    );
-    console.log(icrcAccount);
+  const handleAddToken = async (tokenData: TokenData) => {
+    if (vaultCanisterId && identity) {
+      try {
+        const icrcAccount = await createIcrcAccount(
+          vaultCanisterId,
+          Principal.fromText(tokenData.address),
+          identity
+        );
+        await fetchAssets();
+      } catch (error) {
+        console.error("Error creating ICRC account:", error);
+      }
+    }
   };
+
+  if (loading) {
+    return (
+      <AccountPageLayout>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </AccountPageLayout>
+    );
+  }
 
   return (
     <AccountPageLayout>
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: "100%", color: "text.primary" }}>
         <Typography variant="h4" sx={{ mb: 3 }}>
           Assets
         </Typography>
@@ -104,7 +246,14 @@ const Assets: React.FC = () => {
           </Button>
         </Box>
 
-        <TableContainer component={Paper}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 0,
+            "& .MuiPaper-root": { borderRadius: 0 },
+            marginTop: 4,
+          }}
+        >
           <Table>
             <TableHead>
               <TableRow>
@@ -115,9 +264,23 @@ const Assets: React.FC = () => {
             </TableHead>
             <TableBody>
               {assets.map((asset) => (
-                <TableRow key={asset.name}>
+                <TableRow
+                  key={asset.name}
+                  sx={{
+                    "&:last-child td, &:last-child th": {
+                      border: 0,
+                    },
+                  }}
+                >
                   <TableCell component="th" scope="row">
-                    {asset.icon} {asset.name}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Chip
+                        label={asset.isIcrc ? "ICRC" : "Native"}
+                        size="small"
+                        color={asset.isIcrc ? "primary" : "secondary"}
+                      />
+                      {asset.name}
+                    </Box>
                   </TableCell>
                   <TableCell align="right">
                     {showTokens ? asset.balance : "****"}

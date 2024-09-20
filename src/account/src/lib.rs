@@ -6,7 +6,7 @@ mod intent;
 use std::{cell::RefCell, collections::{HashMap, LinkedList}, hash::DefaultHasher};
 use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
-use ic_ledger_types::{AccountIdentifier, Subaccount};
+use ic_ledger_types::{AccountIdentifier};
 use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, BTreeMap, DefaultMemoryImpl, StableCell, StableLog, Storable};
 use intent::*;
 use serde::{Deserialize, Serialize};
@@ -29,7 +29,7 @@ pub type VM = VirtualMemory<DefaultMemoryImpl>;
 thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
 
-    static TOKEN_SUBACCOUNTS: RefCell<BTreeMap<String, [u8; 32], VM>> = RefCell::new(
+    static TOKEN_SUBACCOUNTS: RefCell<BTreeMap<String, CborSubaccount, VM>> = RefCell::new(
         BTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(TOKEN_SUBACCOUNTS_MEMORY))
         )
@@ -141,7 +141,20 @@ fn get_signees() -> Vec<Principal> {
 
 #[query]
 fn get_tokens() -> Vec<String> {
-    TOKEN_ACCOUNTS.with(|token_ref| token_ref.borrow().iter().map(|(key, _)| key.clone()).collect())
+    let mut tokens = Vec::new();
+    TOKEN_ACCOUNTS.with(|token_ref| {
+        for (key, _) in token_ref.borrow().iter() {
+            tokens.push(key.clone());
+        }
+    });
+
+    TOKEN_SUBACCOUNTS.with(|token_ref| {
+        for (key, _) in token_ref.borrow().iter() {
+            tokens.push(key.clone());
+        }
+    });
+
+    tokens
 }
 
 #[update]
@@ -175,6 +188,18 @@ fn add_icrc_account(token: String) -> Result<String, Error> {
     })
 }
 
+#[query]
+fn get_icrc_account(token: String) -> Result<String, Error> {
+    TOKEN_ACCOUNTS.with(|token_ref| {
+        match token_ref.borrow().get(&token) {
+            Some(account) => Ok(hex::encode(account)),
+            None => Err(Error {
+                message: "Account not found".to_string(),
+            }),
+        }
+    })
+}
+
 #[update]
 fn add_subaccount(token: String) -> Result<String, Error> {
     let nonce = nonce();
@@ -183,7 +208,7 @@ fn add_subaccount(token: String) -> Result<String, Error> {
     let account_id_hash = subaccountid.to_u64_hash();
 
     TOKEN_SUBACCOUNTS.with(|token_ref| {
-        token_ref.borrow_mut().insert(token, subaccount.0);
+        token_ref.borrow_mut().insert(token, CborSubaccount(subaccount));
     });
 
     LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
@@ -197,7 +222,7 @@ fn add_subaccount(token: String) -> Result<String, Error> {
 fn get_subaccount(token: String) -> Result<String, Error> {
     TOKEN_SUBACCOUNTS.with(|token_ref| {
         match token_ref.borrow().get(&token) {
-            Some(subaccount) => Ok(hex::encode(subaccount)),
+            Some(subaccount) => Ok(to_subaccount_id(subaccount.0).to_hex()),
             None => Err(Error {
                 message: "Subaccount not found".to_string(),
             }),
@@ -221,6 +246,32 @@ async fn init() {
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert("ICP-ICP-Transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
     });
+}
+
+#[query]
+fn get_debug_info() -> String {
+    let mut state = String::new();
+    TOKEN_ACCOUNTS.with(|token_ref| {
+        for (key, _) in token_ref.borrow().iter() {
+            state.push_str(&format!("Token: {}\n", key));
+        }
+    });
+
+    TOKEN_SUBACCOUNTS.with(|token_ref| {
+        for (key, _) in token_ref.borrow().iter() {
+            state.push_str(&format!("Subaccount: {}\n", key));
+        }
+    });
+
+    LAST_ACCOUNT.with(|last_account_ref| {
+        state.push_str(&format!("Last Account: {}\n", hex::encode(last_account_ref.borrow().get())));
+    });
+
+    LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
+        state.push_str(&format!("Last Subaccount Nonce: {}\n", nonce_ref.borrow().get()));
+    });
+
+    state
 }
 
 // Export candid

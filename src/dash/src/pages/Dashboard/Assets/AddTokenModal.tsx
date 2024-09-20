@@ -24,7 +24,6 @@ const style = {
   transform: "translate(-50%, -50%)",
   width: 400,
   bgcolor: "background.paper",
-  border: "2px solid #000",
   boxShadow: 24,
   p: 4,
 };
@@ -102,7 +101,7 @@ const AddTokenModal: React.FC<AddTokenModalProps> = ({
     >
       <Box sx={style}>
         <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-          Add Token
+          Token
         </Typography>
         {!tokenData ? (
           <form onSubmit={handlePrincipalSubmit}>

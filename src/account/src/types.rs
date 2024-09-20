@@ -3,7 +3,7 @@ use candid::{CandidType, Principal};
 use core::future::Future;
 use ic_cdk::api::call::CallResult;
 use ic_cdk_timers::TimerId;
-use ic_ledger_types::{BlockIndex, TransferArgs};
+use ic_ledger_types::{BlockIndex, Subaccount, TransferArgs};
 use ic_stable_structures::storable::{Bound, Storable};
 use icrc_ledger_types::icrc1::transfer::TransferArg;
 use std::{borrow::Cow, collections::HashMap};
@@ -12,6 +12,45 @@ use once_cell::sync::Lazy;
 #[cfg(not(test))]
 use ic_cdk::api;
 
+
+#[derive(Default, CandidType, Deserialize, Serialize)]
+pub struct Cbor32(pub [u8; 32]);
+
+impl Storable for Cbor32 {
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 32,
+        is_fixed_size: true,
+    };
+
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        let mut buf = vec![];
+        ciborium::ser::into_writer(&self.0, &mut buf).unwrap();
+        Cow::Owned(buf)
+    }
+
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
+        Self(ciborium::de::from_reader(bytes.as_ref()).unwrap())
+    }
+}
+
+pub struct CborSubaccount(pub Subaccount);
+
+impl Storable for CborSubaccount {
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 34,
+        is_fixed_size: true,
+    };
+
+    fn to_bytes(&self) -> Cow<'_, [u8]> {
+        let mut buf = vec![];
+        ciborium::ser::into_writer(&self.0, &mut buf).unwrap();
+        Cow::Owned(buf)
+    }
+
+    fn from_bytes(bytes: Cow<'_, [u8]>) -> Self {
+        Self(ciborium::de::from_reader(bytes.as_ref()).unwrap())
+    }
+}
 
 static STATIC_PRINCIPAL: Lazy<Principal> =
     Lazy::new(|| Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap());
