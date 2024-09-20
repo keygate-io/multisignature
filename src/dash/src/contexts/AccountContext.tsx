@@ -84,7 +84,11 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
       if (!vaultCanisterId) return;
 
       try {
-        const result = await getSubaccount(vaultCanisterId, "ICP", identity!);
+        const result = await getSubaccount(
+          vaultCanisterId,
+          "icp:native",
+          identity!
+        );
 
         if (!result) {
           throw new Error("Failed to get ICP subaccount");

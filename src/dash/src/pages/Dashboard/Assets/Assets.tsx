@@ -106,7 +106,7 @@ const Assets: React.FC = () => {
     };
   };
 
-  const icTokenInfo = async (token: string): Promise<Asset> => {
+  const icTokenInfo = async (): Promise<Asset> => {
     const balance = icpBalance?.toString() || "Unknown";
 
     return {
@@ -126,7 +126,7 @@ const Assets: React.FC = () => {
 
     try {
       if (network.toLowerCase().includes("icp") && !standard) {
-        return await icTokenInfo(token);
+        return await icTokenInfo();
       } else {
         return await icrcTokenInfo(token, tokenInfo);
       }

@@ -209,7 +209,7 @@ const CreateAccount: React.FC = () => {
       });
 
       deployAccount(identity!).then(async (id) => {
-        const subaccount_id = await createSubaccount(id, "ICP", identity!);
+        await createSubaccount(id, "icp:native", identity!);
 
         setSnackbar({ open: false, message: "", severity: "info" });
         navigate("/dashboard");

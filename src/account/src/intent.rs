@@ -111,7 +111,7 @@ impl ICPNativeTransferAdapter {
     pub fn new() -> ICPNativeTransferAdapter {
         ICPNativeTransferAdapter {
             network: SupportedNetwork::ICP,
-            token: "ICP".to_string(),
+            token: "icp:native".to_string(),
             intent_type: IntentType::Transfer,
         }
     }

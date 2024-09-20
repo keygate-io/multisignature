@@ -36,7 +36,7 @@ const SendToken: React.FC = () => {
   } = useAccount();
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
-  const [token, setToken] = useState<string>("ICP");
+  const [token, setToken] = useState<string>("icp:native");
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
