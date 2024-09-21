@@ -50,7 +50,7 @@ const Assets: React.FC = () => {
   const [showTokens, setShowTokens] = useState(true);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { vaultCanisterId, icpBalance } = useAccount();
   const { identity } = useInternetIdentity();
 
@@ -58,7 +58,7 @@ const Assets: React.FC = () => {
     token: string,
     tokenInfo: TokenInfo
   ): Promise<Asset> => {
-    const { network, standard, principalId } = tokenInfo;
+    const { principalId } = tokenInfo;
     let balance = "Unknown";
 
     console.log("Token", token);
@@ -119,19 +119,19 @@ const Assets: React.FC = () => {
   };
 
   const fetchAssetInfo = async (
-    token: string,
+    tokenPath: string,
     tokenInfo: TokenInfo
   ): Promise<Asset> => {
     const { network, standard } = tokenInfo;
 
     try {
-      if (network.toLowerCase().includes("icp") && !standard) {
+      if (tokenPath.toLowerCase().includes("icp:native")) {
         return await icTokenInfo();
       } else {
-        return await icrcTokenInfo(token, tokenInfo);
+        return await icrcTokenInfo(tokenPath, tokenInfo);
       }
     } catch (error) {
-      console.error(`Error fetching asset info for ${token}:`, error);
+      console.error(`Error fetching asset info for ${tokenPath}:`, error);
       return {
         name: network === "ICP" ? "ICP" : `${standard.toUpperCase()}`,
         icon: network.toLowerCase() === "icp" ? "🔹" : "🔸",
@@ -206,7 +206,7 @@ const Assets: React.FC = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            height: "100vh",
+            height: "100%",
           }}
         >
           <CircularProgress />
