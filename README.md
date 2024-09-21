@@ -41,7 +41,7 @@ dfx canister call icrc1_ledger_canister icrc1_transfer '(
       subaccount = opt blob "<SUBACCOUNT>";
     };
     amount = 200_000_000_000;
-    fee = null;
+    fee = opt 1_000_000;
     memo = null;
     created_at_time = null;
   }
