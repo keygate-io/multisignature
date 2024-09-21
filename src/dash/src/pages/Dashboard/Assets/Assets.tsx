@@ -15,8 +15,10 @@ import {
   Button,
   CircularProgress,
   Chip,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { VisibilityOff, Add } from "@mui/icons-material";
+import { VisibilityOff, Add, ContentCopy } from "@mui/icons-material";
 import AddTokenModal from "./AddTokenModal";
 import {
   getTokens,
@@ -37,6 +39,7 @@ interface Asset {
   balance: string;
   value: string;
   isIcrc: boolean;
+  subaccount: string;
 }
 
 interface TokenInfo {
@@ -51,7 +54,7 @@ const Assets: React.FC = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { vaultCanisterId, icpBalance } = useAccount();
+  const { vaultCanisterId, icpBalance, icpSubaccount } = useAccount();
   const { identity } = useInternetIdentity();
 
   const icrcTokenInfo = async (
@@ -79,7 +82,9 @@ const Assets: React.FC = () => {
 
     console.log("Subaccount", subaccountResult.Ok);
 
-    const subaccountBytes = hexToBytes(subaccountResult.Ok);
+    const subaccount = subaccountResult.Ok;
+
+    const subaccountBytes = hexToBytes(subaccount);
 
     console.log("Subaccount bytes", subaccountBytes);
     const rawBalance = await getTokenBalance(
@@ -103,6 +108,7 @@ const Assets: React.FC = () => {
       balance,
       value: "N/A",
       isIcrc: true,
+      subaccount,
     };
   };
 
@@ -115,13 +121,14 @@ const Assets: React.FC = () => {
       balance,
       value: "N/A",
       isIcrc: false,
+      subaccount: icpSubaccount!,
     };
   };
 
   const fetchAssetInfo = async (
     tokenPath: string,
     tokenInfo: TokenInfo
-  ): Promise<Asset> => {
+  ): Promise<Asset | undefined> => {
     const { network, standard } = tokenInfo;
 
     try {
@@ -132,13 +139,6 @@ const Assets: React.FC = () => {
       }
     } catch (error) {
       console.error(`Error fetching asset info for ${tokenPath}:`, error);
-      return {
-        name: network === "ICP" ? "ICP" : `${standard.toUpperCase()}`,
-        icon: network.toLowerCase() === "icp" ? "🔹" : "🔸",
-        balance: "Error",
-        value: "N/A",
-        isIcrc: network !== "ICP",
-      };
     }
   };
 
@@ -151,10 +151,13 @@ const Assets: React.FC = () => {
         const formattedAssets = await Promise.all(
           tokens.map(async (token) => {
             const tokenInfo = extractTokenData(token);
-            return fetchAssetInfo(token, tokenInfo);
+            const asset = await fetchAssetInfo(token, tokenInfo);
+            return asset;
           })
         );
-        setAssets(formattedAssets);
+        setAssets(
+          formattedAssets.filter((asset) => asset !== undefined) as Asset[]
+        );
       } catch (error) {
         console.error("Error fetching tokens:", error);
       } finally {
@@ -196,6 +199,11 @@ const Assets: React.FC = () => {
         console.error("Error creating ICRC account:", error);
       }
     }
+  };
+
+  const handleCopySubaccount = (subaccount: string) => {
+    navigator.clipboard.writeText(subaccount);
+    // Optionally, you can add a toast notification here to inform the user that the subaccount has been copied
   };
 
   if (loading) {
@@ -258,8 +266,9 @@ const Assets: React.FC = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Asset</TableCell>
-                <TableCell align="right">Balance</TableCell>
-                <TableCell align="right">Value</TableCell>
+                <TableCell align="center">Balance</TableCell>
+                <TableCell align="center">Value</TableCell>
+                <TableCell align="center">Subaccount</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -282,11 +291,33 @@ const Assets: React.FC = () => {
                       {asset.name}
                     </Box>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="center">
                     {showTokens ? asset.balance : "****"}
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="center">
                     {showTokens ? asset.value : "****"}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ mr: 1 }}>
+                        {asset.subaccount.slice(0, 6)}...
+                        {asset.subaccount.slice(-6)}
+                      </Typography>
+                      <Tooltip title="Copy Subaccount">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleCopySubaccount(asset.subaccount)}
+                        >
+                          <ContentCopy fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}

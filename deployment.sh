@@ -91,8 +91,8 @@ dfx canister install icrc1_ledger_canister --argument "(variant { Init = record 
   transfer_fee = 1_000_000 : nat;
   metadata = vec {};
   initial_balances = vec { 
-    record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat },
-    record { record { owner = principal \"$DEFAULT_PRINCIPAL\"; subaccount = null }; 1_000_000_000_000 : nat }
+    record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat };
+    record { record { owner = principal \"$DEFAULT_PRINCIPAL\"; subaccount = null }; 1_000_000_000_000 : nat };
   };
   archive_options = record {
     num_blocks_to_archive = 10 : nat64;

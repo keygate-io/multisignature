@@ -28,3 +28,22 @@ A cross-chain decentralized multisignature wallet.
 **Dashboard canister** (`dash`): Provides the user interface for interacting with the multisignature wallet.
 
 **Account canister**: Manages the multisignature wallet functionality, including transaction creation, approval, and execution.
+
+## Useful commands
+
+Send ICRC1 tokens to a vault.
+```
+dfx canister call icrc1_ledger_canister icrc1_transfer '(
+  record {
+    from_subaccount = null;
+    to = record {
+      owner = principal "<RECIPIENT_PRINCIPAL>";
+      subaccount = opt blob "<SUBACCOUNT>";
+    };
+    amount = 200_000_000_000;
+    fee = null;
+    memo = null;
+    created_at_time = null;
+  }
+)'
+```
