@@ -15,6 +15,9 @@ dfx stop
 # Step 5: Start a local replica
 dfx start --background --clean
 
+dfx identity use default
+export DEFAULT_PRINCIPAL=$(dfx identity get-principal)
+
 # Step 6: Create a new identity that will work as a minting account
 dfx identity new minter
 dfx identity use minter
@@ -87,7 +90,10 @@ dfx canister install icrc1_ledger_canister --argument "(variant { Init = record 
   minting_account = record { owner = principal \"$LEDGER_ACC\"; subaccount = null };
   transfer_fee = 1_000_000 : nat;
   metadata = vec {};
-  initial_balances = vec { record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat } };
+  initial_balances = vec { 
+    record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat },
+    record { record { owner = principal \"$DEFAULT_PRINCIPAL\"; subaccount = null }; 1_000_000_000_000 : nat }
+  };
   archive_options = record {
     num_blocks_to_archive = 10 : nat64;
     trigger_threshold = 5 : nat64;
@@ -136,6 +142,7 @@ LEDGER_CANISTER_ID=$LEDGER_CANISTER_ID
 ICRC1_LEDGER_CANISTER_ID=$ICRC1_LEDGER_CANISTER_ID
 DASHBOARD_CANISTER_ID=$DASHBOARD_CANISTER_ID
 ACCOUNT_CANISTER_ID=$ACCOUNT_CANISTER_ID
+DEFAULT_PRINCIPAL=$DEFAULT_PRINCIPAL
 EOF
 
 echo "Debug information has been written to .debug file"

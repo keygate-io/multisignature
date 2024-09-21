@@ -444,6 +444,7 @@ pub async fn execute_intent(intent_id: u64) -> IntentStatus {
     }
 }
 
+
 // Helper function to update intent status
 fn update_intent_status(intent_id: u64, new_status: IntentStatus) {
     INTENTS.with(|intents| {
