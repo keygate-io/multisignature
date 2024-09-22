@@ -47,3 +47,14 @@ dfx canister call icrc1_ledger_canister icrc1_transfer '(
   }
 )'
 ```
+
+Request ICRC1 balance of a principal.
+```
+dfx canister call icrc1_ledger_canister icrc1_balance_of '(
+  record {
+    owner = principal "avqkn-guaaa-aaaaa-qaaea-cai";
+    subaccount = null;
+  }
+)'
+```
+

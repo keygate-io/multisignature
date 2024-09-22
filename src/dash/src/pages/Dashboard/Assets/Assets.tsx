@@ -30,8 +30,18 @@ import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { TokenData } from "../../../types/assets";
 import { Principal } from "@dfinity/principal";
 import { extractTokenData } from "../../../util/token";
-import { getTokenBalance, getTokenSymbol } from "../../../api/icrc";
-import { base32ToBlob, hexToBytes } from "../../../util/conversion";
+import {
+  getTokenBalance,
+  getTokenDecimals,
+  getTokenSymbol,
+} from "../../../api/icrc";
+import {
+  base32ToBlob,
+  blobToBase32,
+  hexToBytes,
+} from "../../../util/conversion";
+import { formatIcp, formatIcrc } from "../../../util/units";
+import { ICP_DECIMALS } from "../../../util/constants";
 
 interface Asset {
   name: string;
@@ -39,10 +49,12 @@ interface Asset {
   balance: string;
   value: string;
   isIcrc: boolean;
-  subaccount: string;
+  subaccount?: string;
+  decimals: number;
 }
 
 interface TokenInfo {
+  path: string;
   network: string;
   standard: string;
   principalId: string;
@@ -57,14 +69,9 @@ const Assets: React.FC = () => {
   const { vaultCanisterId, icpBalance, icpSubaccount } = useAccount();
   const { identity } = useInternetIdentity();
 
-  const icrcTokenInfo = async (
-    token: string,
-    tokenInfo: TokenInfo
-  ): Promise<Asset> => {
+  const icrcTokenInfo = async (tokenInfo: TokenInfo): Promise<Asset> => {
     const { principalId } = tokenInfo;
     let balance = "Unknown";
-
-    console.log("Token", token);
 
     const subaccountResult = await getIcrcAccount(
       vaultCanisterId!,
@@ -80,27 +87,24 @@ const Assets: React.FC = () => {
       );
     }
 
-    console.log("Subaccount", subaccountResult.Ok);
-
-    const subaccount = subaccountResult.Ok;
-
-    const subaccountBytes = hexToBytes(subaccount);
-
-    console.log("Subaccount bytes", subaccountBytes);
     const rawBalance = await getTokenBalance(
       Principal.fromText(principalId),
-      subaccountBytes
+      vaultCanisterId!
     );
 
-    console.log("Raw balance", rawBalance);
-
     if (rawBalance === undefined) {
-      throw new Error(`Error fetching balance for ${token}:`);
+      throw new Error(`Error fetching balance for ${tokenInfo.path}:`);
     }
 
     balance = rawBalance.toString();
 
     const symbol = await getTokenSymbol(Principal.fromText(principalId));
+
+    const decimals = await getTokenDecimals(Principal.fromText(principalId));
+
+    if (decimals === undefined) {
+      throw new Error(`Error fetching decimals for ${tokenInfo.path}:`);
+    }
 
     return {
       name: `${symbol}`,
@@ -108,7 +112,7 @@ const Assets: React.FC = () => {
       balance,
       value: "N/A",
       isIcrc: true,
-      subaccount,
+      decimals,
     };
   };
 
@@ -122,23 +126,23 @@ const Assets: React.FC = () => {
       value: "N/A",
       isIcrc: false,
       subaccount: icpSubaccount!,
+      decimals: ICP_DECIMALS,
     };
   };
 
   const fetchAssetInfo = async (
-    tokenPath: string,
     tokenInfo: TokenInfo
   ): Promise<Asset | undefined> => {
     const { network, standard } = tokenInfo;
 
     try {
-      if (tokenPath.toLowerCase().includes("icp:native")) {
+      if (tokenInfo.path.toLowerCase().includes("icp:native")) {
         return await icTokenInfo();
       } else {
-        return await icrcTokenInfo(tokenPath, tokenInfo);
+        return await icrcTokenInfo(tokenInfo);
       }
     } catch (error) {
-      console.error(`Error fetching asset info for ${tokenPath}:`, error);
+      console.error(`Error fetching asset info for ${tokenInfo.path}:`, error);
     }
   };
 
@@ -151,7 +155,7 @@ const Assets: React.FC = () => {
         const formattedAssets = await Promise.all(
           tokens.map(async (token) => {
             const tokenInfo = extractTokenData(token);
-            const asset = await fetchAssetInfo(token, tokenInfo);
+            const asset = await fetchAssetInfo(tokenInfo);
             return asset;
           })
         );
@@ -292,7 +296,11 @@ const Assets: React.FC = () => {
                     </Box>
                   </TableCell>
                   <TableCell align="center">
-                    {showTokens ? asset.balance : "****"}
+                    {showTokens
+                      ? asset.isIcrc
+                        ? formatIcrc(BigInt(asset.balance), asset.decimals)
+                        : formatIcp(BigInt(asset.balance))
+                      : "****"}
                   </TableCell>
                   <TableCell align="center">
                     {showTokens ? asset.value : "****"}
@@ -306,13 +314,21 @@ const Assets: React.FC = () => {
                       }}
                     >
                       <Typography variant="body2" sx={{ mr: 1 }}>
-                        {asset.subaccount.slice(0, 6)}...
-                        {asset.subaccount.slice(-6)}
+                        {asset.subaccount
+                          ? asset.subaccount.slice(0, 6) +
+                            "..." +
+                            asset.subaccount.slice(-6)
+                          : "Default"}
                       </Typography>
-                      <Tooltip title="Copy Subaccount">
+                      <Tooltip title={"Copy subaccount"}>
                         <IconButton
                           size="small"
-                          onClick={() => handleCopySubaccount(asset.subaccount)}
+                          onClick={() =>
+                            handleCopySubaccount(
+                              asset.subaccount ||
+                                "0000000000000000000000000000000000000000000000000000000000000000"
+                            )
+                          }
                         >
                           <ContentCopy fontSize="small" />
                         </IconButton>

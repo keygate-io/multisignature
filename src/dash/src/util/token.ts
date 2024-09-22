@@ -1,8 +1,9 @@
-export function extractTokenData(token: string): {
+export function extractTokenData(path: string): {
+  path: string;
   network: string;
   standard: string;
   principalId: string;
 } {
-  const [network, standard, principalId] = token.split(":");
-  return { network, standard, principalId };
+  const [network, standard, principalId] = path.split(":");
+  return { path, network, standard, principalId };
 }

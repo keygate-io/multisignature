@@ -30,3 +30,31 @@ export function base32ToBlob(base32: string): Uint8Array {
 
   return new Uint8Array(bytes);
 }
+
+export function blobToBase32(blob: Uint8Array): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let value = 0;
+  let output = "";
+
+  for (let i = 0; i < blob.length; i++) {
+    value = (value << 8) | blob[i];
+    bits += 8;
+
+    while (bits >= 5) {
+      output += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+
+  if (bits > 0) {
+    output += alphabet[(value << (5 - bits)) & 31];
+  }
+
+  // Pad to multiple of 8 characters
+  while (output.length % 8 !== 0) {
+    output += "=";
+  }
+
+  return output;
+}
