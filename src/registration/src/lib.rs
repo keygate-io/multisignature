@@ -107,11 +107,17 @@ async fn deploy_account() -> Principal {
     }
 }
 
-#[update]
 fn load_wallet_wasm() {
     let wasm_module: Vec<u8> = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
     WALLET_WASM.with(|wasm| {
         *wasm.borrow_mut() = Some(wasm_module);
+    });
+}
+
+#[update]
+fn load_wallet_wasm_blob(wasm_blob: Vec<u8>) {
+    WALLET_WASM.with(|wasm| {
+        *wasm.borrow_mut() = Some(wasm_blob);
     });
 }
 
@@ -140,7 +146,6 @@ fn get_user_vaults(owner_principal: Principal) -> Vec<Principal> {
 
     user_vaults
 }
-
 
 #[query]
 fn user_exists(principal: Principal) -> bool {

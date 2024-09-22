@@ -75,6 +75,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   };
 
   const handleUpgradeAccount = async () => {
+    console.log(`Upgrading account ${vaultCanisterId}`);
     const result = await upgradeAccount(vaultCanisterId!, identity!);
     console.log("Upgrade result", result);
   };

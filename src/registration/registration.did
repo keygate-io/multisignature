@@ -12,4 +12,5 @@ service : {
     register_user : (principal, text, text) -> ();
     user_exists : (principal) -> (bool) query;
     upgrade_account : (principal) -> (variant { Ok : null; Err : text });
+    load_wallet_wasm_blob : (blob) -> ();
 }

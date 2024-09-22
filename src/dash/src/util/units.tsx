@@ -11,3 +11,9 @@ export const formatIcrc = (value: bigint, decimals: number) => {
     maximumFractionDigits: 2,
   });
 };
+
+export const formatCommaSeparated = (value: bigint) => {
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+  });
+};

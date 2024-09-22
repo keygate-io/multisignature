@@ -117,8 +117,14 @@ LEDGER_CANISTER_ID=$(dfx canister id ledger)
 ICRC1_LEDGER_CANISTER_ID=$(dfx canister id icrc1_ledger_canister)
 DASHBOARD_CANISTER_ID=$(dfx canister id dash)
 ACCOUNT_CANISTER_ID=$(dfx canister id account)
+REGISTRATION_CANISTER_ID=$(dfx canister id registration)
+INTERNET_IDENTITY_CANISTER_ID=$(dfx canister id internet_identity)
 
-# Create .debug file with exported variables and canister IDs
+# Extract URLs from deploy output
+FRONTEND_URLS=$(echo "$deploy_output" | grep -A 4 "Frontend canister via browser" | grep "http" | sed 's/^[[:space:]]*//')
+BACKEND_URLS=$(echo "$deploy_output" | grep -A 6 "Backend canister via Candid interface:" | grep "http" | sed 's/^[[:space:]]*//')
+
+# Create .debug file with exported variables, canister IDs, and URLs
 cat << EOF > .debug
 Exported variables:
 REVISION=$REVISION
@@ -142,7 +148,15 @@ LEDGER_CANISTER_ID=$LEDGER_CANISTER_ID
 ICRC1_LEDGER_CANISTER_ID=$ICRC1_LEDGER_CANISTER_ID
 DASHBOARD_CANISTER_ID=$DASHBOARD_CANISTER_ID
 ACCOUNT_CANISTER_ID=$ACCOUNT_CANISTER_ID
+REGISTRATION_CANISTER_ID=$REGISTRATION_CANISTER_ID
+INTERNET_IDENTITY_CANISTER_ID=$INTERNET_IDENTITY_CANISTER_ID
 DEFAULT_PRINCIPAL=$DEFAULT_PRINCIPAL
+
+Frontend URLs:
+$FRONTEND_URLS
+
+Backend URLs:
+$BACKEND_URLS
 EOF
 
 echo "Debug information has been written to .debug file"

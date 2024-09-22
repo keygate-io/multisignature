@@ -43,7 +43,7 @@ pub async fn execute(intent: &Intent) -> IntentStatus {
     let key = format!("{}-{}-{}", intent.token(), network, it);
     
     let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
-        dyn_clone::clone_box(adapters.borrow().get(&key).expect("Error getting adapter").as_ref())
+        dyn_clone::clone_box(adapters.borrow().get(&key).expect(&format!("Adapter not found for {}", key)))
     });
 
     match adapter.execute(intent).await {
