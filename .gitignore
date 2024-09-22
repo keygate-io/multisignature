@@ -27,3 +27,7 @@ dist/
 .mops
 
 .debug
+
+load_account_wasm.log
+
+.history
