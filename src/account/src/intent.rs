@@ -28,19 +28,9 @@ dyn_clone::clone_trait_object!(BlockchainAdapter);
 
 type TokenPath = String;
 
-pub fn add_adapter(adapter: Box<dyn BlockchainAdapter>) {
-    let s: &'static str = adapter.network().into();
-    let it: &'static str = adapter.intent_type().into();
-    let key = [adapter.token(), s.to_string(), it.to_string()].join("-");
-    ADAPTERS.with(|adapters| {
-        adapters.borrow_mut().insert(key, adapter);
-    });
-}
-
 pub async fn execute(intent: &Intent) -> IntentStatus {
-    let network: &'static str = intent.network().into();
     let it: &'static str = intent.intent_type().into();
-    let key = format!("{}-{}-{}", intent.token(), network, it);
+    let key = format!("{}:{}", intent.token(), it);
     
     let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
         dyn_clone::clone_box(adapters.borrow().get(&key).expect(&format!("Adapter not found for {}", key)))

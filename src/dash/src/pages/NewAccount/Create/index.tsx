@@ -200,7 +200,7 @@ const CreateAccount: React.FC = () => {
 
   const nextStep = () => {
     if (step < 3) {
-      setStep(step + 1);
+      setStep(step + 1); 
     } else {
       setSnackbar({
         open: true,

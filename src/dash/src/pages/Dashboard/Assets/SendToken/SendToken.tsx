@@ -167,13 +167,12 @@ const SendToken: React.FC = () => {
       const intentId = await addIntent(account, intent, identity!);
 
       if (!intentId) {
-        setError("Could not create intent");
+        console.log("intent_id", intentId);
+        setError("Could not create intent.");
         return;
       }
 
       setCurrentStep(2);
-
-      const adapters = await getAdapters(account, identity!);
 
       const result = await executeIntent(account, intentId, identity!);
 
