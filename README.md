@@ -9,7 +9,7 @@ A cross-chain decentralized multisignature wallet.
 ## Installation
 1. Clone the repository:
    ```
-   git clone git@github.com:polysign-labs/multisignature.git
+   git clone git@github.com:keygate-vault/multisignature.git
    ```
 2. Install frontend dependencies via NPM:
    ```
