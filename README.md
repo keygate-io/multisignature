@@ -29,6 +29,43 @@ A cross-chain decentralized multisignature wallet.
 
 **Account canister**: Manages the multisignature wallet functionality, including transaction creation, approval, and execution.
 
+## Logic
+```mermaid
+sequenceDiagram
+    participant User
+    participant INTENTS
+    participant DECISIONS
+    participant ADAPTERS
+    participant ICPNativeTransferAdapter
+
+    User->>+INTENTS: add_intent(intent)
+    INTENTS->>INTENTS: Store intent
+    INTENTS-->>-User: Return intent_id
+
+    User->>+DECISIONS: add_decision(decision)
+    DECISIONS->>DECISIONS: Store decision
+    DECISIONS-->>-User: Decision added
+
+    User->>+INTENTS: execute_intent(intent_id)
+    INTENTS->>INTENTS: Get intent
+    INTENTS->>DECISIONS: get_decisions(intent_id)
+    DECISIONS-->>INTENTS: Return decisions
+
+    alt Enough approvals
+        INTENTS->>+ADAPTERS: Get appropriate adapter
+        ADAPTERS-->>-INTENTS: Return adapter (e.g., ICPNativeTransferAdapter)
+        INTENTS->>+ICPNativeTransferAdapter: execute(intent)
+        ICPNativeTransferAdapter->>ICPNativeTransferAdapter: Prepare transfer args
+        ICPNativeTransferAdapter->>ICPNativeTransferAdapter: transfer()
+        ICPNativeTransferAdapter-->>-INTENTS: Return IntentStatus
+        INTENTS->>INTENTS: update_intent_status(intent_id, new_status)
+    else Not enough approvals
+        INTENTS-->>User: Return IntentStatus::Failed
+    end
+
+    INTENTS-->>-User: Return final IntentStatus
+```
+
 ## Useful commands
 
 Send ICRC1 tokens to a vault.
