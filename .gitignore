@@ -31,3 +31,5 @@ dist/
 load_account_wasm.log
 
 .history
+
+pocket-ic
