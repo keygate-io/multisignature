@@ -1,6 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import { Identity } from "@dfinity/agent";
-import { createActor as createRegistrationActor } from "../../../declarations/registration";
+import { createActor as createCentralActor } from "../../../declarations/central";
 import { createActor as createAccountActor } from "../../../declarations/account";
 import {
   Intent,
@@ -8,27 +8,27 @@ import {
 } from "../../../declarations/account/account.did";
 
 // Create maps to cache the actors
-const registrationActorMap = new Map<
+const centralActorMap = new Map<
   string,
-  ReturnType<typeof createRegistrationActor>
+  ReturnType<typeof createCentralActor>
 >();
 const accountActorMap = new Map<
   string,
   ReturnType<typeof createAccountActor>
 >();
 
-function getRegistrationActor(identity: Identity) {
+function getCentralActor(identity: Identity) {
   const key = identity.getPrincipal().toString();
-  if (!registrationActorMap.has(key)) {
-    const actor = createRegistrationActor(
+  if (!centralActorMap.has(key)) {
+    const actor = createCentralActor(
       process.env.CANISTER_ID_REGISTRATION as string,
       {
         agentOptions: { identity },
       }
     );
-    registrationActorMap.set(key, actor);
+    centralActorMap.set(key, actor);
   }
-  return registrationActorMap.get(key)!;
+  return centralActorMap.get(key)!;
 }
 
 function getAccountActor(account_canister_id: Principal, identity: Identity) {
@@ -45,11 +45,11 @@ function getAccountActor(account_canister_id: Principal, identity: Identity) {
 }
 
 export function deployAccount(identity: Identity) {
-  return getRegistrationActor(identity).deploy_account();
+  return getCentralActor(identity).deploy_account();
 }
 
 export function upgradeAccount(canister_id: Principal, identity: Identity) {
-  return getRegistrationActor(identity).upgrade_account(canister_id);
+  return getCentralActor(identity).upgrade_account(canister_id);
 }
 
 export function createSubaccount(

@@ -41,7 +41,7 @@ const CreateProfile: React.FC = () => {
       >
         <Container maxWidth="sm">
           <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
-            Registration
+            Central
           </Typography>
           <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
             <Typography variant="h6" gutterBottom>

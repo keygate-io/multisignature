@@ -1,5 +1,5 @@
 [workspace]
-members = ["src/account", "src/registration"]
+members = ["src/account", "src/central"]
 resolver = "2"
 
 [workspace.dependencies]

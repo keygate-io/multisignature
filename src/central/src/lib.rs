@@ -1,6 +1,9 @@
 mod deployer;
 mod types;
 
+#[cfg(test)]
+mod tests;
+
 use std::{cell::RefCell};
 
 use ic_cdk::{init, query, update};
@@ -31,19 +34,26 @@ thread_local! {
     );
 }
 
+#[query]
+fn get_wasm() -> Vec<u8> {
+    WALLET_WASM.with(|wasm| wasm.borrow().clone().unwrap())
+}
+
 #[init]
 fn init() {
     load_wallet_wasm();
 }
 
 #[update]
-fn register_user(principal: Principal, first_name: String, last_name: String) {
+fn register_user() {
+    let principal = ic_cdk::caller();
+
     STABLE_USERS.with(|users| {
         let mut users = users.borrow_mut();
         if users.contains_key(&principal) {
             ic_cdk::trap(&format!("User with principal {} already exists", principal));
         }
-        users.insert(principal, UserInfo { first_name, last_name, vaults: vec![] });
+        users.insert(principal, UserInfo { vaults: vec![] });
     });
 }
 
@@ -67,19 +77,27 @@ async fn upgrade_account(canister_id: Principal) -> Result<(), String> {
     }
 }
 
+fn user_exists(principal: Principal) -> bool {
+    STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
+}
+
 /**
  * TODO: Add vault name to init args of the vault canister.
  */
 #[update]
 async fn deploy_account() -> Principal {
+    // Verify caller is registered
+    let owner_principal = ic_cdk::caller();
+    if !user_exists(owner_principal) {
+        ic_cdk::trap(&format!("User with principal {} not found", owner_principal));
+    }
+
     let wallet_wasm = WALLET_WASM.with(|wasm| {
         wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded"))
     });
 
     match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
-            let owner_principal = ic_cdk::caller();
-
             // Add to ownership hash map
             STABLE_VAULTS.with(|vaults| {
                 let mut vaults = vaults.borrow_mut();
@@ -145,11 +163,6 @@ fn get_user_vaults(owner_principal: Principal) -> Vec<Principal> {
     });
 
     user_vaults
-}
-
-#[query]
-fn user_exists(principal: Principal) -> bool {
-    STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
 }
 
 #[ic_cdk::post_upgrade]

@@ -4,10 +4,8 @@ use candid::{CandidType, Deserialize, Principal};
 use ic_stable_structures::{memory_manager::VirtualMemory, storable::Bound, DefaultMemoryImpl, Storable};
 use serde::Serialize;
 
-#[derive(Clone, CandidType, Deserialize, Serialize)]
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
 pub struct UserInfo {
-    pub first_name: String,
-    pub last_name: String,
     pub vaults: Vec<Principal>
 }
 
