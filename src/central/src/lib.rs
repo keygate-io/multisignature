@@ -140,12 +140,20 @@ fn load_wallet_wasm_blob(wasm_blob: Vec<u8>) {
 }
 
 #[query]
-fn get_user(principal: Principal) -> Option<UserInfo> {
+fn get_user() -> Option<UserInfo> {
+    let principal = ic_cdk::caller(); 
+
+    if !user_exists(principal) {
+        ic_cdk::trap(&format!("User with principal {} not found", principal));
+    }
+
     STABLE_USERS.with(|users| users.borrow().get(&principal))
 }
 
 #[query]
-fn get_user_vaults(owner_principal: Principal) -> Vec<Principal> {
+fn get_user_vaults() -> Vec<Principal> {
+    let owner_principal = ic_cdk::caller();
+
     if !user_exists(owner_principal) {
         ic_cdk::trap(&format!("User with principal {} not found", owner_principal));
     }
