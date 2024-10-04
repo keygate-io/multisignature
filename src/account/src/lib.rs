@@ -2,6 +2,7 @@ mod types;
 mod ledger;
 mod hashof;
 mod intent;
+mod tests;
 
 use std::{cell::RefCell, collections::{HashMap, LinkedList}, hash::DefaultHasher};
 use ic_cdk::{query, update};
@@ -25,7 +26,7 @@ const TOKEN_ACCOUNTS_MEMORY: MemoryId = MemoryId::new(6);
 
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
-// Thread-local storage
+// Thread-local storage 
 thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
 
@@ -72,7 +73,7 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_DATA_MEMORY)),
         ).expect("Failed to initialize INTENTS StableLog")
     );
-    
+
     pub static DECISIONS: RefCell<HashMap<u64, LinkedList<Decision>>> = RefCell::default();
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
 }
@@ -122,20 +123,38 @@ fn nonce() -> u32 {
     LAST_SUBACCOUNT_NONCE.with(|nonce_ref| *nonce_ref.borrow().get())
 }
 
-#[update]
-fn include_signee(signee: String) {
+fn signee_exists(signee: Principal) -> bool {
     SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
-        match Principal::from_text(signee) {
-            Ok(x) => signees.borrow_mut().push(x),
-            Err(x) => ic_cdk::trap(&format!("Could not parse signee principal: {}. Is it a valid principal?", x))
-        }
+        signees.borrow().contains(&signee)
+    })
+}
+
+#[update]
+fn include_signee(signee: Principal) -> Result<(), Error> {
+    if signee_exists(signee) {
+        return Err(Error {
+            message: "Signee already exists".to_string(),
+        });
+    }
+
+    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
+        signees.borrow_mut().push(signee);
     });
+
+    Ok(())
 }
 
 #[query]
 fn get_signees() -> Vec<Principal> {
     SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
         signees.borrow().clone()
+    })
+}
+
+#[query]
+fn get_supported_blockchain_adapters() -> Vec<String> {
+    ADAPTERS.with(|adapters| {
+        adapters.borrow().keys().cloned().collect()
     })
 }
 
@@ -238,6 +257,8 @@ fn post_upgrade() {
 
 #[ic_cdk::init]
 async fn init() {
+    let caller = ic_cdk::caller();
+
     LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
         let _ = nonce_ref.borrow_mut().set(0);
     });
@@ -245,32 +266,10 @@ async fn init() {
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert("icp:native:transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
     });
-}
 
-#[query]
-fn get_debug_info() -> String {
-    let mut state = String::new();
-    TOKEN_ACCOUNTS.with(|token_ref| {
-        for (key, _) in token_ref.borrow().iter() {
-            state.push_str(&format!("Token: {}\n", key));
-        }
+    SIGNEES.with(|signees| {
+        signees.borrow_mut().push(caller);
     });
-
-    TOKEN_SUBACCOUNTS.with(|token_ref| {
-        for (key, _) in token_ref.borrow().iter() {
-            state.push_str(&format!("Subaccount: {}\n", key));
-        }
-    });
-
-    LAST_ACCOUNT.with(|last_account_ref| {
-        state.push_str(&format!("Last Account: {}\n", hex::encode(last_account_ref.borrow().get())));
-    });
-
-    LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
-        state.push_str(&format!("Last Subaccount Nonce: {}\n", nonce_ref.borrow().get()));
-    });
-
-    state
 }
 
 // Export candid

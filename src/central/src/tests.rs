@@ -5,7 +5,6 @@ use ed25519_dalek::SigningKey;
 use pocket_ic::PocketIc;
 use rand::rngs::OsRng;
 
-
 use crate::types::UserInfo;
 
 #[cfg(test)]
@@ -16,6 +15,7 @@ fn generate_principal() -> Principal {
     Principal::self_authenticating(&verifying_key.as_bytes())
 }
 
+#[cfg(test)]
 fn gzip(blob: Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
     use libflate::gzip::Encoder;
     let mut encoder = Encoder::new(Vec::with_capacity(blob.len())).unwrap();
@@ -176,7 +176,6 @@ fn deploy_account_should_return_error_if_user_not_registered() {
 
     let err_description = wasm_result.unwrap_err().description;
 
-
     assert!(err_description.contains("with principal") && err_description.contains("not found"), "Expected error message to contain 'with principal' and 'not found' but got: {}", err_description);
 }
 
@@ -313,3 +312,4 @@ fn deploy_account_should_add_to_vaults() {
         },
     };
 }
+
