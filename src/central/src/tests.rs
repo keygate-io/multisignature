@@ -76,7 +76,7 @@ fn register_user_ok() {
 
     assert!(wasm_result.is_ok(), "Failed to execute update 'register_user': {}", wasm_result.unwrap_err());
 
-    let query_result = pic.query_call(central_id, Principal::anonymous(), "get_user", encode_one(caller).unwrap());
+    let query_result = pic.query_call(central_id, caller, "get_user", encode_one(()).unwrap());
 
     match query_result.unwrap() {
         pocket_ic::WasmResult::Reply(bytes) => {
@@ -103,16 +103,21 @@ fn get_user_should_return_none_if_not_exists() {
 
     let query_result = pic.query_call(central_id, Principal::anonymous(), "get_user", encode_one(caller).unwrap());
 
-    match query_result.unwrap() {
-        pocket_ic::WasmResult::Reply(bytes) => {
+    match query_result {
+        Ok(pocket_ic::WasmResult::Reply(bytes)) => {
             let user_info = Decode!(&bytes, Option<UserInfo>);
             assert!(user_info.is_ok(), "Failed to decode UserInfo: {:?}", user_info.unwrap_err());
             assert!(user_info.unwrap().is_none(), "Expected None but got Some(UserInfo)");
         },
-        pocket_ic::WasmResult::Reject(msg) => {
+        Ok(pocket_ic::WasmResult::Reject(msg)) => {
             panic!("Canister rejected 'get_user' call: {}", msg);
         },
-    };
+        Err(e) => {
+            assert!(e.code == pocket_ic::ErrorCode::CanisterCalledTrap, "Expected CanisterCalledTrap but got {:?}", e.code);
+            assert!(e.description.contains("User with principal") && e.description.contains("not found"), "Expected error message to contain 'User with principal' and 'not found' but got: {}", e.description);
+        }
+    }
+
 }
 
 #[test]
@@ -141,7 +146,7 @@ fn deploy_account_ok() {
 
     assert!(wasm_result.is_ok(), "Failed to execute update 'deploy_account': {}", wasm_result.unwrap_err());
 
-    let query_result = pic.query_call(central_id, Principal::anonymous(), "get_user", encode_one(caller).unwrap());
+    let query_result = pic.query_call(central_id, caller, "get_user", encode_one(()).unwrap());
 
     match query_result.unwrap() {
         pocket_ic::WasmResult::Reply(bytes) => {
@@ -261,7 +266,7 @@ fn user_vaults_should_be_empty_on_registration() {
 
     assert!(wasm_result.is_ok(), "Failed to execute update 'register_user': {}", wasm_result.unwrap_err());
 
-    let query_result = pic.query_call(central_id, Principal::anonymous(), "get_user_vaults", encode_one(caller).unwrap());
+    let query_result = pic.query_call(central_id, caller, "get_user_vaults", encode_one(()).unwrap());
 
     match query_result.unwrap() {
         pocket_ic::WasmResult::Reply(bytes) => {
@@ -299,7 +304,7 @@ fn deploy_account_should_add_to_vaults() {
         encode_one(()).unwrap()
     );
 
-    let query_result = pic.query_call(central_id, Principal::anonymous(), "get_user_vaults", encode_one(caller).unwrap());
+    let query_result = pic.query_call(central_id, caller, "get_user_vaults", encode_one(()).unwrap());
 
     match query_result.unwrap() {
         pocket_ic::WasmResult::Reply(bytes) => {

@@ -7,7 +7,7 @@ use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs,
 use icrc_ledger_types::icrc1::{account::Account, transfer::{TransferArg as ICRC1TransferArgs, TransferError}};
 use serde_bytes::ByteBuf;
 
-use crate::{ADAPTERS, TOKEN_ACCOUNTS, TOKEN_SUBACCOUNTS};
+use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS};
 
 use std::{borrow::Cow, collections::LinkedList, fmt::{self, Display}};
 
@@ -76,16 +76,12 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
     fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             println!("Executing ICPAdapter");
-            let subaccount = TOKEN_SUBACCOUNTS.with(|list_ref| {
-                list_ref.borrow().get(&intent.token()).unwrap()
-            });
-
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(intent.to().as_str()).unwrap(),
                 amount: Tokens::from_e8s(intent.amount()),
                 fee: Tokens::from_e8s(RECOMMENDED_TRANSACTION_FEE),
                 memo: Memo(0),
-                from_subaccount: Some(subaccount.0),
+                from_subaccount: Some(to_subaccount(0)),
                 created_at_time: None,
             };
 
@@ -144,16 +140,13 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
     fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             println!("Executing ICRC1Adapter");
-            let icrc_account = TOKEN_ACCOUNTS.with(|list_ref| {
-                list_ref.borrow().get(&intent.token()).unwrap().clone()
-            });
 
             let args = ICRC1TransferArgs {
                 to: ICRC1TransferAdapter::extract_owner_and_subaccount(intent.to().as_str()),
                 amount: Nat::from(intent.amount()),
                 fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
                 memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
-                from_subaccount: Some(icrc_account),
+                from_subaccount: Some(get_default_icrc_subaccount().0),
                 created_at_time: None,
             };
 

@@ -1,7 +1,12 @@
+use b3_utils::{ledger::ICRCAccount, Subaccount};
+use ic_ledger_types::AccountIdentifier;
 #[cfg(test)]
 use pocket_ic::PocketIc;
 use std::{error::Error, fmt::format, io::Write};
 use candid::{encode_one, Decode, Principal};
+
+#[cfg(test)]
+use crate::{to_subaccount};
 
 #[cfg(test)]
 fn generate_principal() -> Principal {
@@ -34,9 +39,6 @@ fn should_initialize_with_default_values() {
 
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    // add signer to the account
-    let signer = generate_principal();
 
     let wasm_result = pic.query_call(account_id, caller,"get_signees",  encode_one(()).unwrap());
     match wasm_result.unwrap() {
@@ -150,113 +152,71 @@ fn should_not_add_signee_if_exists() {
     }
 }
 
-
 #[test]
-fn add_icrc_account_ok() {
+fn should_get_default_account_for_icp() {
     let pic = PocketIc::new();
     let caller = generate_principal();
 
     let account_id = pic.create_canister_with_settings(Some(caller), None);
 
+    let subaccountid = AccountIdentifier::new(&account_id, &to_subaccount(0)).to_hex();
     pic.add_cycles(account_id, 2_000_000_000_000);
 
     let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
-    let signer = generate_principal();
-
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let wasm_result = pic.update_call(account_id, caller, "add_icrc_account", encode_one("icp:native:transfer".to_string()).unwrap());
+    let wasm_result = pic.query_call(account_id, caller,"get_icp_account",  encode_one(()).unwrap());
 
     match wasm_result.unwrap() {
         pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Update call failed: {}", reject_message);
+            panic!("Query call failed: {}", reject_message);
         },
-        pocket_ic::WasmResult::Reply(_) => {
-            let wasm_result = pic.query_call(account_id, caller,"get_tokens",  encode_one(()).unwrap());
-            match wasm_result.unwrap() {
-                pocket_ic::WasmResult::Reject(reject_message) => {
-                    panic!("Query call failed: {}", reject_message);
-                },
-                pocket_ic::WasmResult::Reply(reply) => {
-                    let tokens = Decode!(&reply, Vec<String>);
+        pocket_ic::WasmResult::Reply(reply) => {
+            println!("{:?}", reply);
 
-                    match tokens {
-                        Ok(tokens) => assert!(tokens.contains(&"icp:native:transfer".to_string())),
-                        Err(e) => panic!("Error decoding tokens: {}", e)
-                    }
-                }
+            let account = Decode!(&reply, String);
+
+            match account {
+                Ok(y_account) => assert_eq!(y_account, subaccountid),
+                Err(e) => panic!("Error decoding account: {}", e)
             }
-        },
-    }
-}
-
-#[test]
-fn get_icrc_account_ok() {
-    let pic = PocketIc::new();
-    let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-    let signer = generate_principal();
-
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-    let icrc_account = "icp:native:transfer".to_string();
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.update_call(account_id, caller, "add_icrc_account", encode_one(icrc_account.clone()).unwrap());
-
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Update call failed: {}", reject_message);
-        },
-        pocket_ic::WasmResult::Reply(_) => {
-            let wasm_result = pic.query_call(account_id, caller,"get_token",  encode_one(icrc_account.clone()).unwrap());
-            match wasm_result.unwrap() {
-                pocket_ic::WasmResult::Reject(reject_message) => {
-                    panic!("Query call failed: {}", reject_message);
-                },
-                pocket_ic::WasmResult::Reply(reply) => {
-                    let token = Decode!(&reply, String);
-
-                    match token {
-                        Ok(token) => assert_eq!(token, icrc_account),
-                        Err(e) => panic!("Error decoding token: {}", e)
-                    }
-                }
-            }
-        },
-    }
-}
-
-#[test]
-fn get_icrc_account_should_return_error_if_not_exists() {
-    let pic = PocketIc::new();
-
-    let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    let signer = generate_principal();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.query_call(account_id, caller,"get_icrc_account",  encode_one("skib:native:transfer".to_string()).unwrap());
-
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            assert_eq!(reject_message, "Token not found");
-        },
-        pocket_ic::WasmResult::Reply(bytes) => {
-            let reply = Decode!(&bytes, String);
-
-            assert!(reply.is_err())
         }
     }
 }
+
+#[test]
+fn should_get_default_account_for_icrc() {
+    let pic = PocketIc::new();
+    let caller = generate_principal();
+
+    let account_id = pic.create_canister_with_settings(Some(caller), None);
+
+    let subaccount = to_subaccount(0);
+
+    let subaccountid = ICRCAccount::new(account_id, None).to_text();
+
+    pic.add_cycles(account_id, 2_000_000_000_000);
+
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+
+    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
+
+    let wasm_result = pic.query_call(account_id, caller,"get_icrc_account",  encode_one(()).unwrap());
+
+    match wasm_result.unwrap() {
+        pocket_ic::WasmResult::Reject(reject_message) => {
+            panic!("Query call failed: {}", reject_message);
+        },
+        pocket_ic::WasmResult::Reply(reply) => {
+            let account = Decode!(&reply, String);
+
+            match account {
+                Ok(y_account) => assert_eq!(y_account, subaccountid),
+                Err(e) => panic!("Error decoding account: {}", e)
+            }
+        }
+    }
+}
+
+
