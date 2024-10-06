@@ -3,7 +3,7 @@ mod ledger;
 mod intent;
 mod tests;
 
-use std::{cell::RefCell, collections::{HashMap, LinkedList}, hash::DefaultHasher};
+use std::{cell::RefCell, collections::{HashMap, LinkedList}};
 use b3_utils::{ledger::ICRCAccount, Subaccount};
 use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
@@ -17,7 +17,6 @@ use ledger::*;
 const LAST_SUBACCOUNT_NONCE_MEMORY: MemoryId = MemoryId::new(1);
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
-const LAST_ACCOUNT_MEMORY: MemoryId = MemoryId::new(4);
 
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 

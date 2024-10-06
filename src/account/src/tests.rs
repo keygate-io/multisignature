@@ -218,5 +218,3 @@ fn should_get_default_account_for_icrc() {
         }
     }
 }
-
-

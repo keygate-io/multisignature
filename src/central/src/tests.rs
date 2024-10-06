@@ -318,3 +318,51 @@ fn deploy_account_should_add_to_vaults() {
     };
 }
 
+
+#[test]
+fn state_should_persist_as_stable_memory() {
+    let pic = PocketIc::new();
+    let central_id = pic.create_canister();
+    pic.add_cycles(central_id, 2_000_000_000_000);
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/central.wasm").to_vec();
+    pic.install_canister(central_id, wasm_module, Vec::new(), None);
+
+    let caller = generate_principal();
+
+    let _ = pic.update_call(
+        central_id, 
+        caller,
+        "register_user",
+        encode_one(()).unwrap()
+    );
+
+    let _ = pic.update_call(
+        central_id, 
+        caller,
+        "deploy_account",
+        encode_one(()).unwrap()
+    );
+
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/central.wasm").to_vec();
+    let upgrade_result = pic.upgrade_canister(central_id, wasm_module, encode_one(()).unwrap(), None);
+
+    match upgrade_result {
+        Ok(()) => {
+            let query_result = pic.query_call(central_id, caller, "get_user_vaults", encode_one(()).unwrap());
+
+            match query_result.unwrap() {
+                pocket_ic::WasmResult::Reply(bytes) => {
+                    let user_vaults = Decode!(&bytes, Vec<Principal>);
+                    assert!(user_vaults.is_ok(), "Failed to decode Vec<Principal>: {:?}", user_vaults.unwrap_err());
+                    assert!(!user_vaults.unwrap().is_empty(), "Expected non-empty Vec<Principal> but got empty");
+                },
+                pocket_ic::WasmResult::Reject(msg) => {
+                    panic!("Canister rejected 'get_user_vaults' call: {}", msg);
+                },
+            };
+        },
+        Err(e) => {
+            panic!("Failed to upgrade canister: {:?}", e);
+        }
+    }
+}
