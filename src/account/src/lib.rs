@@ -27,14 +27,6 @@ thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
-    // u32 - upper limit is 4,294,967,295
-    pub static LAST_SUBACCOUNT_NONCE: RefCell<StableCell<u32, VM>> = RefCell::new(
-        StableCell::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(LAST_SUBACCOUNT_NONCE_MEMORY)),
-            0
-        ).expect("Initializing LAST_SUBACCOUNT_NONCE StableCell failed")
-    );
-
     pub static INTENTS: RefCell<StableLog<Intent, VM, VM>> = RefCell::new(
         StableLog::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_INDEX_MEMORY)),
@@ -124,14 +116,9 @@ fn post_upgrade() {
     });
 }
 
-
 #[ic_cdk::init]
 async fn init() {
     let caller = ic_cdk::caller();
-
-    LAST_SUBACCOUNT_NONCE.with(|nonce_ref| {
-        let _ = nonce_ref.borrow_mut().set(0);
-    });
 
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert("icp:native:transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));

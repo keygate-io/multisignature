@@ -218,3 +218,115 @@ fn should_get_default_account_for_icrc() {
         }
     }
 }
+
+#[cfg(test)]
+mod intent_tests {
+    use crate::Intent;
+
+    use super::*;
+
+    #[test]
+    fn should_add_intent_ok() {
+        let receiver = generate_principal();
+
+        let pic = PocketIc::new();
+        let caller = generate_principal();
+
+        let account_id = pic.create_canister_with_settings(Some(caller), None);
+
+        pic.add_cycles(account_id, 2_000_000_000_000);
+
+        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+
+        let signer = generate_principal();
+
+        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
+
+        let wasm_result = pic.update_call(account_id, caller, "include_signee", encode_one(signer).unwrap());
+
+        match wasm_result.unwrap() {
+            pocket_ic::WasmResult::Reject(reject_message) => {
+                panic!("Update call failed: {}", reject_message);
+            },
+            pocket_ic::WasmResult::Reply(_) => {
+                let sample_intent = Intent {
+                    intent_type: crate::IntentType::Transfer,
+                    amount: 100_000_000_000,
+                    to: ""
+                };
+
+                let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
+
+                match wasm_result.unwrap() {
+                    pocket_ic::WasmResult::Reject(reject_message) => {
+                        panic!("Update call failed: {}", reject_message);
+                    },
+                    pocket_ic::WasmResult::Reply(_) => {
+                        let wasm_result = pic.query_call(account_id, caller,"get_intents",  encode_one(()).unwrap());
+
+                        match wasm_result.unwrap() {
+                            pocket_ic::WasmResult::Reject(reject_message) => {
+                                panic!("Query call failed: {}", reject_message);
+                            },
+                            pocket_ic::WasmResult::Reply(reply) => {
+                                let intents = Decode!(&reply, Vec<String>);
+
+                                match intents {
+                                    Ok(intents) => assert_eq!(intents, vec!["icp:native:transfer"]),
+                                    Err(e) => panic!("Error decoding intents: {}", e)
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn should_add_intent_fail() {
+        let pic = PocketIc::new();
+        let caller = generate_principal();
+
+        let account_id = pic.create_canister_with_settings(Some(caller), None);
+
+        pic.add_cycles(account_id, 2_000_000_000_000);
+
+        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+
+        let signer = generate_principal();
+
+        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
+
+        let wasm_result = pic.update_call(account_id, caller, "include_signee", encode_one(signer).unwrap());
+
+        match wasm_result.unwrap() {
+            pocket_ic::WasmResult::Reject(reject_message) => {
+                panic!("Update call failed: {}", reject_message);
+            },
+            pocket_ic::WasmResult::Reply(_) => {
+                let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
+
+                match wasm_result.unwrap() {
+                    pocket_ic::WasmResult::Reject(reject_message) => {
+                        panic!("Update call failed: {}", reject_message);
+                    },
+                    pocket_ic::WasmResult::Reply(_) => {
+                        let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
+
+                        match wasm_result.unwrap() {
+                            pocket_ic::WasmResult::Reject(reject_message) => {
+                                assert_eq!(reject_message, "Intent already exists");
+                            },
+                            pocket_ic::WasmResult::Reply(bytes) => {
+                                let reply = Decode!(&bytes, String);
+
+                                assert!(reply.is_err())
+                            }
+                        }
+                    },
+                }
+            }
+        }
+    }
+}
