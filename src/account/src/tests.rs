@@ -221,7 +221,11 @@ fn should_get_default_account_for_icrc() {
 
 #[cfg(test)]
 mod intent_tests {
-    use crate::Intent;
+    use icrc_ledger_types::icrc1::account::Account;
+    use num_bigint::ToBigUint;
+    use pocket_ic::common::rest::base64;
+
+    use crate::{ledger, types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs}, Intent, IntentStatus};
 
     use super::*;
 
@@ -238,7 +242,7 @@ mod intent_tests {
 
         let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
-        let 
+        let receiver_account_id = ledger::to_subaccount_id_from_principal(receiver, to_subaccount(0));
 
         let signer = generate_principal();
 
@@ -255,12 +259,12 @@ mod intent_tests {
                     intent_type: crate::IntentType::Transfer,
                     amount: 100_000_000_000,
                     network: crate::SupportedNetwork::ICP,
-                    to: "receiver",
-                    token: todo!(),
-                    status: todo!(),
+                    to: receiver_account_id.to_hex(),
+                    token: "icp:native".to_string(),
+                    status: crate::IntentStatus::Pending("".to_string())
                 };
 
-                let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
+                let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one(sample_intent.clone()).unwrap());
 
                 match wasm_result.unwrap() {
                     pocket_ic::WasmResult::Reject(reject_message) => {
@@ -274,10 +278,10 @@ mod intent_tests {
                                 panic!("Query call failed: {}", reject_message);
                             },
                             pocket_ic::WasmResult::Reply(reply) => {
-                                let intents = Decode!(&reply, Vec<String>);
+                                let intents = Decode!(&reply, Vec<Intent>);
 
                                 match intents {
-                                    Ok(intents) => assert_eq!(intents, vec!["icp:native:transfer"]),
+                                    Ok(intents) => assert_eq!(intents, vec![sample_intent]),
                                     Err(e) => panic!("Error decoding intents: {}", e)
                                 }
                             }
@@ -289,7 +293,9 @@ mod intent_tests {
     }
 
     #[test]
-    fn should_add_intent_fail() {
+    fn should_transfer_icrc1() {
+        let receiver = generate_principal();
+
         let pic = PocketIc::new();
         let caller = generate_principal();
 
@@ -297,39 +303,102 @@ mod intent_tests {
 
         pic.add_cycles(account_id, 2_000_000_000_000);
 
-        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+        let icrc_ledger = pic.create_canister_with_settings(Some(caller), None);
 
-        let signer = generate_principal();
+        pic.add_cycles(icrc_ledger, 2_000_000_000_000);
+
+        let icrc_wasm_module = include_bytes!("../../../mock_icrc1_wasm_build.gz").to_vec();
+
+        let mint_amount_u64: u128 = 1000_000_000_000;
+
+       let icrc1_deploy_args = ICRC1Args::Init(ICRC1InitArgs {
+            token_symbol: "MCK".to_string(),
+            token_name: "Mock Token".to_string(),
+            minting_account: Account {
+                owner: caller,
+                subaccount: None,
+            },
+            transfer_fee: 1_000_000,
+            metadata: vec![],
+            initial_balances: vec![
+                (
+                    Account {
+                        owner: account_id,
+                        subaccount: None,
+                    },
+                    mint_amount_u64
+                ),
+            ],
+            archive_options: ArchiveOptions {
+                num_blocks_to_archive: 10,
+                trigger_threshold: 5,
+                controller_id: account_id,
+                max_transactions_per_response: None,
+                max_message_size_bytes: None,
+                cycles_for_archive_creation: None,
+                node_max_memory_size_bytes: None,
+            },
+            feature_flags: Some(FeatureFlags { icrc2: false }),
+            decimals: Some(3),  // Assuming 8 decimals, adjust as needed
+            maximum_number_of_accounts: None,
+            accounts_overflow_trim_quantity: None,
+            fee_collector_account: None,
+            max_memo_length: None,
+        });
+
+        pic.install_canister(icrc_ledger, icrc_wasm_module, encode_one(icrc1_deploy_args).unwrap(), Some(caller));
+
+        pic.add_cycles(account_id, 2_000_000_000_000);
+
+        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
         pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-        let wasm_result = pic.update_call(account_id, caller, "include_signee", encode_one(signer).unwrap());
+        println!("icrc principal id is {}", icrc_ledger.to_string());
+
+        let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one(Intent {
+            intent_type: crate::IntentType::Transfer,
+            amount: 100_000_000_000,
+            network: crate::SupportedNetwork::ICP,
+            to: format!("{}", receiver.to_text()),
+            token: "icp:icrc1:".to_string() + &icrc_ledger.to_string(),
+            status: crate::IntentStatus::Pending("".to_string())
+        }).unwrap());
+
+        if wasm_result.is_err() {
+            panic!("Update call failed: {:?}", wasm_result);
+        }
+
+        let wasm_result = pic.update_call(account_id, caller, "execute_intent", encode_one(0 as u64).unwrap());
 
         match wasm_result.unwrap() {
             pocket_ic::WasmResult::Reject(reject_message) => {
                 panic!("Update call failed: {}", reject_message);
             },
-            pocket_ic::WasmResult::Reply(_) => {
-                let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
+            pocket_ic::WasmResult::Reply(result) => {
+                let intent_status = Decode!(&result, IntentStatus).unwrap();
+                assert_eq!(intent_status, IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string()));
+            }
+        }
 
-                match wasm_result.unwrap() {
-                    pocket_ic::WasmResult::Reject(reject_message) => {
-                        panic!("Update call failed: {}", reject_message);
-                    },
-                    pocket_ic::WasmResult::Reply(_) => {
-                        let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
+        let q_result = pic.query_call(icrc_ledger, caller, "icrc1_balance_of", encode_one(ICRCAccount::new(receiver, None)).unwrap());
 
-                        match wasm_result.unwrap() {
-                            pocket_ic::WasmResult::Reject(reject_message) => {
-                                assert_eq!(reject_message, "Intent already exists");
-                            },
-                            pocket_ic::WasmResult::Reply(bytes) => {
-                                let reply = Decode!(&bytes, String);
+        if q_result.is_err() {
+            panic!("Query call failed: {:?}", q_result);
+        }
 
-                                assert!(reply.is_err())
-                            }
-                        }
-                    },
+        let wasm_result = q_result.unwrap();
+
+        match wasm_result {
+            pocket_ic::WasmResult::Reject(reject_message) => {
+                panic!("Query call failed: {}", reject_message);
+            },
+            pocket_ic::WasmResult::Reply(reply) => {
+                let balance = Decode!(&reply, u128);
+
+                match balance {
+                    Ok(balance) => assert_eq!(balance, 100_000_000_000),
+                    Err(e) => panic!("Error decoding balance: {}", e)
                 }
             }
         }

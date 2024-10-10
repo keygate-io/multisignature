@@ -1,5 +1,6 @@
 use std::{collections::HashMap, future::Future, pin::Pin, str::FromStr};
 
+use b3_utils::ledger::ICRCAccount;
 use candid::{CandidType, Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
@@ -30,11 +31,22 @@ type TokenPath = String;
 
 pub async fn execute(intent: &Intent) -> IntentStatus {
     let it: &'static str = intent.intent_type().into();
-    let key = format!("{}:{}", intent.token(), it);
-    
+
+    let token = intent.token();
+
+    // if icrc, ignore last token : split of str
+    let token_parts: Vec<&str> = token.split(':').collect();
+    let token_key = if token_parts.len() > 2 && token_parts[1] == "icrc1" {
+        // For ICRC, ignore the last part
+        token_parts[..token_parts.len() - 1].join(":") + ":" + it.to_ascii_lowercase().as_str()
+    } else {
+        token.to_string() + "false:" + it
+    };
+
     let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
-        dyn_clone::clone_box(adapters.borrow().get(&key).expect(&format!("Adapter not found for {}", key)))
+        dyn_clone::clone_box(adapters.borrow().get(&token_key).expect(&format!("Adapter not found for {}", token_key)))
     });
+
 
     match adapter.execute(intent).await {
         Ok(status) => status,
@@ -76,6 +88,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
     fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             println!("Executing ICPAdapter");
+
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(intent.to().as_str()).unwrap(),
                 amount: Tokens::from_e8s(intent.amount()),
@@ -118,7 +131,7 @@ impl ICPNativeTransferAdapter {
 }
 
 #[derive(Clone)]
-struct ICRC1TransferAdapter {
+pub struct ICRC1TransferAdapter {
     pub(crate) network: SupportedNetwork,
     pub(crate) token: TokenPath,
     pub(crate) intent_type: IntentType,
@@ -140,17 +153,7 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
     fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             println!("Executing ICRC1Adapter");
-
-            let args = ICRC1TransferArgs {
-                to: ICRC1TransferAdapter::extract_owner_and_subaccount(intent.to().as_str()),
-                amount: Nat::from(intent.amount()),
-                fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
-                memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
-                from_subaccount: Some(get_default_icrc_subaccount().0),
-                created_at_time: None,
-            };
-
-            match self.transfer(args).await {
+            match self.transfer(intent).await {
                 // TODO: include the name or symbol of the token
                 Ok(_) => Ok(IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())),
                 Err(e) => Err(e.to_string()),
@@ -160,21 +163,15 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
 }
 
 impl ICRC1TransferAdapter {
-    pub fn extract_owner_and_subaccount(to: &str) -> Account {
-        let to_parts: Vec<&str> = to.split('.').collect();
-        let owner = Principal::from_str(to_parts[0]).unwrap();
-        let subaccount = to_parts[1].as_bytes();
 
-        if subaccount.len() != 32 {
-            panic!("Subaccount must be 32 bytes");
-        }
-
-        Account {
-            owner,
-            subaccount: Some(subaccount.try_into().unwrap()),
+    pub fn new() -> ICRC1TransferAdapter {
+        ICRC1TransferAdapter {
+            network: SupportedNetwork::ICP,
+            token: "icp:icrc1".to_string(),
+            intent_type: IntentType::Transfer,
         }
     }
-
+    
     pub fn extract_token_identifier(token: TokenPath) -> Result<String, String> {
         let parts: Vec<&str> = token.split(':').collect();
         if parts.len() != 3 {
@@ -183,9 +180,22 @@ impl ICRC1TransferAdapter {
         Ok(parts[2].to_string())
     }
 
-    async fn transfer(&self, args: ICRC1TransferArgs) -> Result<Nat, String> {
-        let token_identifier  = ICRC1TransferAdapter::extract_token_identifier(self.token())?;
-        let principal = Principal::from_slice(&token_identifier.as_bytes());
+    async fn transfer(&self, intent: &Intent) -> Result<Nat, String> {
+        let args = ICRC1TransferArgs {
+            to: Account {
+                owner: Principal::from_text(intent.to()).unwrap(),
+                subaccount: None
+            },
+            amount: Nat::from(intent.amount()),
+            fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
+            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
+            from_subaccount: Some(get_default_icrc_subaccount().0),
+            created_at_time: None,
+        };
+
+        let token_identifier  = ICRC1TransferAdapter::extract_token_identifier(intent.token())?;
+        let principal = Principal::from_text(&token_identifier).unwrap();
+
         let transfer_result: CallResult<(Result<Nat, TransferError>,)> = ic_cdk::call(principal, "icrc1_transfer", (args,)).await;
         match transfer_result {
             Ok((inner_result,)) => match inner_result {

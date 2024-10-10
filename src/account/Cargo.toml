@@ -35,3 +35,4 @@ lazy_static = "1.5.0"
 once_cell = "1.15"
 ciborium = "0.2.2"
 b3_utils = { version = "0.13.1", features = ["ledger"] }
+num-bigint = "0.4.6"

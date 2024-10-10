@@ -1,3 +1,4 @@
+use candid::Principal;
 use ic_ledger_types::{AccountIdentifier as LedgerAccountIdentifier, Subaccount};
 
 
@@ -10,5 +11,9 @@ pub fn to_subaccount(nonce: u32) -> Subaccount {
 
 pub fn to_subaccount_id(subaccount: Subaccount) -> LedgerAccountIdentifier {
     let principal_id = ic_cdk::id();
+    LedgerAccountIdentifier::new(&principal_id, &subaccount)
+}
+
+pub fn to_subaccount_id_from_principal(principal_id: Principal, subaccount: Subaccount) -> LedgerAccountIdentifier {
     LedgerAccountIdentifier::new(&principal_id, &subaccount)
 }

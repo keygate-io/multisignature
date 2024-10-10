@@ -14,7 +14,6 @@ use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use ledger::*;
 
-const LAST_SUBACCOUNT_NONCE_MEMORY: MemoryId = MemoryId::new(1);
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
 
@@ -113,6 +112,7 @@ fn get_icp_account() -> String {
 fn post_upgrade() {
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert("icp:native:transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
+        adapters.borrow_mut().insert("icp:icrc1:transfer".to_string(), Box::new(ICRC1TransferAdapter::new()))
     });
 }
 
@@ -122,6 +122,7 @@ async fn init() {
 
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert("icp:native:transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
+        adapters.borrow_mut().insert("icp:icrc1:transfer".to_string(), Box::new(ICRC1TransferAdapter::new()))
     });
 
     SIGNEES.with(|signees| {
