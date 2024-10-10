@@ -238,6 +238,8 @@ mod intent_tests {
 
         let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
+        let 
+
         let signer = generate_principal();
 
         pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
@@ -252,7 +254,10 @@ mod intent_tests {
                 let sample_intent = Intent {
                     intent_type: crate::IntentType::Transfer,
                     amount: 100_000_000_000,
-                    to: ""
+                    network: crate::SupportedNetwork::ICP,
+                    to: "receiver",
+                    token: todo!(),
+                    status: todo!(),
                 };
 
                 let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one("icp:native:transfer").unwrap());
