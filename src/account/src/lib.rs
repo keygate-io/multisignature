@@ -11,7 +11,6 @@ use ic_ledger_types::AccountIdentifier;
 use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableCell, StableLog};
 use intent::*;
 use serde::{Deserialize, Serialize};
-use std::hash::{Hash, Hasher};
 use ledger::*;
 
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);

@@ -8,6 +8,26 @@ use candid::{encode_one, Decode, Principal};
 #[cfg(test)]
 use crate::{to_subaccount};
 
+
+#[cfg(test)]
+pub fn get_icp_balance(env: &PocketIc, user_id: Principal) -> u64 {
+    use ic_ledger_types::{AccountBalanceArgs, Tokens, DEFAULT_SUBACCOUNT};
+    use pocket_ic::update_candid_as;
+
+    let ledger_canister_id = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
+    let account = AccountIdentifier::new(&user_id, &DEFAULT_SUBACCOUNT);
+    let account_balance_args = AccountBalanceArgs { account };
+    let res: (Tokens,) = update_candid_as(
+        env,
+        ledger_canister_id,
+        user_id,
+        "account_balance",
+        (account_balance_args,),
+    )
+    .unwrap();
+    res.0.e8s()
+}
+
 #[cfg(test)]
 fn generate_principal() -> Principal {
     use ed25519_dalek::SigningKey;
@@ -221,11 +241,12 @@ fn should_get_default_account_for_icrc() {
 
 #[cfg(test)]
 mod intent_tests {
+    use ic_ledger_types::{AccountBalanceArgs, Tokens, DEFAULT_SUBACCOUNT};
     use icrc_ledger_types::icrc1::account::Account;
     use num_bigint::ToBigUint;
-    use pocket_ic::common::rest::base64;
+    use pocket_ic::{common::rest::base64, WasmResult};
 
-    use crate::{ledger, types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs}, Intent, IntentStatus};
+    use crate::{ledger, types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs}, Intent, IntentStatus, IntentType, SupportedNetwork};
 
     use super::*;
 
@@ -402,5 +423,87 @@ mod intent_tests {
                 }
             }
         }
+    }
+
+    #[test]
+    #[ignore]
+    fn should_transfer_icp() {
+        let pic = PocketIc::new();
+        let caller = generate_principal();
+
+        // Create and set up the account canister
+        let account_id = pic.create_canister_with_settings(Some(caller), None);
+        pic.add_cycles(account_id, 2_000_000_000_000);
+        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
+
+        // Create a receiver principal
+        let receiver = generate_principal();
+
+        // Set up the ICP ledger canister
+        let icp_ledger = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
+        
+        // Mint some ICP to the account canister
+        let mint_amount = 1_000_000_000; // 10 ICP
+        let account_balance_args = AccountBalanceArgs {
+            account: AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT)
+        };
+        let mint_result = pic.update_call(icp_ledger, caller, "mint", encode_one((account_balance_args.clone(), Tokens::from_e8s(mint_amount))).unwrap());
+        match mint_result {
+            Ok(WasmResult::Reply(_)) => {},
+            Ok(WasmResult::Reject(reject_message)) => panic!("Mint call rejected: {}", reject_message),
+            Err(err) => panic!("Mint call failed: {:?}", err),
+        }
+
+        // Create an intent to transfer ICP
+        let transfer_amount = 100_000_000; // 1 ICP
+        let intent = Intent {
+            intent_type: IntentType::Transfer,
+            amount: transfer_amount,
+            network: SupportedNetwork::ICP,
+            to: AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT).to_string(),
+            token: "icp:native".to_string(),
+            status: IntentStatus::Pending("".to_string())
+        };
+
+        // Add the intent
+        let add_intent_result = pic.update_call(account_id, caller, "add_intent", encode_one(intent.clone()).unwrap());
+        let intent_id = match add_intent_result {
+            Ok(WasmResult::Reply(reply)) => Decode!(&reply, u64).unwrap(),
+            Ok(WasmResult::Reject(reject_message)) => panic!("Add intent call rejected: {}", reject_message),
+            Err(err) => panic!("Add intent call failed: {:?}", err),
+        };
+
+        // Execute the intent
+        let execute_result = pic.update_call(account_id, caller, "execute_intent", encode_one(intent_id).unwrap());
+        let status = match execute_result {
+            Ok(WasmResult::Reply(reply)) => Decode!(&reply, IntentStatus).unwrap(),
+            Ok(WasmResult::Reject(reject_message)) => panic!("Execute intent call rejected: {}", reject_message),
+            Err(err) => panic!("Execute intent call failed: {:?}", err),
+        };
+
+        assert_eq!(status, IntentStatus::Completed("Successfully transferred native ICP.".to_string()));
+
+        // Check the receiver's balance
+        let receiver_balance_args = AccountBalanceArgs {
+            account: AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT)
+        };
+        let receiver_balance_result = pic.query_call(icp_ledger, caller, "account_balance", encode_one(receiver_balance_args).unwrap());
+        let receiver_balance = match receiver_balance_result {
+            Ok(WasmResult::Reply(reply)) => Decode!(&reply, Tokens).unwrap(),
+            Ok(WasmResult::Reject(reject_message)) => panic!("Receiver balance query rejected: {}", reject_message),
+            Err(err) => panic!("Receiver balance query failed: {:?}", err),
+        };
+
+        assert_eq!(receiver_balance.e8s(), transfer_amount);
+
+        // Check the account canister's balance
+        let account_balance_result = pic.query_call(icp_ledger, caller, "account_balance", encode_one(account_balance_args).unwrap());
+        let account_balance = match account_balance_result {
+            Ok(WasmResult::Reply(reply)) => Decode!(&reply, Tokens).unwrap(),
+            Ok(WasmResult::Reject(reject_message)) => panic!("Account balance query rejected: {}", reject_message),
+            Err(err) => panic!("Account balance query failed: {:?}", err),
+        };
+
     }
 }

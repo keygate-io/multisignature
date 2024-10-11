@@ -51,6 +51,13 @@
           "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
         }
       }
+    },
+    "landing": {
+      "source": [
+        "src/landing/dist"
+      ],
+      "type": "assets",
+      "workspace": "landing"
     }
   },
   "defaults": {
