@@ -3,7 +3,7 @@ import { Shield, Lock, Zap, Globe, Users, Wallet } from "lucide-react";
 
 function App() {
   return (
-    <div className="min-h-screen bg-black text-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100">
       <header className="container mx-auto px-4 py-6">
         <nav className="flex justify-between items-center">
           <a
@@ -13,7 +13,7 @@ function App() {
             <img
               src="/keygate-logo.svg"
               alt="DFINITY logo"
-              className="h-6 mr-2"
+              className="h-8 mr-2"
             />
           </a>
           <div className="space-x-6">
@@ -41,7 +41,7 @@ function App() {
 
       <main>
         <section className="py-20 text-center">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 flex items-center flex-col">
             <h1 className="text-3xl font-bold tracking-tighter mb-8 sm:text-4xl md:text-5xl lg:text-6xl/none  drop-shadow-lg">
               Secure your $ICP and ICRCs using
               <div>a decentralized multisignature wallet.</div>
@@ -54,10 +54,20 @@ function App() {
               <button className="bg-white text-black px-8 py-3 rounded-full transition-opacity border-none hover:cursor-pointer rounded-md">
                 Launch dApp
               </button>
-              <button className="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-900 transition-colors hover:cursor-pointer border-none rounded-md">
-                Documentation
-              </button>
+              <a
+                href="https://www.notion.so/Technical-Architecture-10e834c1223d808c9359d6d720fd747a"
+                className="inline-block"
+              >
+                <button className="bg-sky-800 text-white px-8 py-3 rounded-md hover:bg-blue transition-colors hover:cursor-pointer border-none">
+                  Documentation
+                </button>
+              </a>
             </div>
+            <img
+              src="hosted_onchain.png"
+              alt="Internet Computer Logo"
+              className="h-32 mt-8 pointer-events-none"
+            />
           </div>
         </section>
 
@@ -66,7 +76,7 @@ function App() {
             <h2 className="text-5xl font-semibold text-center mb-12">
               Key Features
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-10">
               <FeatureCard
                 icon={<Lock className="w-12 h-12" />}
                 title="Multisignature"
@@ -81,11 +91,6 @@ function App() {
                 icon={<Users className="w-12 h-12" />}
                 title="Identity-based Access"
                 description="Control access using Internet Identity for enhanced security and user management."
-              />
-              <FeatureCard
-                icon={<Zap className="w-12 h-12" />}
-                title="Intent-based Transactions"
-                description="Simplify transactions with our transaction intent system. Stop worrying about complex blockchain-specific details."
               />
               <FeatureCard
                 icon={<Wallet className="w-12 h-12" />}

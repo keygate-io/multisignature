@@ -1,9 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+import animate from "tailwindcss-animate";
 
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: ["class"],
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
   corePlugins: {
     preflight: false, // fix antd & tailwind conflicts
   },
