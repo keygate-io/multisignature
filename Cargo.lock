@@ -21,6 +21,7 @@ dependencies = [
  "icrc-ledger-types",
  "lazy_static",
  "libflate",
+ "num-bigint",
  "once_cell",
  "pocket-ic",
  "rand",
