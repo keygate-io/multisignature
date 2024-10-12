@@ -1,5 +1,12 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Box, IconButton } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Box,
+  IconButton,
+  Chip,
+} from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
@@ -26,9 +33,17 @@ const Header: React.FC = () => {
             alignItems: "center",
           }}
         >
-          <Typography variant="h5" component="h1">
-            Keygate
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography variant="h5" component="h1">
+              Keygate
+            </Typography>
+            <Chip
+              label="Alpha version"
+              color="secondary"
+              size="small"
+              sx={{ fontWeight: "bold" }}
+            />
+          </Box>
           {identity && (
             <IconButton
               color="inherit"

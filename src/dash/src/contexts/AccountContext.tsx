@@ -72,7 +72,10 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
           navigate("/new-profile/create");
         }
       } catch (err) {
-        setError("Failed to fetch user account");
+        // TODO: Make getUser return an Option instead of throwing an error if user does not exist
+        // setError("Failed to fetch user account");
+        navigate("/new-account/create");
+        console.log(err);
       }
     };
 
