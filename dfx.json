@@ -12,9 +12,6 @@
       "candid": "src/central/central.did"
     },
     "dash": {
-      "dependencies": [
-        "account"
-      ],
       "source": [
         "src/dash/dist"
       ],
