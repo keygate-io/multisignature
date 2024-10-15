@@ -38,7 +38,7 @@ const Home = () => {
 
   useEffect(() => {
     if (account) {
-      navigate("/dashboard");
+      navigate("/vaults");
     }
   }, [account, navigate]);
 
@@ -111,7 +111,6 @@ const Home = () => {
               onClick={login}
               size="small"
               color="primary"
-              disabled
               sx={{ py: 1.5, px: 3 }}
             >
               Try out the demo

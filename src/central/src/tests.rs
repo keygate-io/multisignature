@@ -161,7 +161,7 @@ fn deploy_account_ok() {
 }
 
 #[test]
-fn deploy_account_should_return_error_if_user_not_registered() {
+fn deploy_account_should_not_return_error_if_user_not_registered() {
     let pic = PocketIc::new();
     let central_id = pic.create_canister();
     pic.add_cycles(central_id, 2_000_000_000_000);
@@ -177,11 +177,7 @@ fn deploy_account_should_return_error_if_user_not_registered() {
         encode_one(()).unwrap()
     );
 
-    assert!(wasm_result.is_err(), "Expected error but got Ok");
-
-    let err_description = wasm_result.unwrap_err().description;
-
-    assert!(err_description.contains("with principal") && err_description.contains("not found"), "Expected error message to contain 'with principal' and 'not found' but got: {}", err_description);
+    assert!(!wasm_result.is_err())
 }
 
 #[test]

@@ -12,6 +12,8 @@ const Footer: React.FC = () => {
         alignItems: "center",
         px: 3,
         py: 2,
+        backgroundColor: "#1e1e1e",
+        color: "white",
       }}
     >
       <Typography variant="body2">

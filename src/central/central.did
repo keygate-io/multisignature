@@ -7,7 +7,7 @@ type UserInfo = record {
 service : {
     deploy_account : () -> (principal);
     get_user : (principal) -> (opt UserInfo) query;
-    get_user_vaults : (principal) -> (vec principal) query;
+    get_user_vaults : () -> (vec principal) query;
     load_wallet_wasm : () -> ();
     register_user : (principal, text, text) -> ();
     user_exists : (principal) -> (bool) query;

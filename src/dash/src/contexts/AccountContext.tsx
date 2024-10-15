@@ -7,10 +7,9 @@ import React, {
 } from "react";
 import { Principal } from "@dfinity/principal";
 import { balanceOf } from "../api/ledger";
-import { getUser, getUserVaults } from "../api/users";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
 import { useNavigate } from "react-router-dom";
-import { getSubaccount } from "../api/account";
+import { getSubaccount, getVaults } from "../api/account";
 
 interface AccountContextType {
   vaultCanisterId: Principal | undefined;
@@ -54,19 +53,12 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
       }
 
       try {
-        const user = await getUser(identity.getPrincipal());
+        const vaults = await getVaults(identity);
 
-        if (!user) {
-          navigate("/new-profile/create");
-          return;
-        }
-
-        const vaults = await getUserVaults(identity.getPrincipal());
-
-        if (user && vaults.length > 0) {
+        if (vaults.length > 0) {
           setVaultCanisterId(vaults[0]);
           setVaultName("Funding");
-        } else if (user && vaults.length === 0) {
+        } else if (vaults.length === 0) {
           navigate("/new-account/create");
         } else {
           navigate("/new-profile/create");

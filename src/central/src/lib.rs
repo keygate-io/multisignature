@@ -89,7 +89,7 @@ async fn deploy_account() -> Principal {
     // Verify caller is registered
     let owner_principal = ic_cdk::caller();
     if !user_exists(owner_principal) {
-        ic_cdk::trap(&format!("User with principal {} not found", owner_principal));
+        register_user();
     }
 
     let wallet_wasm = WALLET_WASM.with(|wasm| {
@@ -155,7 +155,7 @@ fn get_user_vaults() -> Vec<Principal> {
     let owner_principal = ic_cdk::caller();
 
     if !user_exists(owner_principal) {
-        ic_cdk::trap(&format!("User with principal {} not found", owner_principal));
+        return vec![];
     }
 
     let mut user_vaults = vec![];

@@ -10,6 +10,7 @@ import SendToken from "./pages/Dashboard/Assets/SendToken/SendToken";
 import { AccountProvider } from "./contexts/AccountContext";
 import Transactions from "./pages/Dashboard/Transactions/Transactions";
 import { createTheme, ThemeProvider } from "@mui/material";
+import Vaults from "./pages/Vaults";
 
 const darkTheme = createTheme({
   palette: {
@@ -31,6 +32,10 @@ function App() {
           >
             <Routes>
               <Route path="/" element={<PageLayout main={<Home />} />} />
+              <Route
+                path="/vaults"
+                element={<PageLayout main={<Vaults />} />}
+              />
               <Route
                 path="/dashboard"
                 element={<PageLayout main={<Dashboard />} />}

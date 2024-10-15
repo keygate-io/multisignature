@@ -21,7 +21,7 @@ function getCentralActor(identity: Identity) {
   const key = identity.getPrincipal().toString();
   if (!centralActorMap.has(key)) {
     const actor = createCentralActor(
-      process.env.CANISTER_ID_REGISTRATION as string,
+      process.env.CANISTER_ID_CENTRAL as string,
       {
         agentOptions: { identity },
       }
@@ -52,12 +52,8 @@ export function upgradeAccount(canister_id: Principal, identity: Identity) {
   return getCentralActor(identity).upgrade_account(canister_id);
 }
 
-export function createSubaccount(
-  account_canister_id: Principal,
-  token: string,
-  identity: Identity
-) {
-  return getAccountActor(account_canister_id, identity).add_subaccount(token);
+export function getVaults(identity: Identity) {
+  return getCentralActor(identity).get_user_vaults();
 }
 
 export function getSubaccount(

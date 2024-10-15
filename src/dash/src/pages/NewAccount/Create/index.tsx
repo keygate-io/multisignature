@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
-import { getUser } from "../../../api/users";
-import { deployAccount, createSubaccount } from "../../../api/account";
+import { deployAccount } from "../../../api/account";
 import {
   Box,
   Button,
@@ -42,7 +41,7 @@ const Step1: React.FC<Step1Props> = ({
 }) => (
   <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
     <Typography variant="h6" gutterBottom>
-      1. Select a name for the vault
+      1. Select a name for the wallet
     </Typography>
     <TextField
       fullWidth
@@ -156,8 +155,8 @@ const Review: React.FC<ReviewProps> = ({
       3. Review
     </Typography>
     <Typography variant="body2" color="text.secondary" gutterBottom>
-      You're about to create a new vault and will have to confirm the
-      transaction with your connected wallet.
+      You're about to create a new wallet and will have to confirm the
+      transaction with your connected identity.
     </Typography>
     <Box sx={{ mt: 2 }}>
       <Typography>
@@ -166,7 +165,7 @@ const Review: React.FC<ReviewProps> = ({
       <Typography>
         <strong>Name:</strong> {accountName}
       </Typography>
-      <Typography>
+      {/* <Typography>
         <strong>Signers:</strong>
       </Typography>
       {signers.map((signer, index) => (
@@ -177,7 +176,7 @@ const Review: React.FC<ReviewProps> = ({
       <Typography>
         <strong>Threshold:</strong> {threshold} out of {signers.length}{" "}
         signer(s)
-      </Typography>
+      </Typography> */}
     </Box>
   </Paper>
 );
@@ -185,7 +184,7 @@ const Review: React.FC<ReviewProps> = ({
 const CreateAccount: React.FC = () => {
   const [step, setStep] = useState(1);
   const [accountName, setAccountName] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState("ICP");
+  const [selectedNetwork, setSelectedNetwork] = useState("Internet Computer");
   const [signers, setSigners] = useState<Signer[]>([
     { name: "Signer 1", principalId: "" },
   ]);
@@ -199,8 +198,8 @@ const CreateAccount: React.FC = () => {
   });
 
   const nextStep = () => {
-    if (step < 3) {
-      setStep(step + 1); 
+    if (step < 2) {
+      setStep(step + 1);
     } else {
       setSnackbar({
         open: true,
@@ -208,11 +207,11 @@ const CreateAccount: React.FC = () => {
         severity: "info",
       });
 
-      deployAccount(identity!).then(async (id) => {
-        await createSubaccount(id, "icp:native", identity!);
+      console.log(identity);
 
+      deployAccount(identity!).then(async (id) => {
         setSnackbar({ open: false, message: "", severity: "info" });
-        navigate("/dashboard");
+        navigate("/vaults");
       });
     }
   };
@@ -234,17 +233,16 @@ const CreateAccount: React.FC = () => {
         return;
       }
 
-      const profile = await getUser(identity.getPrincipal());
       const defaultName = "Signer 1";
 
-      setSigners([
-        {
-          name: profile
-            ? `${profile.first_name} ${profile.last_name}`
-            : defaultName || defaultName,
-          principalId: identity.getPrincipal().toText(),
-        },
-      ]);
+      // setSigners([
+      //   {
+      //     name: profile
+      //       ? `${profile.first_name} ${profile.last_name}`
+      //       : defaultName || defaultName,
+      //     principalId: identity.getPrincipal().toText(),
+      //   },
+      // ]);
     }
 
     loadUser();
@@ -262,12 +260,12 @@ const CreateAccount: React.FC = () => {
       >
         <Container maxWidth="sm">
           <Typography variant="h4" gutterBottom>
-            Vault creation
+            Wallet creation
           </Typography>
           <LinearProgress
             variant="determinate"
             color="primary"
-            value={step * 33}
+            value={step * 50}
             sx={{ mb: 4 }}
           />
           {step === 1 ? (
@@ -277,14 +275,13 @@ const CreateAccount: React.FC = () => {
               selectedNetwork={selectedNetwork}
               setSelectedNetwork={setSelectedNetwork}
             />
-          ) : step === 2 ? (
-            <Step2
-              signers={signers}
-              setSigners={setSigners}
-              threshold={threshold}
-              setThreshold={setThreshold}
-            />
           ) : (
+            // <Step2
+            //   signers={signers}
+            //   setSigners={setSigners}
+            //   threshold={threshold}
+            //   setThreshold={setThreshold}
+            // />
             <Review
               accountName={accountName}
               selectedNetwork={selectedNetwork}
@@ -298,8 +295,13 @@ const CreateAccount: React.FC = () => {
                 ← Back
               </Button>
             )}
-            <Button variant="contained" onClick={nextStep} sx={{ ml: "auto" }}>
-              {step < 3 ? "Next" : "Create"}
+            <Button
+              variant="contained"
+              onClick={nextStep}
+              sx={{ ml: "auto" }}
+              disabled={accountName.trim().length === 0}
+            >
+              {step < 2 ? "Next" : "Create"}
             </Button>
           </Box>
         </Container>
