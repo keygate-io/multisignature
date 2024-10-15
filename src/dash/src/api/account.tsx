@@ -44,8 +44,10 @@ function getAccountActor(account_canister_id: Principal, identity: Identity) {
   return accountActorMap.get(key)!;
 }
 
-export function deployAccount(identity: Identity) {
-  return getCentralActor(identity).deploy_account();
+export function deployAccount(identity: Identity, name: string) {
+  return getCentralActor(identity).deploy_account({
+    name,
+  });
 }
 
 export function upgradeAccount(canister_id: Principal, identity: Identity) {

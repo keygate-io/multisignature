@@ -4,10 +4,20 @@ type UserInfo = record {
     vaults : vec principal;
 };
 
+type Vault = record {
+    name: text;
+    id: principal;
+};
+
+type VaultInitArgs = record {
+    name: text;
+};
+
 service : {
-    deploy_account : () -> (principal);
+    deploy_account : (VaultInitArgs) -> (principal);
     get_user : (principal) -> (opt UserInfo) query;
     get_user_vaults : () -> (vec principal) query;
+    get_user_vaults_info : (principal) -> (Vault) query;
     load_wallet_wasm : () -> ();
     register_user : (principal, text, text) -> ();
     user_exists : (principal) -> (bool) query;

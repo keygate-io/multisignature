@@ -18,10 +18,6 @@ export function registerUser(
   return central.register_user(principal, firstName, lastName);
 }
 
-export async function deployAccount(): Promise<Principal> {
-  return central.deploy_account();
-}
-
 export function loadWalletWasm(): Promise<void> {
   return central.load_wallet_wasm();
 }

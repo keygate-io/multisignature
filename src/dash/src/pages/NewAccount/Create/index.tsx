@@ -209,7 +209,7 @@ const CreateAccount: React.FC = () => {
 
       console.log(identity);
 
-      deployAccount(identity!).then(async (id) => {
+      deployAccount(identity!, accountName).then(async (id) => {
         setSnackbar({ open: false, message: "", severity: "info" });
         navigate("/vaults");
       });

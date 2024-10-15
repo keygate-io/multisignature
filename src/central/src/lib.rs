@@ -9,10 +9,11 @@ use std::{cell::RefCell};
 use ic_cdk::{init, query, update};
 use candid::Principal;
 use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager}, StableBTreeMap, DefaultMemoryImpl};
-use types::{Memory, UserInfo};
+use types::{Memory, UserInfo, Vault, VaultInitArgs};
 
 const USERS_MEMORY: MemoryId = MemoryId::new(0);
 const VAULTS_MEMORY: MemoryId = MemoryId::new(1);
+const VAULTS_INFO_MEMORY: MemoryId = MemoryId::new(2);
 
 thread_local! {
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
@@ -30,6 +31,13 @@ thread_local! {
     pub static STABLE_VAULTS: RefCell<StableBTreeMap<Principal, Principal, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
+        )
+    );
+
+    // Map from vault canister id to info
+    pub static STABLE_VAULTS_INFO: RefCell<StableBTreeMap<Principal, Vault, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_INFO_MEMORY))
         )
     );
 }
@@ -81,11 +89,16 @@ fn user_exists(principal: Principal) -> bool {
     STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
 }
 
+#[query]
+fn get_user_vaults_info(principal: Principal) -> Option<Vault> {
+    STABLE_VAULTS_INFO.with(|vaults| vaults.borrow().get(&principal))
+}
+
 /**
  * TODO: Add vault name to init args of the vault canister.
  */
 #[update]
-async fn deploy_account() -> Principal {
+async fn deploy_account(args: VaultInitArgs) -> Principal {
     // Verify caller is registered
     let owner_principal = ic_cdk::caller();
     if !user_exists(owner_principal) {
@@ -98,13 +111,11 @@ async fn deploy_account() -> Principal {
 
     match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
-            // Add to ownership hash map
             STABLE_VAULTS.with(|vaults| {
                 let mut vaults = vaults.borrow_mut();
                 vaults.insert(canister_id, owner_principal);
             });
 
-            // Add vault to user
             STABLE_USERS.with(|users| {
                 let mut users = users.borrow_mut();
                 let user = users.get(&owner_principal);
@@ -117,6 +128,13 @@ async fn deploy_account() -> Principal {
                     },
                     None => ic_cdk::trap(&format!("User with principal {} not found", owner_principal)),
                 }
+            });
+
+            STABLE_VAULTS_INFO.with(|vaults_info| {
+                vaults_info.borrow_mut().insert(canister_id, Vault {
+                    id: canister_id,
+                    name: args.name
+                })
             });
 
             canister_id

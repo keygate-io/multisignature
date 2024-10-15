@@ -2,10 +2,10 @@ use std::{error::Error, fmt::format, io::Write};
 
 use candid::{encode_one, Decode, Principal};
 use ed25519_dalek::SigningKey;
-use pocket_ic::PocketIc;
+use pocket_ic::{PocketIc, WasmResult};
 use rand::rngs::OsRng;
 
-use crate::types::UserInfo;
+use crate::types::{UserInfo, Vault, VaultInitArgs};
 
 #[cfg(test)]
 fn generate_principal() -> Principal {
@@ -130,18 +130,13 @@ fn deploy_account_ok() {
 
     let caller = generate_principal();
 
-    let _ = pic.update_call(
-        central_id, 
-        caller,
-        "register_user",
-        encode_one(()).unwrap()
-    );
-
     let wasm_result = pic.update_call(
         central_id, 
         caller,
         "deploy_account",
-        encode_one(()).unwrap()
+        encode_one(VaultInitArgs {
+            name: "Funding".to_string()
+        }).unwrap()
     );
 
     assert!(wasm_result.is_ok(), "Failed to execute update 'deploy_account': {}", wasm_result.unwrap_err());
@@ -174,7 +169,9 @@ fn deploy_account_should_not_return_error_if_user_not_registered() {
         central_id, 
         caller,
         "deploy_account",
-        encode_one(()).unwrap()
+        encode_one((VaultInitArgs {
+            name: "Funding".to_string()
+        })).unwrap()
     );
 
     assert!(!wasm_result.is_err())
@@ -297,7 +294,9 @@ fn deploy_account_should_add_to_vaults() {
         central_id, 
         caller,
         "deploy_account",
-        encode_one(()).unwrap()
+        encode_one((VaultInitArgs {
+            name: "Funding".to_string()
+        })).unwrap()
     );
 
     let query_result = pic.query_call(central_id, caller, "get_user_vaults", encode_one(()).unwrap());
@@ -314,6 +313,60 @@ fn deploy_account_should_add_to_vaults() {
     };
 }
 
+#[test]
+fn deploy_account_should_save_vault_name() {
+    let pic = PocketIc::new();
+    let central_id = pic.create_canister();
+    pic.add_cycles(central_id, 2_000_000_000_000);
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/central.wasm").to_vec();
+    pic.install_canister(central_id, wasm_module, Vec::new(), None);
+
+    let caller = generate_principal();
+
+    let mock_name = "Funding".to_string();
+
+    let deploy_account_result = pic.update_call(
+        central_id, 
+        caller,
+        "deploy_account",
+        encode_one((VaultInitArgs {
+            name: mock_name.clone()
+        })).unwrap()
+    );
+
+    let canister_id = match deploy_account_result {
+        Ok(bytes) => {
+            match bytes {
+                WasmResult::Reply(bytes) => {
+                    Decode!(&bytes, Principal).unwrap()
+                },
+                WasmResult::Reject(_) => {
+                    panic!("Canister rejected the 'deploy_account' call.")
+                }
+            }
+        },
+        Err(_) => {
+            panic!("Canister failed to deploy")
+        }
+    };
+
+    let query_result = pic.query_call(central_id, caller, "get_user_vaults_info", encode_one(canister_id).unwrap());
+
+    match query_result.unwrap() {
+        pocket_ic::WasmResult::Reply(bytes) => {
+            let user_vaults = Decode!(&bytes, Option<Vault>).unwrap();
+            assert!(user_vaults.is_some(), "No vault data found after deployment");
+
+            let vault_data = user_vaults.unwrap();
+            assert_eq!(vault_data.name, mock_name);
+
+            assert_eq!(vault_data.id, canister_id);
+        },
+        pocket_ic::WasmResult::Reject(msg) => {
+            panic!("Canister rejected 'get_user_vaults' call: {}", msg);
+        },
+    };
+}
 
 #[test]
 fn state_should_persist_as_stable_memory() {
@@ -328,15 +381,10 @@ fn state_should_persist_as_stable_memory() {
     let _ = pic.update_call(
         central_id, 
         caller,
-        "register_user",
-        encode_one(()).unwrap()
-    );
-
-    let _ = pic.update_call(
-        central_id, 
-        caller,
         "deploy_account",
-        encode_one(()).unwrap()
+        encode_one((VaultInitArgs {
+            name: "Funding".to_string()
+        })).unwrap()
     );
 
     let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/central.wasm").to_vec();
