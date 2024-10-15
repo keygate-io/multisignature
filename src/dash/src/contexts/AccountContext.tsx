@@ -8,7 +8,7 @@ import React, {
 import { Principal } from "@dfinity/principal";
 import { balanceOf } from "../api/ledger";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getSubaccount, getVaults } from "../api/account";
 
 interface AccountContextType {
@@ -44,6 +44,7 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
   const [icpBalance, setIcpBalance] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const location = useLocation();
 
   useEffect(() => {
     const setupAccount = async (): Promise<void> => {
@@ -55,17 +56,14 @@ export const AccountProvider: React.FC<AccountProviderProps> = ({
       try {
         const vaults = await getVaults(identity);
 
-        if (vaults.length > 0) {
-          setVaultCanisterId(vaults[0]);
-          setVaultName("Funding");
-        } else if (vaults.length === 0) {
-          navigate("/new-account/create");
-        } else {
-          navigate("/new-profile/create");
+        console.log(identity);
+
+        if (vaults.length > 0 && location.pathname === "/") {
+          setVaultCanisterId(vaults[0].id);
+          setVaultName(vaults[0].name);
+          navigate("/vaults");
         }
       } catch (err) {
-        // TODO: Make getUser return an Option instead of throwing an error if user does not exist
-        // setError("Failed to fetch user account");
         navigate("/new-account/create");
         console.log(err);
       }

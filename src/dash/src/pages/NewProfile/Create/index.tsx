@@ -25,7 +25,7 @@ const CreateProfile: React.FC = () => {
     e.preventDefault();
     if (identity) {
       await registerUser(identity.getPrincipal(), firstName, lastName);
-      navigate("/new-account/create");
+      // navigate("/new-account/create");
     }
   };
 

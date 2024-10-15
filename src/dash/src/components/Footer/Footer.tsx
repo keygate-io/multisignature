@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
     <Box
       component="footer"
       sx={{
-        width: "100%",
+        width: "1vh%",
         maxHeight: "10vh",
         display: "flex",
         alignItems: "center",

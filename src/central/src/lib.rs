@@ -13,7 +13,6 @@ use types::{Memory, UserInfo, Vault, VaultInitArgs};
 
 const USERS_MEMORY: MemoryId = MemoryId::new(0);
 const VAULTS_MEMORY: MemoryId = MemoryId::new(1);
-const VAULTS_INFO_MEMORY: MemoryId = MemoryId::new(2);
 
 thread_local! {
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
@@ -31,13 +30,6 @@ thread_local! {
     pub static STABLE_VAULTS: RefCell<StableBTreeMap<Principal, Principal, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
-        )
-    );
-
-    // Map from vault canister id to info
-    pub static STABLE_VAULTS_INFO: RefCell<StableBTreeMap<Principal, Vault, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_INFO_MEMORY))
         )
     );
 }
@@ -89,11 +81,6 @@ fn user_exists(principal: Principal) -> bool {
     STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
 }
 
-#[query]
-fn get_user_vaults_info(principal: Principal) -> Option<Vault> {
-    STABLE_VAULTS_INFO.with(|vaults| vaults.borrow().get(&principal))
-}
-
 /**
  * TODO: Add vault name to init args of the vault canister.
  */
@@ -123,18 +110,14 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
                 match user {
                     Some(user) => {
                         let mut user = user.clone();
-                        user.vaults.push(canister_id);
+                        user.vaults.push(Vault {
+                            id: canister_id,
+                            name: args.name
+                        });
                         users.insert(owner_principal, user);
                     },
                     None => ic_cdk::trap(&format!("User with principal {} not found", owner_principal)),
                 }
-            });
-
-            STABLE_VAULTS_INFO.with(|vaults_info| {
-                vaults_info.borrow_mut().insert(canister_id, Vault {
-                    id: canister_id,
-                    name: args.name
-                })
             });
 
             canister_id
@@ -169,7 +152,7 @@ fn get_user() -> Option<UserInfo> {
 }
 
 #[query]
-fn get_user_vaults() -> Vec<Principal> {
+fn get_user_vaults() -> Vec<Vault> {
     let owner_principal = ic_cdk::caller();
 
     if !user_exists(owner_principal) {

@@ -32,15 +32,15 @@ const theme = createTheme({
 });
 
 const Home = () => {
-  const { vaultCanisterId: account, error } = useAccount();
-  const { login } = useInternetIdentity();
+  const { vaultCanisterId, error } = useAccount();
+  const { login, identity } = useInternetIdentity();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (account) {
+    if (identity) {
       navigate("/vaults");
     }
-  }, [account, navigate]);
+  }, [identity, navigate]);
 
   if (error) {
     return <Typography color="error">Error: {error}</Typography>;

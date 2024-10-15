@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { deployAccount } from "../../../api/account";
 import {
@@ -53,90 +53,6 @@ const Step1: React.FC<Step1Props> = ({
   </Paper>
 );
 
-interface Step2Props {
-  signers: Signer[];
-  setSigners: (signers: Signer[]) => void;
-  threshold: number;
-  setThreshold: (threshold: number) => void;
-}
-
-const Step2: React.FC<Step2Props> = ({
-  signers,
-  setSigners,
-  threshold,
-  setThreshold,
-}) => {
-  const addSigner = () => {
-    setSigners([...signers, { name: "", principalId: "" }]);
-  };
-
-  const updateSigner = (index: number, field: keyof Signer, value: string) => {
-    const newSigners = [...signers];
-    newSigners[index][field] = value;
-    setSigners(newSigners);
-  };
-
-  return (
-    <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        2. Signers and confirmations
-      </Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        Set the signer wallets of your vault and how many need to confirm to
-        execute a valid transaction.
-      </Typography>
-      {signers.map((signer, index) => (
-        <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Signer name"
-              value={signer.name}
-              onChange={(e) => updateSigner(index, "name", e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Principal ID"
-              value={signer.principalId}
-              onChange={(e) =>
-                updateSigner(index, "principalId", e.target.value)
-              }
-            />
-          </Grid>
-        </Grid>
-      ))}
-      <Button variant="contained" onClick={addSigner} sx={{ mb: 2 }}>
-        + Add new signer
-      </Button>
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="subtitle1" gutterBottom>
-          Threshold
-        </Typography>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
-          Any transaction requires the confirmation of:
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <FormControl sx={{ minWidth: 120, mr: 2 }}>
-            <Select
-              value={threshold}
-              onChange={(e) => setThreshold(Number(e.target.value))}
-            >
-              {signers.map((_, index) => (
-                <MenuItem key={index} value={index + 1}>
-                  {index + 1}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Typography>out of {signers.length} signer(s)</Typography>
-        </Box>
-      </Box>
-    </Paper>
-  );
-};
-
 interface ReviewProps {
   accountName: string;
   selectedNetwork: string;
@@ -152,7 +68,7 @@ const Review: React.FC<ReviewProps> = ({
 }) => (
   <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
     <Typography variant="h6" gutterBottom>
-      3. Review
+      2. Review
     </Typography>
     <Typography variant="body2" color="text.secondary" gutterBottom>
       You're about to create a new wallet and will have to confirm the
@@ -165,18 +81,6 @@ const Review: React.FC<ReviewProps> = ({
       <Typography>
         <strong>Name:</strong> {accountName}
       </Typography>
-      {/* <Typography>
-        <strong>Signers:</strong>
-      </Typography>
-      {signers.map((signer, index) => (
-        <Typography key={index}>
-          {signer.name} - {signer.principalId}
-        </Typography>
-      ))}
-      <Typography>
-        <strong>Threshold:</strong> {threshold} out of {signers.length}{" "}
-        signer(s)
-      </Typography> */}
     </Box>
   </Paper>
 );
@@ -191,6 +95,7 @@ const CreateAccount: React.FC = () => {
   const [threshold, setThreshold] = useState(1);
   const { identity, isInitializing } = useInternetIdentity();
   const navigate = useNavigate();
+  const location = useLocation();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -222,6 +127,10 @@ const CreateAccount: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   useEffect(() => {
     async function loadUser() {
       if (!identity) {
@@ -234,19 +143,13 @@ const CreateAccount: React.FC = () => {
       }
 
       const defaultName = "Signer 1";
-
-      // setSigners([
-      //   {
-      //     name: profile
-      //       ? `${profile.first_name} ${profile.last_name}`
-      //       : defaultName || defaultName,
-      //     principalId: identity.getPrincipal().toText(),
-      //   },
-      // ]);
     }
 
     loadUser();
   }, [identity]);
+
+  // Check if the previous location was not "/"
+  const showBackButton = true;
 
   return (
     <>
@@ -259,6 +162,11 @@ const CreateAccount: React.FC = () => {
         }}
       >
         <Container maxWidth="sm">
+          {showBackButton && (
+            <Button onClick={handleBack} variant="outlined" sx={{ mb: 2 }}>
+              ← Back
+            </Button>
+          )}
           <Typography variant="h4" gutterBottom>
             Wallet creation
           </Typography>
@@ -276,12 +184,6 @@ const CreateAccount: React.FC = () => {
               setSelectedNetwork={setSelectedNetwork}
             />
           ) : (
-            // <Step2
-            //   signers={signers}
-            //   setSigners={setSigners}
-            //   threshold={threshold}
-            //   setThreshold={setThreshold}
-            // />
             <Review
               accountName={accountName}
               selectedNetwork={selectedNetwork}

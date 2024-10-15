@@ -286,13 +286,6 @@ fn deploy_account_should_add_to_vaults() {
     let _ = pic.update_call(
         central_id, 
         caller,
-        "register_user",
-        encode_one(()).unwrap()
-    );
-
-    let _ = pic.update_call(
-        central_id, 
-        caller,
         "deploy_account",
         encode_one((VaultInitArgs {
             name: "Funding".to_string()
@@ -303,9 +296,9 @@ fn deploy_account_should_add_to_vaults() {
 
     match query_result.unwrap() {
         pocket_ic::WasmResult::Reply(bytes) => {
-            let user_vaults = Decode!(&bytes, Vec<Principal>);
-            assert!(user_vaults.is_ok(), "Failed to decode Vec<Principal>: {:?}", user_vaults.unwrap_err());
-            assert!(!user_vaults.unwrap().is_empty(), "Expected non-empty Vec<Principal> but got empty");
+            let user_vaults = Decode!(&bytes, Vec<Vault>);
+            assert!(user_vaults.is_ok(), "Failed to decode Vec<Vault>: {:?}", user_vaults.unwrap_err());
+            assert!(!user_vaults.unwrap().is_empty(), "Expected non-empty Vec<Vault> but got empty");
         },
         pocket_ic::WasmResult::Reject(msg) => {
             panic!("Canister rejected 'get_user_vaults' call: {}", msg);
@@ -335,35 +328,34 @@ fn deploy_account_should_save_vault_name() {
     );
 
     let canister_id = match deploy_account_result {
-        Ok(bytes) => {
-            match bytes {
-                WasmResult::Reply(bytes) => {
-                    Decode!(&bytes, Principal).unwrap()
-                },
-                WasmResult::Reject(_) => {
-                    panic!("Canister rejected the 'deploy_account' call.")
-                }
-            }
+        Ok(WasmResult::Reply(bytes)) => {
+            Decode!(&bytes, Principal).unwrap()
         },
-        Err(_) => {
-            panic!("Canister failed to deploy")
+        Ok(WasmResult::Reject(msg)) => {
+            panic!("Canister rejected the 'deploy_account' call: {}", msg)
+        },
+        Err(e) => {
+            panic!("Canister failed to deploy: {}", e)
         }
     };
 
-    let query_result = pic.query_call(central_id, caller, "get_user_vaults_info", encode_one(canister_id).unwrap());
+    let query_result = pic.query_call(central_id, caller, "get_user_vaults", encode_one(()).unwrap());
 
-    match query_result.unwrap() {
-        pocket_ic::WasmResult::Reply(bytes) => {
-            let user_vaults = Decode!(&bytes, Option<Vault>).unwrap();
-            assert!(user_vaults.is_some(), "No vault data found after deployment");
-
-            let vault_data = user_vaults.unwrap();
-            assert_eq!(vault_data.name, mock_name);
-
-            assert_eq!(vault_data.id, canister_id);
+    match query_result {
+        Ok(WasmResult::Reply(bytes)) => {
+            let user_vaults: Vec<Vault> = Decode!(&bytes, Vec<Vault>).unwrap();
+            
+            assert_eq!(user_vaults.len(), 1, "Expected one vault to be created");
+            
+            let created_vault = &user_vaults[0];
+            assert_eq!(created_vault.name, mock_name, "Vault name doesn't match");
+            assert_eq!(created_vault.id, canister_id, "Vault ID doesn't match");
         },
-        pocket_ic::WasmResult::Reject(msg) => {
+        Ok(WasmResult::Reject(msg)) => {
             panic!("Canister rejected 'get_user_vaults' call: {}", msg);
+        },
+        Err(e) => {
+            panic!("Error calling 'get_user_vaults': {}", e);
         },
     };
 }
@@ -396,9 +388,9 @@ fn state_should_persist_as_stable_memory() {
 
             match query_result.unwrap() {
                 pocket_ic::WasmResult::Reply(bytes) => {
-                    let user_vaults = Decode!(&bytes, Vec<Principal>);
-                    assert!(user_vaults.is_ok(), "Failed to decode Vec<Principal>: {:?}", user_vaults.unwrap_err());
-                    assert!(!user_vaults.unwrap().is_empty(), "Expected non-empty Vec<Principal> but got empty");
+                    let user_vaults = Decode!(&bytes, Vec<Vault>);
+                    assert!(user_vaults.is_ok(), "Failed to decode Vec<Vault>: {:?}", user_vaults.unwrap_err());
+                    assert!(!user_vaults.unwrap().is_empty(), "Expected non-empty Vec<Vault> but got empty");
                 },
                 pocket_ic::WasmResult::Reject(msg) => {
                     panic!("Canister rejected 'get_user_vaults' call: {}", msg);

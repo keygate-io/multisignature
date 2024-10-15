@@ -6,6 +6,7 @@ import {
   Intent,
   IntentStatus,
 } from "../../../declarations/account/account.did";
+import { Vault } from "../../../declarations/central/central.did";
 
 // Create maps to cache the actors
 const centralActorMap = new Map<
@@ -54,8 +55,12 @@ export function upgradeAccount(canister_id: Principal, identity: Identity) {
   return getCentralActor(identity).upgrade_account(canister_id);
 }
 
-export function getVaults(identity: Identity) {
-  return getCentralActor(identity).get_user_vaults();
+export async function getVaults(identity: Identity) {
+  const response: Vault[] = await getCentralActor(identity).get_user_vaults();
+
+  console.log("v response", response);
+
+  return response;
 }
 
 export function getSubaccount(

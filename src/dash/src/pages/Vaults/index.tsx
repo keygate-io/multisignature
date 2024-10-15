@@ -13,29 +13,28 @@ import {
 } from "@mui/material";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Principal } from "@dfinity/principal";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
-import { useAccount } from "../../contexts/AccountContext";
 import { getVaults } from "../../api/account";
+import { Vault } from "../../../../declarations/central/central.did";
 
 const Vaults = () => {
   const { identity } = useInternetIdentity();
-  const { icpBalance } = useAccount();
   const navigate = useNavigate();
-  const [vaults, setVaults] = useState<Principal[]>([]);
+  const [vaults, setVaults] = useState<Vault[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchVaults = async () => {
       if (!identity) {
-        navigate("/");
+        console.log("no identity");
         return;
       }
 
       try {
         setIsLoading(true);
         const fetchedVaults = await getVaults(identity);
+
         setVaults(fetchedVaults);
         setError("");
       } catch (err) {
@@ -106,11 +105,11 @@ const Vaults = () => {
             >
               <ListItemAvatar>
                 <Avatar sx={{ bgcolor: "primary.main" }}>
-                  {`V${index + 1}`}
+                  {`${vault.name.charAt(0)}${index + 1}`}
                 </Avatar>
               </ListItemAvatar>
               <ListItemText
-                primary={`Vault ${index + 1}`}
+                primary={`${vault.name}`}
                 secondary={
                   <React.Fragment>
                     <Typography
@@ -118,7 +117,7 @@ const Vaults = () => {
                       variant="body2"
                       color="text.primary"
                     >
-                      {vault.toString()}
+                      {vault.id.toString()}
                     </Typography>
                     <br />
                   </React.Fragment>

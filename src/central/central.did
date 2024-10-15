@@ -16,8 +16,7 @@ type VaultInitArgs = record {
 service : {
     deploy_account : (VaultInitArgs) -> (principal);
     get_user : (principal) -> (opt UserInfo) query;
-    get_user_vaults : () -> (vec principal) query;
-    get_user_vaults_info : (principal) -> (Vault) query;
+    get_user_vaults : () -> (vec Vault) query;
     load_wallet_wasm : () -> ();
     register_user : (principal, text, text) -> ();
     user_exists : (principal) -> (bool) query;
