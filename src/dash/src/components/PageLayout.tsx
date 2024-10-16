@@ -1,13 +1,10 @@
-import React, { ReactNode } from "react";
+import React from "react";
+import { Outlet } from "react-router-dom";
 import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
 import { Box } from "@mui/material";
 
-interface PageLayoutProps {
-  main: ReactNode;
-}
-
-const PageLayout: React.FC<PageLayoutProps> = ({ main }) => {
+const PageLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -17,7 +14,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ main }) => {
           backgroundColor: "#2c2c2c",
         }}
       >
-        {main}
+        <Outlet />
       </Box>
       <Footer />
     </div>

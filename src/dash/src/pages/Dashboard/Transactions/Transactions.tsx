@@ -19,7 +19,7 @@ import {
   InfoOutlined as InfoIcon,
 } from "@mui/icons-material";
 import { useAccount } from "../../../contexts/AccountContext";
-import AccountPageLayout from "../../AccountPageLayout";
+import AccountPageLayout from "../../VaultPageLayout";
 import { getIntents } from "../../../api/account";
 import { Principal } from "@dfinity/principal";
 import {

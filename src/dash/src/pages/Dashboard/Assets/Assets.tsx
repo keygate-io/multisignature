@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AccountPageLayout from "../../AccountPageLayout";
+import AccountPageLayout from "../../VaultPageLayout";
 import {
   Box,
   Typography,

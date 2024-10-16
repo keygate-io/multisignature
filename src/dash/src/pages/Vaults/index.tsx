@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 import { getVaults } from "../../api/account";
 import { Vault } from "../../../../declarations/central/central.did";
+import { Principal } from "@dfinity/principal";
 
 const Vaults = () => {
   const { identity } = useInternetIdentity();
@@ -50,6 +51,10 @@ const Vaults = () => {
 
   const handleCreateAccount = () => {
     navigate("/new-account/create");
+  };
+
+  const handleVaultClick = (id: Principal) => {
+    navigate(`/vaults/${id.toText()}`);
   };
 
   if (isLoading) {
@@ -110,6 +115,7 @@ const Vaults = () => {
               </ListItemAvatar>
               <ListItemText
                 primary={`${vault.name}`}
+                onClick={() => handleVaultClick(vault.id)}
                 secondary={
                   <React.Fragment>
                     <Typography

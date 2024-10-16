@@ -58,8 +58,6 @@ export function upgradeAccount(canister_id: Principal, identity: Identity) {
 export async function getVaults(identity: Identity) {
   const response: Vault[] = await getCentralActor(identity).get_user_vaults();
 
-  console.log("v response", response);
-
   return response;
 }
 

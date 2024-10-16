@@ -20,7 +20,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
 import MultipleRouteModal from "../modals/MultipleRouteModal";
-import { getDebugInfo, upgradeAccount } from "../api/account";
+import { upgradeAccount } from "../api/account";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
 
 interface MenuItemType {
@@ -78,10 +78,6 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     console.log(`Upgrading account ${vaultCanisterId}`);
     const result = await upgradeAccount(vaultCanisterId!, identity!);
     console.log("Upgrade result", result);
-  };
-
-  const handleGetDebugInfo = async () => {
-    const result = await getDebugInfo(vaultCanisterId!, identity!);
   };
 
   const renderMenuItem = (item: MenuItemType) => (

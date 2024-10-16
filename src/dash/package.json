@@ -11,11 +11,12 @@
         "format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
     },
     "dependencies": {
-        "@dfinity/agent": "^1.2.0",
-        "@dfinity/auth-client": "^1.2.0",
-        "@dfinity/candid": "^1.2.0",
-        "@dfinity/identity": "^1.2.0",
-        "@dfinity/principal": "^1.2.0",
+        "@dfinity/agent": "^2.1.2",
+        "@dfinity/auth-client": "^2.1.2",
+        "@dfinity/candid": "^2.1.2",
+        "@dfinity/identity": "^2.1.2",
+        "@dfinity/ledger-icp": "^2.6.1",
+        "@dfinity/principal": "^2.1.2",
         "@emotion/react": "^11.13.0",
         "@emotion/styled": "^11.13.0",
         "@fontsource/roboto": "^5.0.14",
