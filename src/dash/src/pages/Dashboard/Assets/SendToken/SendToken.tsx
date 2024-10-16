@@ -13,28 +13,22 @@ import {
   Button,
   TextField,
   MenuItem,
-  Tooltip,
 } from "@mui/material";
-import { useAccount } from "../../../../contexts/AccountContext";
 import { Buffer } from "buffer";
 import {
   addIntent,
   createIntent,
   executeIntent,
-  getAdapters,
   getTokens,
 } from "../../../../api/account";
 import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
 import { getTokenSymbol, getTokenDecimals } from "../../../../api/icrc";
 import { Principal } from "@dfinity/principal";
 import { extractTokenData } from "../../../../util/token";
-import {
-  formatCommaSeparated,
-  formatIcp,
-  formatIcrc,
-} from "../../../../util/units";
+import { formatCommaSeparated } from "../../../../util/units";
 import { ICP_DECIMALS } from "../../../../util/constants";
 import ConfirmationView from "./ConfirmationView";
+import { useVaultDetail } from "../../../../contexts/VaultDetailContext";
 
 if (typeof window !== "undefined") {
   window.Buffer = Buffer;
@@ -108,12 +102,6 @@ const SendForm: React.FC<SendFormProps> = ({
 
 // Main SendToken component
 const SendToken: React.FC = () => {
-  const {
-    vaultCanisterId: account,
-    icpSubaccount: icpAccount,
-    isLoading: contextLoading,
-    error: contextError,
-  } = useAccount();
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [token, setToken] = useState<string>("icp:native");
@@ -128,6 +116,7 @@ const SendToken: React.FC = () => {
   const [tokenCanisterId, setTokenCanisterId] = useState<string>("");
   const [tokenDecimals, setTokenDecimals] = useState<number>(ICP_DECIMALS);
   const [formattedAmount, setFormattedAmount] = useState<string>("");
+  const { vaultCanisterId, nativeAccountId } = useVaultDetail();
 
   const handleRecipientChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -154,7 +143,7 @@ const SendToken: React.FC = () => {
   };
 
   const handleExecute = useCallback(async () => {
-    if (!account || !icpAccount) {
+    if (!vaultCanisterId || !nativeAccountId) {
       setError("Account information is missing");
       return;
     }
@@ -163,8 +152,13 @@ const SendToken: React.FC = () => {
     setError(null);
 
     try {
-      const intent = createIntent(BigInt(amount), token, recipient, icpAccount);
-      const intentId = await addIntent(account, intent, identity!);
+      const intent = createIntent(
+        BigInt(amount),
+        token,
+        recipient,
+        nativeAccountId
+      );
+      const intentId = await addIntent(vaultCanisterId, intent, identity!);
 
       if (!intentId) {
         console.log("intent_id", intentId);
@@ -174,7 +168,7 @@ const SendToken: React.FC = () => {
 
       setCurrentStep(2);
 
-      const result = await executeIntent(account, intentId, identity!);
+      const result = await executeIntent(vaultCanisterId, intentId, identity!);
 
       if ("Completed" in result) {
         setCurrentStep(3);
@@ -189,21 +183,21 @@ const SendToken: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [account, icpAccount, amount, token, recipient, identity]);
+  }, [vaultCanisterId, nativeAccountId, amount, token, recipient, identity]);
 
   useEffect(() => {
     async function fetchTokens() {
-      if (account && identity) {
-        const fetchedTokens = await getTokens(account, identity);
+      if (vaultCanisterId && identity) {
+        const fetchedTokens = await getTokens(vaultCanisterId, identity);
         setTokens(fetchedTokens);
       }
     }
     fetchTokens();
-  }, [account, identity]);
+  }, [vaultCanisterId, identity]);
 
   useEffect(() => {
     async function fetchTokenInfo() {
-      if (account && identity && token) {
+      if (vaultCanisterId && identity && token) {
         const tokenInfo = extractTokenData(token);
         setTokenNetwork(tokenInfo.network);
 
@@ -236,13 +230,13 @@ const SendToken: React.FC = () => {
       }
     }
     fetchTokenInfo();
-  }, [account, identity, token]);
+  }, [vaultCanisterId, nativeAccountId, identity, token]);
 
   useEffect(() => {
     setFormattedAmount(formatCommaSeparated(BigInt(amount)));
   }, [amount, tokenDecimals, token]);
 
-  if (contextLoading) {
+  if (isLoading) {
     return (
       <AccountPageLayout>
         <Box
@@ -259,10 +253,10 @@ const SendToken: React.FC = () => {
     );
   }
 
-  if (contextError) {
+  if (error) {
     return (
       <AccountPageLayout>
-        <Typography color="error">{contextError}</Typography>
+        <Typography color="error">{error}</Typography>
       </AccountPageLayout>
     );
   }

@@ -57,6 +57,27 @@ fn register_user() {
     });
 }
 
+#[query]
+fn get_vault_by_id(vault_id: Principal) -> Option<Vault> {
+    let owner = STABLE_VAULTS.with(|vaults| {
+        vaults.borrow().get(&vault_id)
+    });
+
+    if owner.is_none() {
+        return None;
+    }
+
+    let user_info = STABLE_USERS.with(|users| {
+        users.borrow().get(&owner.unwrap())
+    });
+
+    match user_info {
+        Some(user) => user.vaults.iter().find(|vault| vault.id == vault_id).cloned(),
+        None => None,
+    }
+}
+
+
 #[update]
 async fn upgrade_account(canister_id: Principal) -> Result<(), String> {
     let owner_principal = ic_cdk::caller();
@@ -86,7 +107,6 @@ fn user_exists(principal: Principal) -> bool {
  */
 #[update]
 async fn deploy_account(args: VaultInitArgs) -> Principal {
-    // Verify caller is registered
     let owner_principal = ic_cdk::caller();
     if !user_exists(owner_principal) {
         register_user();

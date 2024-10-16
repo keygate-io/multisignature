@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAccount } from "../../contexts/AccountContext";
 import { useInternetIdentity } from "../../hooks/use-internet-identity";
 import {
   Box,
@@ -32,7 +31,6 @@ const theme = createTheme({
 });
 
 const Home = () => {
-  const { vaultCanisterId, error } = useAccount();
   const { login, identity } = useInternetIdentity();
   const navigate = useNavigate();
 
@@ -41,10 +39,6 @@ const Home = () => {
       navigate("/vaults");
     }
   }, [identity, navigate]);
-
-  if (error) {
-    return <Typography color="error">Error: {error}</Typography>;
-  }
 
   const features = [
     {

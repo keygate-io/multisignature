@@ -18,26 +18,25 @@ import {
   AccountBalanceWallet as WalletIcon,
   InfoOutlined as InfoIcon,
 } from "@mui/icons-material";
-import { useAccount } from "../../../contexts/AccountContext";
 import AccountPageLayout from "../../VaultPageLayout";
 import { getIntents } from "../../../api/account";
-import { Principal } from "@dfinity/principal";
 import {
   Intent,
   IntentStatus,
 } from "../../../../../declarations/account/account.did";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
+import { useVaultDetail } from "../../../contexts/VaultDetailContext";
 
 const Transactions: React.FC = () => {
   const [intents, setIntents] = useState<Intent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
-  const { icpSubaccount, vaultCanisterId } = useAccount();
+  const { vaultCanisterId, nativeAccountId } = useVaultDetail();
   const { identity } = useInternetIdentity();
 
   useEffect(() => {
     const fetchIntents = async () => {
-      if (icpSubaccount) {
+      if (nativeAccountId) {
         setIsLoading(true);
         try {
           const fetchedIntents = await getIntents(vaultCanisterId!, identity!);
@@ -51,7 +50,7 @@ const Transactions: React.FC = () => {
     };
 
     fetchIntents();
-  }, [icpSubaccount, vaultCanisterId]);
+  }, [nativeAccountId, vaultCanisterId]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);

@@ -10,18 +10,20 @@ import {
   Typography,
   Tooltip,
   Snackbar,
+  IconButton,
 } from "@mui/material";
 import {
   AccountBalanceWalletOutlined,
   HomeOutlined,
   ReceiptOutlined,
   ArrowUpward,
+  ArrowBack,
 } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAccount } from "../contexts/AccountContext";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import MultipleRouteModal from "../modals/MultipleRouteModal";
 import { upgradeAccount } from "../api/account";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
+import { useVaultDetail } from "../contexts/VaultDetailContext";
 
 interface MenuItemType {
   text: string;
@@ -37,28 +39,20 @@ interface PageLayoutProps {
 const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    vaultCanisterId,
-    vaultName,
-    icpSubaccount: icpAccount,
-  } = useAccount();
-  const { identity } = useInternetIdentity();
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [multipleRouteModalOpen, setMultipleRouteModalOpen] = useState(false);
+  const { vaultName, vaultCanisterId, nativeAccountId } = useVaultDetail();
+  const { vaultId } = useParams();
 
   const menuItems: MenuItemType[] = [
-    { text: "Home", icon: <HomeOutlined />, path: "/dashboard" },
-    { text: "Assets", icon: <AccountBalanceWalletOutlined />, path: "/assets" },
+    { text: "Home", icon: <HomeOutlined />, path: `/vaults/${vaultId}` },
+    {
+      text: "Assets",
+      icon: <AccountBalanceWalletOutlined />,
+      path: `/vaults/${vaultId}/assets`,
+    },
     { text: "Transactions", icon: <ReceiptOutlined />, path: "/transactions" },
   ];
-
-  const handleCopyAddress = () => {
-    if (icpAccount) {
-      navigator.clipboard.writeText(icpAccount).then(() => {
-        setCopySnackbarOpen(true);
-      });
-    }
-  };
 
   const handleCloseSnackbar = () => {
     setCopySnackbarOpen(false);
@@ -74,10 +68,8 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     handleMultipleRouteModalClose();
   };
 
-  const handleUpgradeAccount = async () => {
-    console.log(`Upgrading account ${vaultCanisterId}`);
-    const result = await upgradeAccount(vaultCanisterId!, identity!);
-    console.log("Upgrade result", result);
+  const handleBackToVaults = () => {
+    navigate("/vaults");
   };
 
   const renderMenuItem = (item: MenuItemType) => (
@@ -128,23 +120,22 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
           p: 2,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between", // This ensures space between content and footer
+          justifyContent: "space-between",
         }}
       >
         <Box>
-          <Typography variant="h6" sx={{ mb: 2, px: 2 }}>
-            Vault
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
-            <Tooltip title={icpAccount || "Fetching account"}>
-              <Typography
-                variant="subtitle2"
-                sx={{ textAlign: "center", fontWeight: "bold" }}
-              >
-                {vaultName || "Fetching name"}
-              </Typography>
-            </Tooltip>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <IconButton
+              onClick={handleBackToVaults}
+              sx={{ color: "white", mr: 1 }}
+            >
+              <ArrowBack />
+            </IconButton>
           </Box>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
+            <Typography variant="h6">{vaultName || "Vault"}</Typography>
+          </Box>
+
           <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
             <Typography
               variant="subtitle2"
@@ -171,12 +162,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
           <List>{menuItems.map(renderMenuItem)}</List>
         </Box>
         <Box sx={{ mt: "auto", pt: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowUpward />}
-            fullWidth
-            onClick={handleUpgradeAccount}
-          >
+          <Button variant="outlined" startIcon={<ArrowUpward />} fullWidth>
             Upgrade Account
           </Button>
         </Box>

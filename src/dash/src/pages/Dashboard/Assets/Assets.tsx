@@ -25,7 +25,6 @@ import {
   createIcrcAccount,
   getIcrcAccount,
 } from "../../../api/account";
-import { useAccount } from "../../../contexts/AccountContext";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { TokenData } from "../../../types/assets";
 import { Principal } from "@dfinity/principal";
@@ -35,13 +34,9 @@ import {
   getTokenDecimals,
   getTokenSymbol,
 } from "../../../api/icrc";
-import {
-  base32ToBlob,
-  blobToBase32,
-  hexToBytes,
-} from "../../../util/conversion";
 import { formatIcp, formatIcrc } from "../../../util/units";
 import { ICP_DECIMALS } from "../../../util/constants";
+import { useVaultDetail } from "../../../contexts/VaultDetailContext";
 
 interface Asset {
   name: string;
@@ -66,8 +61,8 @@ const Assets: React.FC = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { vaultCanisterId, icpBalance, icpSubaccount } = useAccount();
   const { identity } = useInternetIdentity();
+  const { vaultCanisterId, nativeAccountId } = useVaultDetail();
 
   const icrcTokenInfo = async (tokenInfo: TokenInfo): Promise<Asset> => {
     const { principalId } = tokenInfo;
@@ -117,7 +112,7 @@ const Assets: React.FC = () => {
   };
 
   const icTokenInfo = async (): Promise<Asset> => {
-    const balance = icpBalance?.toString() || "Unknown";
+    const balance = nativeAccountId?.toString() || "Unknown";
 
     return {
       name: "ICP",
@@ -125,7 +120,7 @@ const Assets: React.FC = () => {
       balance,
       value: "N/A",
       isIcrc: false,
-      subaccount: icpSubaccount!,
+      subaccount: nativeAccountId!,
       decimals: ICP_DECIMALS,
     };
   };
@@ -172,7 +167,7 @@ const Assets: React.FC = () => {
 
   useEffect(() => {
     fetchAssets();
-  }, [vaultCanisterId, identity, icpBalance]);
+  }, [vaultCanisterId, identity, nativeAccountId]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
