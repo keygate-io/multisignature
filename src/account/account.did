@@ -5,15 +5,23 @@ type Decision = record {
   intent_id : nat64;
 };
 type Error = record { message : text };
-type Intent = record {
+type TransactionRequest = record {
   to : text;
-  status : IntentStatus;
   token : text;
-  from : text;
   network : SupportedNetwork;
   amount : nat64;
   intent_type : IntentType;
 };
+
+type Transaction = record {
+  to : text;
+  token : text;
+  network : SupportedNetwork;
+  amount : nat64;
+  intent_type : IntentType;
+  status : IntentStatus;
+};
+
 type IntentStatus = variant {
   Failed : text;
   Rejected : text;
@@ -25,18 +33,15 @@ type IntentType = variant { Swap; Transfer };
 type Result = variant { Ok : text; Err : Error };
 type SupportedNetwork = variant { ETH; ICP };
 service : () -> {
-  add_decision : (Decision) -> ();
-  add_intent : (Intent) -> (nat64);
   add_subaccount : (text) -> (Result);
   add_icrc_account : (text) -> (Result);
-  execute_intent : (nat64) -> (IntentStatus);
+  execute_transaction : (TransactionRequest) -> (IntentStatus);
   get_adapters : () -> (vec text) query;
-  get_decisions : (nat64) -> (vec Decision) query;
-  get_intents : () -> (vec Intent) query;
+  get_transactions : () -> (vec Transaction) query;
   get_signees : () -> (vec principal) query;
   get_tokens : () -> (vec text) query;
   get_subaccount : (text) -> (Result) query;
   get_debug_info : () -> (text) query;
   include_signee : (text) -> ();
-  get_icrc_account : (text) -> (Result) query;
+  get_icrc_account : () -> (text) query;
 }

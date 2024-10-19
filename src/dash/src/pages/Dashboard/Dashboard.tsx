@@ -9,6 +9,7 @@ import {
 import { ContentCopy } from "@mui/icons-material";
 import AccountPageLayout from "../VaultPageLayout";
 import { useVaultDetail } from "../../contexts/VaultDetailContext";
+import { formatIcp } from "../../util/units";
 
 const Dashboard = () => {
   const { isLoading, error, nativeBalance, nativeAccountId } = useVaultDetail();
@@ -23,7 +24,7 @@ const Dashboard = () => {
           <Typography color="error">{error}</Typography>
         ) : (
           <Typography variant="h3" fontWeight="bold">
-            {nativeBalance?.toLocaleString()} ICP
+            {formatIcp(nativeBalance ?? 0n)} ICP
           </Typography>
         )}
       </Box>

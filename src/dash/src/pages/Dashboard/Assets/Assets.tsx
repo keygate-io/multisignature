@@ -10,25 +10,16 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Tabs,
-  Tab,
   Button,
   CircularProgress,
   Chip,
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { VisibilityOff, Add, ContentCopy } from "@mui/icons-material";
-import AddTokenModal from "./AddTokenModal";
-import {
-  getTokens,
-  createIcrcAccount,
-  getIcrcAccount,
-} from "../../../api/account";
+import { VisibilityOff, ContentCopy } from "@mui/icons-material";
+import { getIcrcAccount } from "../../../api/account";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
-import { TokenData } from "../../../types/assets";
 import { Principal } from "@dfinity/principal";
-import { extractTokenData } from "../../../util/token";
 import {
   getTokenBalance,
   getTokenDecimals,
@@ -48,117 +39,78 @@ interface Asset {
   decimals: number;
 }
 
-interface TokenInfo {
-  path: string;
-  network: string;
-  standard: string;
-  principalId: string;
-}
+const NATIVE_ICP_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+const MOCK_ICRC1_CANISTER = "bd3sg-teaaa-aaaaa-qaaba-cai";
 
 const Assets: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
   const [showTokens, setShowTokens] = useState(true);
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { identity } = useInternetIdentity();
-  const { vaultCanisterId, nativeAccountId } = useVaultDetail();
+  const { vaultCanisterId, nativeAccountId, nativeBalance } = useVaultDetail();
 
-  const icrcTokenInfo = async (tokenInfo: TokenInfo): Promise<Asset> => {
-    const { principalId } = tokenInfo;
+  const fetchIcrcTokenInfo = async (canisterId: string): Promise<Asset> => {
     let balance = "Unknown";
 
     const subaccountResult = await getIcrcAccount(
       vaultCanisterId!,
-      Principal.fromText(principalId),
+      Principal.fromText(canisterId),
       identity!
     );
 
-    if (!("Ok" in subaccountResult)) {
-      throw new Error(
-        `Error fetching subaccount for string ${principalId} : ${JSON.stringify(
-          subaccountResult.Err
-        )}`
-      );
-    }
+    console.log("subaccountResult", subaccountResult);
 
     const rawBalance = await getTokenBalance(
-      Principal.fromText(principalId),
+      Principal.fromText(canisterId),
       vaultCanisterId!
     );
 
     if (rawBalance === undefined) {
-      throw new Error(`Error fetching balance for ${tokenInfo.path}:`);
+      throw new Error(`Error fetching balance for ${canisterId}`);
     }
 
     balance = rawBalance.toString();
 
-    const symbol = await getTokenSymbol(Principal.fromText(principalId));
+    const symbol = await getTokenSymbol(Principal.fromText(canisterId));
 
-    const decimals = await getTokenDecimals(Principal.fromText(principalId));
+    const decimals = await getTokenDecimals(Principal.fromText(canisterId));
 
     if (decimals === undefined) {
-      throw new Error(`Error fetching decimals for ${tokenInfo.path}:`);
+      throw new Error(`Error fetching decimals for ${canisterId}`);
     }
 
     return {
       name: `${symbol}`,
       icon: "🔸",
-      balance,
+      balance: formatIcrc(BigInt(balance), decimals),
       value: "N/A",
       isIcrc: true,
       decimals,
     };
   };
 
-  const icTokenInfo = async (): Promise<Asset> => {
-    const balance = nativeAccountId?.toString() || "Unknown";
+  const fetchNativeIcpInfo = async (): Promise<Asset> => {
+    const balance = nativeBalance?.toString() || "0";
 
     return {
       name: "ICP",
       icon: "🔹",
-      balance,
+      balance: formatIcp(nativeBalance || 0n),
       value: "N/A",
       isIcrc: false,
-      subaccount: nativeAccountId!,
       decimals: ICP_DECIMALS,
     };
-  };
-
-  const fetchAssetInfo = async (
-    tokenInfo: TokenInfo
-  ): Promise<Asset | undefined> => {
-    const { network, standard } = tokenInfo;
-
-    try {
-      if (tokenInfo.path.toLowerCase().includes("icp:native")) {
-        return await icTokenInfo();
-      } else {
-        return await icrcTokenInfo(tokenInfo);
-      }
-    } catch (error) {
-      console.error(`Error fetching asset info for ${tokenInfo.path}:`, error);
-    }
   };
 
   const fetchAssets = async () => {
     if (vaultCanisterId && identity) {
       try {
-        setLoading(true);
-        const tokens = await getTokens(vaultCanisterId, identity);
-        console.log("Tokens", tokens);
-        const formattedAssets = await Promise.all(
-          tokens.map(async (token) => {
-            const tokenInfo = extractTokenData(token);
-            const asset = await fetchAssetInfo(tokenInfo);
-            return asset;
-          })
-        );
-        setAssets(
-          formattedAssets.filter((asset) => asset !== undefined) as Asset[]
-        );
+        const nativeIcp = await fetchNativeIcpInfo();
+        const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
+
+        setAssets([nativeIcp, mockIcrc1]);
       } catch (error) {
-        console.error("Error fetching tokens:", error);
+        console.error("Error fetching assets:", error);
       } finally {
         setLoading(false);
       }
@@ -169,40 +121,13 @@ const Assets: React.FC = () => {
     fetchAssets();
   }, [vaultCanisterId, identity, nativeAccountId]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
   const handleTokenVisibility = () => {
     setShowTokens(!showTokens);
   };
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
-  const handleAddToken = async (tokenData: TokenData) => {
-    if (vaultCanisterId && identity) {
-      try {
-        const icrcAccount = await createIcrcAccount(
-          vaultCanisterId,
-          Principal.fromText(tokenData.address),
-          identity
-        );
-        await fetchAssets();
-      } catch (error) {
-        console.error("Error creating ICRC account:", error);
-      }
-    }
-  };
-
   const handleCopySubaccount = (subaccount: string) => {
     navigator.clipboard.writeText(subaccount);
-    // Optionally, you can add a toast notification here to inform the user that the subaccount has been copied
+    // Optionally, add a toast notification here
   };
 
   if (loading) {
@@ -229,13 +154,6 @@ const Assets: React.FC = () => {
           Assets
         </Typography>
 
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-          <Tabs value={tabValue} onChange={handleTabChange} textColor="inherit">
-            <Tab label="Tokens" />
-            <Tab label="NFTs" />
-          </Tabs>
-        </Box>
-
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
           <Button
             variant="outlined"
@@ -243,13 +161,6 @@ const Assets: React.FC = () => {
             onClick={handleTokenVisibility}
           >
             {showTokens ? "Hide" : "Show"} token amounts
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleOpenModal}
-          >
-            Add Token
           </Button>
         </Box>
 
@@ -267,7 +178,6 @@ const Assets: React.FC = () => {
                 <TableCell>Asset</TableCell>
                 <TableCell align="center">Balance</TableCell>
                 <TableCell align="center">Value</TableCell>
-                <TableCell align="center">Subaccount</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -291,44 +201,10 @@ const Assets: React.FC = () => {
                     </Box>
                   </TableCell>
                   <TableCell align="center">
-                    {showTokens
-                      ? asset.isIcrc
-                        ? formatIcrc(BigInt(asset.balance), asset.decimals)
-                        : formatIcp(BigInt(asset.balance))
-                      : "****"}
+                    {showTokens ? asset.balance : "****"}
                   </TableCell>
                   <TableCell align="center">
                     {showTokens ? asset.value : "****"}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ mr: 1 }}>
-                        {asset.subaccount
-                          ? asset.subaccount.slice(0, 6) +
-                            "..." +
-                            asset.subaccount.slice(-6)
-                          : "Default"}
-                      </Typography>
-                      <Tooltip title={"Copy subaccount"}>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            handleCopySubaccount(
-                              asset.subaccount ||
-                                "0000000000000000000000000000000000000000000000000000000000000000"
-                            )
-                          }
-                        >
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -336,11 +212,6 @@ const Assets: React.FC = () => {
           </Table>
         </TableContainer>
       </Box>
-      <AddTokenModal
-        open={modalOpen}
-        handleClose={handleCloseModal}
-        handleAddToken={handleAddToken}
-      />
     </AccountPageLayout>
   );
 };

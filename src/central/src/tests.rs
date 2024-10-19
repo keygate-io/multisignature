@@ -402,3 +402,25 @@ fn state_should_persist_as_stable_memory() {
         }
     }
 }
+
+#[test]
+fn get_vault_by_id_should_return_none_if_vault_not_found() {
+    let pic = PocketIc::new();
+    let central_id = pic.create_canister();
+    pic.add_cycles(central_id, 2_000_000_000_000);
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/central.wasm").to_vec();
+    pic.install_canister(central_id, wasm_module, Vec::new(), None);
+
+    let query_result = pic.query_call(central_id, Principal::anonymous(), "get_vault_by_id", encode_one(Principal::anonymous()).unwrap());
+
+    match query_result.unwrap() {
+        pocket_ic::WasmResult::Reply(bytes) => {
+            let vault = Decode!(&bytes, Option<Vault>);
+            assert!(vault.is_ok(), "Failed to decode Option<Vault>: {:?}", vault.unwrap_err());
+            assert!(vault.unwrap().is_none(), "Expected None but got Some(Vault)");
+        },
+        pocket_ic::WasmResult::Reject(msg) => {
+            panic!("Canister rejected 'get_vault_by_id' call: {}", msg);
+        },
+    };
+}

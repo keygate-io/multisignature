@@ -1,6 +1,5 @@
-use std::{collections::HashMap, future::Future, pin::Pin, str::FromStr};
+use std::{collections::HashMap, future::Future, pin::Pin};
 
-use b3_utils::ledger::ICRCAccount;
 use candid::{CandidType, Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
@@ -10,29 +9,29 @@ use serde_bytes::ByteBuf;
 
 use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS};
 
-use std::{borrow::Cow, collections::LinkedList, fmt::{self, Display}};
+use std::{borrow::Cow, fmt::{self, Display}};
 
 use ic_cdk::{query, update};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{DECISIONS, INTENTS};
+use crate::{TRANSACTIONS};
 
 pub(crate) trait BlockchainAdapter: DynClone {
     fn network(&self) -> SupportedNetwork;
     fn token(&self) -> String;
-    fn intent_type(&self) -> IntentType;
-    fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>>;
+    fn intent_type(&self) -> TransactionType;
+    fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>>;
 }
 
 dyn_clone::clone_trait_object!(BlockchainAdapter);
 
 type TokenPath = String;
 
-pub async fn execute(intent: &Intent) -> IntentStatus {
-    let it: &'static str = intent.intent_type().into();
+pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
+    let it: &'static str = transaction.transaction_type.clone().into();
 
-    let token = intent.token();
+    let token = transaction.token.clone();
 
     // if icrc, ignore last token : split of str
     let token_parts: Vec<&str> = token.split(':').collect();
@@ -40,7 +39,7 @@ pub async fn execute(intent: &Intent) -> IntentStatus {
         // For ICRC, ignore the last part
         token_parts[..token_parts.len() - 1].join(":") + ":" + it.to_ascii_lowercase().as_str()
     } else {
-        token.to_string() + "false:" + it
+        token.to_string() + ":" + it.to_ascii_lowercase().as_str()
     };
 
     let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
@@ -48,7 +47,7 @@ pub async fn execute(intent: &Intent) -> IntentStatus {
     });
 
 
-    match adapter.execute(intent).await {
+    match adapter.execute(transaction).await {
         Ok(status) => status,
         Err(e) => {
             println!("Error executing intent: {}", e);
@@ -61,7 +60,7 @@ pub async fn execute(intent: &Intent) -> IntentStatus {
 pub struct ICPNativeTransferAdapter {
     pub(crate) network: SupportedNetwork,
     pub(crate) token: TokenPath,
-    pub(crate) intent_type: IntentType,
+    pub(crate) intent_type: TransactionType,
 }
 
 type ICPNativeTransferArgs = TransferArgs;
@@ -81,17 +80,17 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
         self.token.clone()
     }
 
-    fn intent_type(&self) -> IntentType {
+    fn intent_type(&self) -> TransactionType {
         self.intent_type.clone()
     }
 
-    fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
+    fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             println!("Executing ICPAdapter");
 
             let args = ICPNativeTransferArgs {
-                to: AccountIdentifier::from_hex(intent.to().as_str()).unwrap(),
-                amount: Tokens::from_e8s(intent.amount()),
+                to: AccountIdentifier::from_hex(&transaction.to).unwrap(),
+                amount: Tokens::from_e8s(transaction.amount),
                 fee: Tokens::from_e8s(RECOMMENDED_TRANSACTION_FEE),
                 memo: Memo(0),
                 from_subaccount: Some(to_subaccount(0)),
@@ -111,7 +110,7 @@ impl ICPNativeTransferAdapter {
         ICPNativeTransferAdapter {
             network: SupportedNetwork::ICP,
             token: "icp:native".to_string(),
-            intent_type: IntentType::Transfer,
+            intent_type: TransactionType::Transfer,
         }
     }
 
@@ -134,7 +133,7 @@ impl ICPNativeTransferAdapter {
 pub struct ICRC1TransferAdapter {
     pub(crate) network: SupportedNetwork,
     pub(crate) token: TokenPath,
-    pub(crate) intent_type: IntentType,
+    pub(crate) intent_type: TransactionType,
 }
 
 impl BlockchainAdapter for ICRC1TransferAdapter {
@@ -146,14 +145,14 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
         self.token.clone()
     }
 
-    fn intent_type(&self) -> IntentType {
+    fn intent_type(&self) -> TransactionType {
         self.intent_type.clone()
     }
 
-    fn execute<'a>(&'a self, intent: &'a Intent) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
+    fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             println!("Executing ICRC1Adapter");
-            match self.transfer(intent).await {
+            match self.transfer(transaction).await {
                 // TODO: include the name or symbol of the token
                 Ok(_) => Ok(IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())),
                 Err(e) => Err(e.to_string()),
@@ -168,7 +167,7 @@ impl ICRC1TransferAdapter {
         ICRC1TransferAdapter {
             network: SupportedNetwork::ICP,
             token: "icp:icrc1".to_string(),
-            intent_type: IntentType::Transfer,
+            intent_type: TransactionType::Transfer,
         }
     }
     
@@ -180,20 +179,20 @@ impl ICRC1TransferAdapter {
         Ok(parts[2].to_string())
     }
 
-    async fn transfer(&self, intent: &Intent) -> Result<Nat, String> {
+    async fn transfer(&self, transaction: &TransactionRequest) -> Result<Nat, String> {
         let args = ICRC1TransferArgs {
             to: Account {
-                owner: Principal::from_text(intent.to()).unwrap(),
+                owner: Principal::from_text(&transaction.to).unwrap(),
                 subaccount: None
             },
-            amount: Nat::from(intent.amount()),
+            amount: Nat::from(transaction.amount),
             fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
             memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
             from_subaccount: Some(get_default_icrc_subaccount().0),
             created_at_time: None,
         };
 
-        let token_identifier  = ICRC1TransferAdapter::extract_token_identifier(intent.token())?;
+        let token_identifier  = ICRC1TransferAdapter::extract_token_identifier(transaction.token.clone())?;
         let principal = Principal::from_text(&token_identifier).unwrap();
 
         let transfer_result: CallResult<(Result<Nat, TransferError>,)> = ic_cdk::call(principal, "icrc1_transfer", (args,)).await;
@@ -212,7 +211,7 @@ impl ICRC1TransferAdapter {
 
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
-pub enum IntentType {
+pub enum TransactionType {
     Swap,
     Transfer,
 }
@@ -281,12 +280,49 @@ impl Display for Token {
 /// ```
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Intent {
-    pub intent_type: IntentType,
+    pub transaction_type: TransactionType,
     pub amount: u64,
     pub token: TokenPath,
     pub to: String,
     pub network: SupportedNetwork,
     pub status: IntentStatus
+}
+
+
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct TransactionRequest {
+    pub transaction_type: TransactionType,
+    pub amount: u64,
+    pub token: TokenPath,
+    pub to: String,
+    pub network: SupportedNetwork,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct Transaction {
+    pub status: IntentStatus,
+    pub to: String,
+    pub token: TokenPath,
+    pub network: SupportedNetwork,
+    pub amount: u64,
+    pub intent_type: TransactionType,
+}
+
+impl Storable for Transaction {
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 1024,
+        is_fixed_size: false,
+    };
+
+    fn to_bytes(&self) -> Cow<[u8]> {
+        let serialized = serde_cbor::to_vec(self).expect("Serialization failed");
+        Cow::Owned(serialized)
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        let deserialized: Transaction = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
+        deserialized
+    }
 }
 
 impl Intent {
@@ -298,8 +334,8 @@ impl Intent {
         self.token.clone()
     }
 
-    pub fn intent_type(&self) -> IntentType {
-        self.intent_type.clone()
+    pub fn intent_type(&self) -> TransactionType {
+        self.transaction_type.clone()
     }
 
     pub fn status(&self) -> IntentStatus {
@@ -367,82 +403,35 @@ pub fn get_adapters() -> Vec<String> {
     })
 }
 
-#[update]
-pub fn add_intent(intent: Intent) -> u64 {
-    let mut id = 0;
-
-    INTENTS.with(|intents| {
-        id = intents.borrow().len();
-        let intents = intents.borrow_mut();
-        intents.append(&intent).expect("Failed to add intent");
-    });
-
-    id
-}
-
-#[update]
-pub fn add_decision(decision: Decision) {
-    // TODO: Guard checking internet identity
-    DECISIONS.with(|decisions| {
-        let mut decisions = decisions.borrow_mut();
-        let decision_list = decisions.entry(decision.intent_id).or_insert(LinkedList::new());
-        decision_list.push_back(decision);
-    });
-}
-
 #[query]
-pub fn get_intents() -> Vec<Intent> {
-    INTENTS.with(|intents| {
-        let intents = intents.borrow();
-        intents.iter().collect()
+pub fn get_transactions() -> Vec<Transaction> {
+    TRANSACTIONS.with(|transactions| {
+        let transactions = transactions.borrow();
+        transactions.iter().collect()
     })
 }
 
-#[query]
-pub fn get_decisions(intent_id: u64) -> LinkedList<Decision> {
-    DECISIONS.with(|decisions| {
-        let decisions = decisions.borrow();
-        match decisions.get(&intent_id) {
-            Some(decision_list) => decision_list.clone(),
-            None => LinkedList::new()
-        }
-    })
-}
 
 #[update]
-pub async fn execute_intent(intent_id: u64) -> IntentStatus {
-    let intent_option = INTENTS.with(|intents| {
-        let intents = intents.borrow();
-        intents.get(intent_id)
-    });
+pub async fn execute_transaction(transaction: TransactionRequest) -> IntentStatus {
+    let execution_result = super::execute(&transaction).await;
+    
+    TRANSACTIONS.with(|transactions| {
+        let transactions = transactions.borrow_mut();
+        let transaction = Transaction {
+            status: execution_result.clone(),
+            to: transaction.to,
+            token: transaction.token,
+            network: transaction.network,
+            amount: transaction.amount,
+            intent_type: transaction.transaction_type,
+        };
 
-    match intent_option {
-        Some(intent) => {
-            // Start execution
-            let execution_result = super::execute(&intent).await;
-
-            // Update the intent's status in storage
-            update_intent_status(intent_id, execution_result.clone());
-
-            execution_result
-        },
-        None => IntentStatus::Failed("Intent not found".to_string()),
-    }
-}
-
-
-// Helper function to update intent status
-fn update_intent_status(intent_id: u64, new_status: IntentStatus) {
-    INTENTS.with(|intents| {
-        let intents = intents.borrow_mut();
-        let intent = intents.get(intent_id);    
-        match intent {
-            Some(mut intent) => {
-                intent.status = new_status;
-            }
-            None => {
-                panic!("Intent not found");
-            }
+        match transactions.append(&transaction) {
+            Ok(_) => (),
+            Err(e) => panic!("Failed to append transaction: {:?}", e),
         }
     });
+
+    execution_result
 }

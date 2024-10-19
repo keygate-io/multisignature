@@ -19,16 +19,18 @@ import {
   InfoOutlined as InfoIcon,
 } from "@mui/icons-material";
 import AccountPageLayout from "../../VaultPageLayout";
-import { getIntents } from "../../../api/account";
 import {
-  Intent,
+  TransactionRequest,
   IntentStatus,
+  Transaction,
 } from "../../../../../declarations/account/account.did";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
+import { TOKEN_URN_TO_SYMBOL } from "../../../util/constants";
+import { getTransactions } from "../../../api/account";
 
 const Transactions: React.FC = () => {
-  const [intents, setIntents] = useState<Intent[]>([]);
+  const [intents, setIntents] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const { vaultCanisterId, nativeAccountId } = useVaultDetail();
@@ -36,10 +38,14 @@ const Transactions: React.FC = () => {
 
   useEffect(() => {
     const fetchIntents = async () => {
-      if (nativeAccountId) {
+      if (vaultCanisterId && nativeAccountId) {
         setIsLoading(true);
         try {
-          const fetchedIntents = await getIntents(vaultCanisterId!, identity!);
+          const fetchedIntents = await getTransactions(
+            vaultCanisterId,
+            identity!
+          );
+          console.log("Fetched intents:", fetchedIntents);
           setIntents(fetchedIntents || []);
         } catch (error) {
           console.error("Error fetching intents:", error);
@@ -67,8 +73,10 @@ const Transactions: React.FC = () => {
   };
 
   const formatAmount = (amount: bigint, token: string) => {
-    const formattedAmount = Number(amount) / 100000000;
-    return `${formattedAmount.toFixed(8)} ${token}`;
+    const formattedAmount = Number(amount);
+    return `${formattedAmount.toFixed(2).toLocaleString()} ${
+      TOKEN_URN_TO_SYMBOL[token]
+    }`;
   };
 
   const getIntentStatus = (status: IntentStatus): string => {
@@ -135,7 +143,6 @@ const Transactions: React.FC = () => {
                 }
                 secondary={
                   <React.Fragment>
-                    <Typography variant="body2">From: {intent.from}</Typography>
                     <Typography variant="body2">To: {intent.to}</Typography>
                     <Box
                       sx={{

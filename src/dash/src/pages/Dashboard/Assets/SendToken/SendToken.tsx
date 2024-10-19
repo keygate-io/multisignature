@@ -15,20 +15,17 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Buffer } from "buffer";
-import {
-  addIntent,
-  createIntent,
-  executeIntent,
-  getTokens,
-} from "../../../../api/account";
 import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
 import { getTokenSymbol, getTokenDecimals } from "../../../../api/icrc";
 import { Principal } from "@dfinity/principal";
 import { extractTokenData } from "../../../../util/token";
-import { formatCommaSeparated } from "../../../../util/units";
+import { formatCommaSeparated, icpToE8s } from "../../../../util/units";
 import { ICP_DECIMALS } from "../../../../util/constants";
-import ConfirmationView from "./ConfirmationView";
 import { useVaultDetail } from "../../../../contexts/VaultDetailContext";
+import { useNavigate } from "react-router-dom";
+import { TransactionRequest } from "../../../../../../declarations/account/account.did";
+import { executeTransaction } from "../../../../api/account";
+import ConfirmationView from "./ConfirmationView";
 
 if (typeof window !== "undefined") {
   window.Buffer = Buffer;
@@ -117,7 +114,7 @@ const SendToken: React.FC = () => {
   const [tokenDecimals, setTokenDecimals] = useState<number>(ICP_DECIMALS);
   const [formattedAmount, setFormattedAmount] = useState<string>("");
   const { vaultCanisterId, nativeAccountId } = useVaultDetail();
-
+  const navigate = useNavigate();
   const handleRecipientChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -152,26 +149,26 @@ const SendToken: React.FC = () => {
     setError(null);
 
     try {
-      const intent = createIntent(
-        BigInt(amount),
+      const intent = {
+        amount: icpToE8s(BigInt(amount)),
         token,
-        recipient,
-        nativeAccountId
-      );
-      const intentId = await addIntent(vaultCanisterId, intent, identity!);
-
-      if (!intentId) {
-        console.log("intent_id", intentId);
-        setError("Could not create intent.");
-        return;
-      }
+        to: recipient,
+        network: { ICP: null },
+        intent_type: { Transfer: null },
+        from: nativeAccountId,
+      };
 
       setCurrentStep(2);
 
-      const result = await executeIntent(vaultCanisterId, intentId, identity!);
+      const result = await executeTransaction(
+        vaultCanisterId,
+        intent,
+        identity!
+      );
 
       if ("Completed" in result) {
-        setCurrentStep(3);
+        navigate(`/vaults/${vaultCanisterId}/transactions`);
+        setError(null);
       } else if ("Failed" in result) {
         setError(`Transaction failed: ${JSON.stringify(result)}`);
       } else {
@@ -188,7 +185,12 @@ const SendToken: React.FC = () => {
   useEffect(() => {
     async function fetchTokens() {
       if (vaultCanisterId && identity) {
-        const fetchedTokens = await getTokens(vaultCanisterId, identity);
+        const fetchedTokens = [
+          "icp:native",
+          `icp:icrc1:${process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER}`,
+          "icp:test2",
+          "icp:test3",
+        ];
         setTokens(fetchedTokens);
       }
     }

@@ -51,7 +51,11 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
       icon: <AccountBalanceWalletOutlined />,
       path: `/vaults/${vaultId}/assets`,
     },
-    { text: "Transactions", icon: <ReceiptOutlined />, path: "/transactions" },
+    {
+      text: "Transactions",
+      icon: <ReceiptOutlined />,
+      path: `/vaults/${vaultId}/transactions`,
+    },
   ];
 
   const handleCloseSnackbar = () => {
@@ -63,7 +67,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
   const handleMultipleRouteOptionSelect = (option: string) => {
     if (option === "send-token") {
-      navigate("/assets/send-token");
+      navigate(`/vaults/${vaultId}/assets/send-token`);
     }
     handleMultipleRouteModalClose();
   };

@@ -1,7 +1,6 @@
 use candid::Principal;
 use ic_ledger_types::{AccountIdentifier as LedgerAccountIdentifier, Subaccount};
 
-
 pub fn to_subaccount(nonce: u32) -> Subaccount {
     let mut subaccount = Subaccount([0; 32]);
     let nonce_bytes = nonce.to_be_bytes();

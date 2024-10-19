@@ -10,9 +10,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
-import { useAccount } from "../../../../contexts/AccountContext";
 import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
-import { getTokens } from "../../../../api/account";
+import { useParams } from "react-router-dom";
+import { Principal } from "@dfinity/principal";
 
 interface SendFormProps {
   recipient: string;
@@ -35,14 +35,14 @@ const SendForm: React.FC<SendFormProps> = ({
 }) => {
   const [tokenOptions, setTokenOptions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { vaultCanisterId } = useAccount();
   const { identity } = useInternetIdentity();
+  const { vaultId } = useParams();
 
   useEffect(() => {
     const fetchTokens = async () => {
-      if (vaultCanisterId && identity) {
+      if (vaultId && identity) {
         try {
-          const tokens = await getTokens(vaultCanisterId, identity);
+          const tokens = ["icp:native", "icp:test"];
           setTokenOptions(tokens);
         } catch (error) {
           console.error("Error fetching tokens:", error);
@@ -53,7 +53,7 @@ const SendForm: React.FC<SendFormProps> = ({
     };
 
     fetchTokens();
-  }, [vaultCanisterId, identity]);
+  }, [vaultId, identity]);
 
   if (isLoading) {
     return (

@@ -3,8 +3,8 @@ import { Identity } from "@dfinity/agent";
 import { createActor as createCentralActor } from "../../../declarations/central";
 import { createActor as createAccountActor } from "../../../declarations/account";
 import {
-  Intent,
   IntentStatus,
+  TransactionRequest,
 } from "../../../declarations/account/account.did";
 import { Vault } from "../../../declarations/central/central.did";
 
@@ -69,14 +69,6 @@ export function getSubaccount(
   return getAccountActor(account_canister_id, identity).get_subaccount(token);
 }
 
-export function addIntent(
-  account_canister_id: Principal,
-  intent: Intent,
-  identity: Identity
-) {
-  return getAccountActor(account_canister_id, identity).add_intent(intent);
-}
-
 export function getAdapters(
   account_canister_id: Principal,
   identity: Identity
@@ -84,50 +76,23 @@ export function getAdapters(
   return getAccountActor(account_canister_id, identity).get_adapters();
 }
 
-export function executeIntent(
+export function executeTransaction(
   account_canister_id: Principal,
-  intent_id: bigint,
+  request: TransactionRequest,
   identity: Identity
 ): Promise<IntentStatus> {
-  return getAccountActor(account_canister_id, identity).execute_intent(
-    intent_id
+  return getAccountActor(account_canister_id, identity).execute_transaction(
+    request
   );
 }
 
-export function createIntent(
-  amount: bigint,
-  token: string,
-  to: string,
-  from: string
-): Intent {
-  return {
-    intent_type: { Transfer: null },
-    amount,
-    token,
-    to,
-    from,
-    network: { ICP: null },
-    status: { Pending: "Pending" },
-  };
+export function getTransactions(account_canister_id: Principal, identity: Identity) {
+  return getAccountActor(account_canister_id, identity).get_transactions();
 }
 
-export function getIntents(account_canister_id: Principal, identity: Identity) {
-  return getAccountActor(account_canister_id, identity).get_intents();
-}
-
-export function getDecisions(
-  account_canister_id: Principal,
-  intent_id: bigint,
-  identity: Identity
-) {
-  return getAccountActor(account_canister_id, identity).get_decisions(
-    intent_id
-  );
-}
-
-export function getTokens(account_canister_id: Principal, identity: Identity) {
-  return getAccountActor(account_canister_id, identity).get_tokens();
-}
+// export function getTokens(account_canister_id: Principal, identity: Identity) {
+//   return getAccountActor(account_canister_id, identity).get_tokens();
+// }
 
 export async function createIcrcAccount(
   principal_id: Principal,
@@ -144,9 +109,7 @@ export async function getIcrcAccount(
   token_principal_id: Principal,
   identity: Identity
 ) {
-  return getAccountActor(account_canister_id, identity).get_icrc_account(
-    `icp:icrc1:${token_principal_id}`
-  );
+  return getAccountActor(account_canister_id, identity).get_icrc_account();
 }
 
 export function getDebugInfo(

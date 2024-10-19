@@ -53,8 +53,7 @@
       "source": [
         "src/landing/dist"
       ],
-      "type": "assets",
-      "workspace": "landing"
+      "type": "assets"
     }
   },
   "defaults": {

@@ -102,14 +102,27 @@ dfx canister install icrc1_ledger_canister --argument "(variant { Init = record 
   feature_flags = null;
 }})"
 
-# Step 11: Deploy the remaining canisters
-deploy_output=$(dfx deploy 2>&1)
+# Step 11: Deploy the remaining canisters in the specified order
+deploy_canisters() {
+    local canisters=("landing", "ledger" "icrc1_ledger_canister" "internet_identity" "dash" "account" "central")
+    for canister in "${canisters[@]}"; do
+        echo "Deploying $canister..."
+        deploy_output=$(dfx deploy "$canister" 2>&1)
+        if echo "$deploy_output" | grep -q "Deployed canisters"; then
+            echo "$canister deployed successfully."
+        else
+            echo "$deploy_output"
+            echo "Deployment of $canister failed. Please check the error messages above."
+            return 1
+        fi
+    done
+    return 0
+}
 
-if echo "$deploy_output" | grep -q "Deployed canisters"; then
-  echo "You can now interact with the ledger canisters using CLI commands or the Candid UI."
+if deploy_canisters; then
+    echo "All canisters deployed successfully."
 else
-  echo "$deploy_output"
-  echo "Deployment failed. Please check the error messages above."
+    echo "Deployment process encountered errors. Please review the output above."
 fi
 
 # Capture canister IDs
@@ -121,8 +134,8 @@ CENTRAL_CANISTER_ID=$(dfx canister id central)
 INTERNET_IDENTITY_CANISTER_ID=$(dfx canister id internet_identity)
 
 # Extract URLs from deploy output
-FRONTEND_URLS=$(echo "$deploy_output" | grep -A 4 "Frontend canister via browser" | grep "http" | sed 's/^[[:space:]]*//')
-BACKEND_URLS=$(echo "$deploy_output" | grep -A 6 "Backend canister via Candid interface:" | grep "http" | sed 's/^[[:space:]]*//')
+FRONTEND_URLS=$(dfx canister info dash | grep "Frontend canister via browser" -A 1 | tail -n 1)
+BACKEND_URLS=$(dfx canister info dash | grep "Backend canister via Candid interface:" -A 1 | tail -n 1)
 
 # Create .debug file with exported variables, canister IDs, and URLs
 cat << EOF > .debug

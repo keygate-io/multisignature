@@ -27,24 +27,24 @@ interface MultipleRouteModalProps {
 }
 
 const modalOptions = [
-  {
-    title: "Add another signer",
-    description: "Improve the security of your Smart Account",
-    icon: <PersonAddIcon />,
-    key: "add-signer",
-  },
-  {
-    title: "Swap tokens",
-    description: "Trade any token",
-    icon: <SwapHorizIcon />,
-    key: "swap-tokens",
-  },
-  {
-    title: "Custom transaction",
-    description: "Compose custom contract interactions",
-    icon: <CodeIcon />,
-    key: "custom-transaction",
-  },
+  // {
+  //   title: "Add another signer",
+  //   description: "Improve the security of your Smart Account",
+  //   icon: <PersonAddIcon />,
+  //   key: "add-signer",
+  // },
+  // {
+  //   title: "Swap tokens",
+  //   description: "Trade any token",
+  //   icon: <SwapHorizIcon />,
+  //   key: "swap-tokens",
+  // },
+  // {
+  //   title: "Custom transaction",
+  //   description: "Compose custom contract interactions",
+  //   icon: <CodeIcon />,
+  //   key: "custom-transaction",
+  // },
   {
     title: "Send token",
     description: "Send tokens to another address",

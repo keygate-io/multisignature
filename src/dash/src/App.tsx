@@ -44,12 +44,12 @@ function App() {
               >
                 <Route index element={<Dashboard />} />
                 <Route path="assets" element={<Assets />} />
+                <Route path="assets/send-token" element={<SendToken />} />
+                <Route path="transactions" element={<Transactions />} />
               </Route>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="new-profile/create" element={<CreateProfile />} />
               <Route path="new-account/create" element={<CreateAccount />} />
-              <Route path="assets/send-token" element={<SendToken />} />
-              <Route path="transactions" element={<Transactions />} />
             </Route>
           </Routes>
         </ConfigProvider>

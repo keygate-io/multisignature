@@ -8,7 +8,7 @@ use b3_utils::{ledger::ICRCAccount, Subaccount};
 use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
 use ic_ledger_types::AccountIdentifier;
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableCell, StableLog};
+use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog};
 use intent::*;
 use serde::{Deserialize, Serialize};
 use ledger::*;
@@ -25,7 +25,7 @@ thread_local! {
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
-    pub static INTENTS: RefCell<StableLog<Intent, VM, VM>> = RefCell::new(
+    pub static TRANSACTIONS: RefCell<StableLog<Transaction, VM, VM>> = RefCell::new(
         StableLog::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_INDEX_MEMORY)),
             MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_DATA_MEMORY)),

@@ -246,72 +246,9 @@ mod intent_tests {
     use num_bigint::ToBigUint;
     use pocket_ic::{common::rest::base64, WasmResult};
 
-    use crate::{ledger, types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs}, Intent, IntentStatus, IntentType, SupportedNetwork};
+    use crate::{ledger, types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs}, Intent, IntentStatus, TransactionType, SupportedNetwork, TransactionRequest};
 
     use super::*;
-
-    #[test]
-    fn should_add_intent_ok() {
-        let receiver = generate_principal();
-
-        let pic = PocketIc::new();
-        let caller = generate_principal();
-
-        let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-        pic.add_cycles(account_id, 2_000_000_000_000);
-
-        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-        let receiver_account_id = ledger::to_subaccount_id_from_principal(receiver, to_subaccount(0));
-
-        let signer = generate_principal();
-
-        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-        let wasm_result = pic.update_call(account_id, caller, "include_signee", encode_one(signer).unwrap());
-
-        match wasm_result.unwrap() {
-            pocket_ic::WasmResult::Reject(reject_message) => {
-                panic!("Update call failed: {}", reject_message);
-            },
-            pocket_ic::WasmResult::Reply(_) => {
-                let sample_intent = Intent {
-                    intent_type: crate::IntentType::Transfer,
-                    amount: 100_000_000_000,
-                    network: crate::SupportedNetwork::ICP,
-                    to: receiver_account_id.to_hex(),
-                    token: "icp:native".to_string(),
-                    status: crate::IntentStatus::Pending("".to_string())
-                };
-
-                let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one(sample_intent.clone()).unwrap());
-
-                match wasm_result.unwrap() {
-                    pocket_ic::WasmResult::Reject(reject_message) => {
-                        panic!("Update call failed: {}", reject_message);
-                    },
-                    pocket_ic::WasmResult::Reply(_) => {
-                        let wasm_result = pic.query_call(account_id, caller,"get_intents",  encode_one(()).unwrap());
-
-                        match wasm_result.unwrap() {
-                            pocket_ic::WasmResult::Reject(reject_message) => {
-                                panic!("Query call failed: {}", reject_message);
-                            },
-                            pocket_ic::WasmResult::Reply(reply) => {
-                                let intents = Decode!(&reply, Vec<Intent>);
-
-                                match intents {
-                                    Ok(intents) => assert_eq!(intents, vec![sample_intent]),
-                                    Err(e) => panic!("Error decoding intents: {}", e)
-                                }
-                            }
-                        }
-                    },
-                }
-            }
-        }
-    }
 
     #[test]
     fn should_transfer_icrc1() {
@@ -375,30 +312,21 @@ mod intent_tests {
 
         pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-        println!("icrc principal id is {}", icrc_ledger.to_string());
-
-        let wasm_result = pic.update_call(account_id, caller, "add_intent", encode_one(Intent {
-            intent_type: crate::IntentType::Transfer,
-            amount: 100_000_000_000,
-            network: crate::SupportedNetwork::ICP,
+        let wasm_result = pic.update_call(account_id, caller, "execute_transaction", encode_one(TransactionRequest {
             to: format!("{}", receiver.to_text()),
-            token: "icp:icrc1:".to_string() + &icrc_ledger.to_string(),
-            status: crate::IntentStatus::Pending("".to_string())
+            network: crate::SupportedNetwork::ICP,
+            amount: 100_000_000_000,
+            transaction_type: crate::TransactionType::Transfer,
+            token: "icp:icrc1:".to_string() + &icrc_ledger.to_string()
         }).unwrap());
-
-        if wasm_result.is_err() {
-            panic!("Update call failed: {:?}", wasm_result);
-        }
-
-        let wasm_result = pic.update_call(account_id, caller, "execute_intent", encode_one(0 as u64).unwrap());
 
         match wasm_result.unwrap() {
             pocket_ic::WasmResult::Reject(reject_message) => {
                 panic!("Update call failed: {}", reject_message);
             },
             pocket_ic::WasmResult::Reply(result) => {
-                let intent_status = Decode!(&result, IntentStatus).unwrap();
-                assert_eq!(intent_status, IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string()));
+                let tx_status = Decode!(&result, IntentStatus).unwrap();
+                assert_eq!(tx_status, IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string()));
             }
         }
 
@@ -423,6 +351,7 @@ mod intent_tests {
                 }
             }
         }
+
     }
 
     #[test]
@@ -458,7 +387,7 @@ mod intent_tests {
         // Create an intent to transfer ICP
         let transfer_amount = 100_000_000; // 1 ICP
         let intent = Intent {
-            intent_type: IntentType::Transfer,
+            transaction_type: TransactionType::Transfer,
             amount: transfer_amount,
             network: SupportedNetwork::ICP,
             to: AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT).to_string(),
