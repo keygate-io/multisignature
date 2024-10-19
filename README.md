@@ -74,11 +74,10 @@ dfx canister call icrc1_ledger_canister icrc1_transfer '(
   record {
     from_subaccount = null;
     to = record {
-      owner = principal "<RECIPIENT_PRINCIPAL>";
-      subaccount = opt blob "<SUBACCOUNT>";
+      owner = principal "avqkn-guaaa-aaaaa-qaaea-cai"
     };
     amount = 200_000_000_000;
-    fee = opt 1_000_000;
+    fee = opt 0;        
     memo = null;
     created_at_time = null;
   }
