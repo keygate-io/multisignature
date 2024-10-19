@@ -14,6 +14,10 @@ import { formatIcp } from "../../util/units";
 const Dashboard = () => {
   const { isLoading, error, nativeBalance, nativeAccountId } = useVaultDetail();
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
   return (
     <AccountPageLayout>
       <Typography variant="h5">Total asset value</Typography>
@@ -40,7 +44,11 @@ const Dashboard = () => {
             variant="outlined"
             size="small"
           />
-          <IconButton size="small" sx={{ ml: 1 }}>
+          <IconButton
+            size="small"
+            sx={{ ml: 1 }}
+            onClick={() => copyToClipboard(nativeAccountId)}
+          >
             <ContentCopy />
           </IconButton>
         </Box>

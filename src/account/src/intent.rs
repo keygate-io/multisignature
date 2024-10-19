@@ -35,6 +35,8 @@ pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
 
     // if icrc, ignore last token : split of str
     let token_parts: Vec<&str> = token.split(':').collect();
+    ic_cdk::println!("Token parts: {:?}", token_parts);
+
     let token_key = if token_parts.len() > 2 && token_parts[1] == "icrc1" {
         // For ICRC, ignore the last part
         token_parts[..token_parts.len() - 1].join(":") + ":" + it.to_ascii_lowercase().as_str()
@@ -42,15 +44,19 @@ pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
         token.to_string() + ":" + it.to_ascii_lowercase().as_str()
     };
 
+    ic_cdk::println!("Token key: {:?}", token_key);
+
+    ic_cdk::println!("Searching for adapter...");
     let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
         dyn_clone::clone_box(adapters.borrow().get(&token_key).expect(&format!("Adapter not found for {}", token_key)))
     });
-
+    
+    ic_cdk::println!("Adapter found.");
 
     match adapter.execute(transaction).await {
         Ok(status) => status,
         Err(e) => {
-            println!("Error executing intent: {}", e);
+            ic_cdk::println!("Error executing intent: {}", e);
             IntentStatus::Failed(e)
         }
     }
@@ -86,7 +92,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
 
     fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
-            println!("Executing ICPAdapter");
+            ic_cdk::println!("Executing ICPAdapter");
 
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(&transaction.to).unwrap(),
@@ -96,6 +102,8 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
                 from_subaccount: Some(to_subaccount(0)),
                 created_at_time: None,
             };
+
+            ic_cdk::println!("Args: {:?}", args);
 
             match ICPNativeTransferAdapter::transfer(args).await {
                 Ok(_) => Ok(IntentStatus::Completed("Successfully transferred native ICP.".to_string())),
@@ -151,7 +159,7 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
 
     fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
-            println!("Executing ICRC1Adapter");
+            ic_cdk::println!("Executing ICRC1Adapter");
             match self.transfer(transaction).await {
                 // TODO: include the name or symbol of the token
                 Ok(_) => Ok(IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())),
@@ -180,6 +188,8 @@ impl ICRC1TransferAdapter {
     }
 
     async fn transfer(&self, transaction: &TransactionRequest) -> Result<Nat, String> {
+        ic_cdk::println!("Executing ICRC1TransferAdapter");
+
         let args = ICRC1TransferArgs {
             to: Account {
                 owner: Principal::from_text(&transaction.to).unwrap(),
@@ -191,6 +201,8 @@ impl ICRC1TransferAdapter {
             from_subaccount: Some(get_default_icrc_subaccount().0),
             created_at_time: None,
         };
+
+        ic_cdk::println!("Args: {:?}", args);
 
         let token_identifier  = ICRC1TransferAdapter::extract_token_identifier(transaction.token.clone())?;
         let principal = Principal::from_text(&token_identifier).unwrap();
@@ -305,7 +317,7 @@ pub struct Transaction {
     pub token: TokenPath,
     pub network: SupportedNetwork,
     pub amount: u64,
-    pub intent_type: TransactionType,
+    pub transaction_type: TransactionType,
 }
 
 impl Storable for Transaction {
@@ -414,7 +426,11 @@ pub fn get_transactions() -> Vec<Transaction> {
 
 #[update]
 pub async fn execute_transaction(transaction: TransactionRequest) -> IntentStatus {
+    ic_cdk::println!("Executing transaction: {:?}", transaction);
+
     let execution_result = super::execute(&transaction).await;
+
+    ic_cdk::println!("Execution result: {:?}", execution_result);
     
     TRANSACTIONS.with(|transactions| {
         let transactions = transactions.borrow_mut();
@@ -424,9 +440,10 @@ pub async fn execute_transaction(transaction: TransactionRequest) -> IntentStatu
             token: transaction.token,
             network: transaction.network,
             amount: transaction.amount,
-            intent_type: transaction.transaction_type,
+            transaction_type: transaction.transaction_type,
         };
 
+        println!("Appending transaction: {:?}", transaction);
         match transactions.append(&transaction) {
             Ok(_) => (),
             Err(e) => panic!("Failed to append transaction: {:?}", e),

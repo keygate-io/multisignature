@@ -28,6 +28,7 @@ import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
 import { TOKEN_URN_TO_SYMBOL } from "../../../util/constants";
 import { getTransactions } from "../../../api/account";
+import { E8sToIcp } from "../../../util/units";
 
 const Transactions: React.FC = () => {
   const [intents, setIntents] = useState<Transaction[]>([]);
@@ -73,7 +74,7 @@ const Transactions: React.FC = () => {
   };
 
   const formatAmount = (amount: bigint, token: string) => {
-    const formattedAmount = Number(amount);
+    const formattedAmount = Number(E8sToIcp(amount));
     return `${formattedAmount.toFixed(2).toLocaleString()} ${
       TOKEN_URN_TO_SYMBOL[token]
     }`;
@@ -122,7 +123,7 @@ const Transactions: React.FC = () => {
             {index > 0 && <Divider component="li" />}
             <ListItem alignItems="flex-start" sx={{ py: 2 }}>
               <ListItemIcon>
-                {renderIntentIcon(intent.intent_type)}
+                {renderIntentIcon(intent.transaction_type)}
               </ListItemIcon>
               <ListItemText
                 primary={
@@ -134,7 +135,7 @@ const Transactions: React.FC = () => {
                     }}
                   >
                     <Typography variant="body1" sx={{ color: "white" }}>
-                      {Object.keys(intent.intent_type)[0]}
+                      {Object.keys(intent.transaction_type)[0]}
                     </Typography>
                     <Typography component="span" sx={{ color: "white" }}>
                       {formatAmount(intent.amount, intent.token)}

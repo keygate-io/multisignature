@@ -1,8 +1,12 @@
+use ic_cdk::api::call::CallResult;
 use icrc_ledger_types::icrc1::account::Account;
+use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use serde::{Deserialize, Serialize};
 use candid::{CandidType, Nat, Principal};
 use ic_ledger_types::{Subaccount};
 use ic_stable_structures::storable::{Bound, Storable};
+use serde_bytes::ByteBuf;
+use std::any::Any;
 use std::{borrow::Cow};
 
 #[derive(Default, CandidType, Deserialize, Serialize)]
@@ -108,4 +112,114 @@ pub struct ArchiveOptions {
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct FeatureFlags {
     pub icrc2: bool,
+}
+
+use std::str::FromStr;
+
+use crate::get_default_icrc_subaccount;
+
+// Define the supported networks
+#[derive(Debug, Clone, PartialEq)]
+enum Network {
+    ICP,
+    ETH,
+}
+
+// Define the supported token types
+#[derive(Debug, Clone, PartialEq)]
+enum TokenType {
+    Native,
+    // Add other token types as needed
+}
+
+// Define the URN struct
+#[derive(Debug, Clone, PartialEq)]
+struct URN {
+    network: Network,
+    token_type: TokenType,
+}
+
+// Implement FromStr for URN to parse from string
+impl FromStr for URN {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.split(':').collect();
+        if parts.len() != 2 {
+            return Err("Invalid URN format".to_string());
+        }
+
+        let network = match parts[0] {
+            "icp" => Network::ICP,
+            "eth" => Network::ETH,
+            _ => return Err("Unsupported network".to_string()),
+        };
+
+        let token_type = match parts[1] {
+            "native" => TokenType::Native,
+            _ => return Err("Unsupported token type".to_string()),
+        };
+
+        Ok(URN { network, token_type })
+    }
+}
+
+// Define argument types for different networks
+struct ICRC1TxArgs {
+    pub amount: u128,
+    pub to: Account,
+    pub from: Account,
+    pub token: String,
+    pub intent_type: String,
+}
+
+
+// Define the TransactionExecutor
+struct TransactionExecutor {
+    urn: URN,
+}
+
+const LEDGER_PRINCIPAL: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000; 
+
+impl TransactionExecutor {
+    fn new(urn_str: &str) -> Result<Self, String> {
+        let urn = URN::from_str(urn_str)?;
+        Ok(TransactionExecutor { urn })
+    }
+
+    async fn execute(&self, args: &dyn Any) -> Result<(), String> {
+        match self.urn.network {
+            Network::ICP => self.execute_icp(args).await,
+            Network::ETH => panic!("ETH transactions are not supported yet."),
+        }
+    }
+
+    async fn execute_icp(&self, args: &dyn Any) -> Result<(), String> {
+        if let Some(icp_args) = args.downcast_ref::<ICRC1TxArgs>() {
+
+            let args = TransferArg {
+                to: icp_args.to,
+                amount: Nat::from(icp_args.amount),
+                fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
+                memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
+                from_subaccount: Some(get_default_icrc_subaccount().0),
+                created_at_time: None,
+            };
+
+            let token_principal = Principal::from_str(&icp_args.token).unwrap();
+
+            let transfer_result: CallResult<(Result<Nat, TransferError>,)> = ic_cdk::call(token_principal, "icrc1_transfer", (args,)).await;
+            
+            match transfer_result {
+                Ok((inner_result,)) => match inner_result {
+                    Ok(_) => Ok(()),
+                    Err(transfer_error) => Err(format!("ICRC-1 transfer error: {:?}", transfer_error)),
+                },
+                Err((rejection_code, message)) => Err(format!("Call to token failed: {:?} {:?}", rejection_code, message)),
+            }
+        } else {
+            Err("Invalid argument type for ICP transaction".to_string())
+        }
+    }
 }

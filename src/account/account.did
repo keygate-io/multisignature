@@ -10,7 +10,7 @@ type TransactionRequest = record {
   token : text;
   network : SupportedNetwork;
   amount : nat64;
-  intent_type : IntentType;
+  transaction_type : TransactionType;
 };
 
 type Transaction = record {
@@ -18,7 +18,7 @@ type Transaction = record {
   token : text;
   network : SupportedNetwork;
   amount : nat64;
-  intent_type : IntentType;
+  transaction_type : TransactionType;
   status : IntentStatus;
 };
 
@@ -29,7 +29,7 @@ type IntentStatus = variant {
   Completed : text;
   Pending : text;
 };
-type IntentType = variant { Swap; Transfer };
+type TransactionType = variant { Swap; Transfer };
 type Result = variant { Ok : text; Err : Error };
 type SupportedNetwork = variant { ETH; ICP };
 service : () -> {

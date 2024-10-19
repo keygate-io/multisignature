@@ -146,11 +146,14 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
     }
 }
 
+#[update]
 fn load_wallet_wasm() {
     let wasm_module: Vec<u8> = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
     WALLET_WASM.with(|wasm| {
         *wasm.borrow_mut() = Some(wasm_module);
     });
+
+    ic_cdk::println!("Loaded wallet wasm");
 }
 
 #[update]

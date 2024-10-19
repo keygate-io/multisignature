@@ -154,7 +154,7 @@ const SendToken: React.FC = () => {
         token,
         to: recipient,
         network: { ICP: null },
-        intent_type: { Transfer: null },
+        transaction_type: { Transfer: null },
         from: nativeAccountId,
       };
 

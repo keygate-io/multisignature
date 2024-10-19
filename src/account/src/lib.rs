@@ -129,5 +129,11 @@ async fn init() {
     });
 }
 
+#[update]
+fn assume_control() {
+    ic_cdk::println!("Assuming control");
+    let controllers = vec![ic_cdk::id()];
+}
+
 // Export candid
 ic_cdk_macros::export_candid!();

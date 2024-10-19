@@ -86,7 +86,10 @@ export function executeTransaction(
   );
 }
 
-export function getTransactions(account_canister_id: Principal, identity: Identity) {
+export function getTransactions(
+  account_canister_id: Principal,
+  identity: Identity
+) {
   return getAccountActor(account_canister_id, identity).get_transactions();
 }
 
