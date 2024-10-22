@@ -26,7 +26,7 @@ pub(crate) trait BlockchainAdapter: DynClone {
 
 dyn_clone::clone_trait_object!(BlockchainAdapter);
 
-type TokenPath = String;
+pub type TokenPath = String;
 
 pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
     let it: &'static str = transaction.transaction_type.clone().into();
@@ -320,6 +320,7 @@ pub struct Transaction {
     pub transaction_type: TransactionType,
 }
 
+
 impl Storable for Transaction {
     const BOUND: Bound = Bound::Bounded {
         max_size: 1024,
@@ -333,6 +334,34 @@ impl Storable for Transaction {
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         let deserialized: Transaction = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
+        deserialized
+    }
+}
+
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct ProposedTransaction {
+    pub id: u64,
+    pub to: String,
+    pub token: TokenPath,
+    pub network: SupportedNetwork,
+    pub amount: u64,
+    pub transaction_type: TransactionType,
+    pub signers: Vec<Principal>,
+}
+
+impl Storable for ProposedTransaction {
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 1024,
+        is_fixed_size: false,
+    };
+
+    fn to_bytes(&self) -> Cow<[u8]> {
+        let serialized = serde_cbor::to_vec(self).expect("Serialization failed");
+        Cow::Owned(serialized)
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        let deserialized: ProposedTransaction = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
         deserialized
     }
 }
