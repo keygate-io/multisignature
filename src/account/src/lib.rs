@@ -139,6 +139,7 @@ fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> Proposed
         amount: proposed_transaction.amount,
         transaction_type: proposed_transaction.transaction_type,
         signers: vec![caller],
+        rejections: vec![],
     };
 
     PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
@@ -190,6 +191,10 @@ fn get_threshold() -> u64 {
 fn approve_transaction(id: u64) -> ProposedTransaction {
     let caller = ic_cdk::caller();
 
+    if !signer_exists(caller) {
+        ic_cdk::trap(&format!("Caller is not a signer"));
+    }
+
     PROPOSED_TRANSACTIONS.with_borrow_mut(|proposed_transactions| {
         let index_of = proposed_transactions.iter().position(|p| p.id == id).unwrap();
         let mut dxdy = proposed_transactions.get(index_of as u64).unwrap_or_else(|| {
@@ -197,6 +202,28 @@ fn approve_transaction(id: u64) -> ProposedTransaction {
         });
 
         dxdy.signers.push(caller);
+
+        proposed_transactions.set(index_of as u64, &dxdy);
+
+        dxdy
+    })
+}
+
+#[update]
+fn reject_transaction(id: u64) -> ProposedTransaction {
+    let caller = ic_cdk::caller();
+
+    if !signer_exists(caller) {
+        ic_cdk::trap(&format!("Caller is not a signer"));
+    }
+
+    PROPOSED_TRANSACTIONS.with_borrow_mut(|proposed_transactions| {
+        let index_of = proposed_transactions.iter().position(|p| p.id == id).unwrap();
+        let mut dxdy = proposed_transactions.get(index_of as u64).unwrap_or_else(|| {
+            ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
+        });
+
+        dxdy.rejections.push(caller);
 
         proposed_transactions.set(index_of as u64, &dxdy);
 

@@ -272,6 +272,53 @@ fn should_approve_transaction() {
 }
 
 #[test]
+fn should_reject_transaction() {
+    let pic = PocketIc::new();
+    let caller = generate_principal();
+
+    let account_id = pic.create_canister_with_settings(Some(caller), None);
+
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+
+    pic.add_cycles(account_id, 2_000_000_000_000);
+
+    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
+
+    let proposed_transaction: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (ProposeTransactionArgs {
+        to: "test".to_string(),
+        token: "test".to_string(),
+        network: SupportedNetwork::ICP,
+        amount: 100_000_000,
+        transaction_type: TransactionType::Transfer,
+    }, )).unwrap();
+
+    let signer_2 = generate_principal();
+    let signer_3 = generate_principal();
+
+    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2, )).unwrap();
+    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3, )).unwrap();
+
+    let reject_result: () = update_candid_as(&pic, account_id, signer_2, "reject_transaction", (proposed_transaction.0.id, )).unwrap();
+
+    let proposed_transaction_2: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+
+    match proposed_transaction_2.0 {
+        Some(proposed_transaction_2) => assert_eq!(proposed_transaction_2.rejections, vec![signer_2]),
+        None => panic!("Proposed transaction not found")
+    }
+
+    let reject_result_2: () = update_candid_as(&pic, account_id, signer_3, "reject_transaction", (proposed_transaction.0.id, )).unwrap();
+
+    let proposed_transaction_3: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+
+    match proposed_transaction_3.0 {
+        Some(proposed_transaction_3) => assert_eq!(proposed_transaction_3.rejections, vec![signer_2, signer_3]),
+        None => panic!("Proposed transaction not found")
+    }
+}
+
+
+#[test]
 fn should_set_threshold() {
     let pic = PocketIc::new();
     let caller = generate_principal();

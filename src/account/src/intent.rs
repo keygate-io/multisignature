@@ -347,6 +347,7 @@ pub struct ProposedTransaction {
     pub amount: u64,
     pub transaction_type: TransactionType,
     pub signers: Vec<Principal>,
+    pub rejections: Vec<Principal>,
 }
 
 impl Storable for ProposedTransaction {

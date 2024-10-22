@@ -29,6 +29,8 @@ type ProposedTransaction = record {
   network : SupportedNetwork;
   amount : nat64;
   transaction_type : TransactionType;
+  signers : vec principal;
+  rejections : vec principal;
 };
 
 type ProposeTransactionArgs = record {
