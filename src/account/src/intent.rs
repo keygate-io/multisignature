@@ -7,7 +7,7 @@ use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs,
 use icrc_ledger_types::icrc1::{account::Account, transfer::{TransferArg as ICRC1TransferArgs, TransferError}};
 use serde_bytes::ByteBuf;
 
-use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS};
+use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS, PROPOSED_TRANSACTIONS, THRESHOLD};
 
 use std::{borrow::Cow, fmt::{self, Display}};
 
@@ -74,8 +74,8 @@ type ICPNativeTransferArgs = TransferArgs;
 /**
  * See TransferArgs in ic_ledger_types
  */
-const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000; 
-
+pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000; 
+pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {
     fn network(&self) -> SupportedNetwork {
@@ -97,7 +97,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(&transaction.to).unwrap(),
                 amount: Tokens::from_e8s(transaction.amount),
-                fee: Tokens::from_e8s(RECOMMENDED_TRANSACTION_FEE),
+                fee: Tokens::from_e8s(RECOMMENDED_ICP_TRANSACTION_FEE),
                 memo: Memo(0),
                 from_subaccount: Some(to_subaccount(0)),
                 created_at_time: None,
@@ -196,7 +196,7 @@ impl ICRC1TransferAdapter {
                 subaccount: None
             },
             amount: Nat::from(transaction.amount),
-            fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
+            fee: Some(Nat::from(RECOMMENDED_ICRC1_TRANSACTION_FEE)),
             memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
             from_subaccount: Some(get_default_icrc_subaccount().0),
             created_at_time: None,
@@ -455,10 +455,40 @@ pub fn get_transactions() -> Vec<Transaction> {
 
 
 #[update]
-pub async fn execute_transaction(transaction: TransactionRequest) -> IntentStatus {
-    ic_cdk::println!("Executing transaction: {:?}", transaction);
+pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
+    let proposal = PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
+        proposed_transactions.borrow().get(proposal_id)
+    });
+
+    if proposal.is_none() {
+        return IntentStatus::Failed(format!("Proposal not found: {}", proposal_id));
+    }
+
+    // check if threshold is met
+    let threshold = THRESHOLD.with(|threshold| {
+        threshold.borrow().get().clone()
+    });
+
+    let signers = proposal.clone().unwrap().signers;
+    let length = signers.len() as u64;
+    let proposal = proposal.unwrap();
+
+    if length < threshold {
+        return IntentStatus::Failed("Threshold not met".to_string());
+    }
+
+    let transaction = TransactionRequest {
+        transaction_type: proposal.transaction_type,
+        amount: proposal.amount,
+        token: proposal.token,
+        to: proposal.to,
+        network: proposal.network,
+    };
 
     let execution_result = super::execute(&transaction).await;
+
+    ic_cdk::println!("Executing transaction: {:?}", transaction);
+
 
     ic_cdk::println!("Execution result: {:?}", execution_result);
     

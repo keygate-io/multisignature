@@ -54,7 +54,7 @@ type SupportedNetwork = variant { ETH; ICP };
 service : () -> {
   add_subaccount : (text) -> (Result);
   add_icrc_account : (text) -> (Result);
-  execute_transaction : (TransactionRequest) -> (IntentStatus);
+  execute_transaction : (nat64) -> (IntentStatus);
   get_adapters : () -> (vec text) query;
   get_transactions : () -> (vec Transaction) query;
   get_signees : () -> (vec principal) query;

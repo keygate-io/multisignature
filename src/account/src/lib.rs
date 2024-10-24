@@ -132,7 +132,7 @@ fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> Proposed
     });
 
     let proposed_transaction = ProposedTransaction {
-        id: last_id + 1,
+        id: last_id,
         to: proposed_transaction.to,
         token: proposed_transaction.token,
         network: proposed_transaction.network,
@@ -149,7 +149,7 @@ fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> Proposed
     });
 
     PROPOSED_TRANSACTIONS_LAST_ID.with(|last_id| {
-        let result = last_id.borrow_mut().set(proposed_transaction.id);
+        let result = last_id.borrow_mut().set(proposed_transaction.id + 1);
         match result {
             Ok(_) => (),
             Err(e) => ic_cdk::trap(&format!("Failed to set proposed transaction last id: {:?}", e)),
