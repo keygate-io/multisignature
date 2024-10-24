@@ -18,11 +18,10 @@ import {
   ReceiptOutlined,
   ArrowUpward,
   ArrowBack,
+  SettingsOutlined,
 } from "@mui/icons-material";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import MultipleRouteModal from "../modals/MultipleRouteModal";
-import { upgradeAccount } from "../api/account";
-import { useInternetIdentity } from "../hooks/use-internet-identity";
 import { useVaultDetail } from "../contexts/VaultDetailContext";
 
 interface MenuItemType {
@@ -55,6 +54,11 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
       text: "Transactions",
       icon: <ReceiptOutlined />,
       path: `/vaults/${vaultId}/transactions`,
+    },
+    {
+      text: "Settings",
+      icon: <SettingsOutlined />,
+      path: `/vaults/${vaultId}/settings`,
     },
   ];
 

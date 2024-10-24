@@ -12,6 +12,7 @@ import SendToken from "./pages/Dashboard/Assets/SendToken/SendToken";
 import Transactions from "./pages/Dashboard/Transactions/Transactions";
 import Vaults from "./pages/Vaults";
 import { VaultDetailProvider } from "./contexts/VaultDetailContext";
+import Settings from "./pages/Dashboard/Settings/Settings";
 
 const darkTheme = createTheme({
   palette: {
@@ -46,6 +47,7 @@ function App() {
                 <Route path="assets" element={<Assets />} />
                 <Route path="assets/send-token" element={<SendToken />} />
                 <Route path="transactions" element={<Transactions />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="new-profile/create" element={<CreateProfile />} />

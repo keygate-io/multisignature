@@ -40,7 +40,7 @@ thread_local! {
     );
 
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
-    pub static THRESHOLD: RefCell<StableCell<u64, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(THRESHOLD_MEMORY)), 0).expect("Failed to initialize THRESHOLD StableCell"));
+    pub static THRESHOLD: RefCell<StableCell<u64, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(THRESHOLD_MEMORY)), 1).expect("Failed to initialize THRESHOLD StableCell"));
 }
 
 // Structs and Traits
