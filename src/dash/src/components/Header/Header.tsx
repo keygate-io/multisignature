@@ -39,7 +39,7 @@ const Header: React.FC = () => {
               Keygate
             </Typography>
             <Chip
-              label={`${capitalize(process.env.NODE_ENV ?? "unknown")} version`}
+              label={`Pre-alpha version`}
               color="secondary"
               size="small"
               sx={{ fontWeight: "bold" }}
