@@ -42,24 +42,24 @@ const Home = () => {
 
   const features = [
     {
-      title: "Multisignature Vault Management",
+      title: "Cross-Chain Asset Management",
       content:
-        "Create and manage multisignature vaults with customizable settings. Configure the required number of signatories and set user-defined spending limits for enhanced security.",
+        "Manage assets across ICP, Solana, and EVM chains through a single, secure interface. No more juggling multiple wallets for different blockchains.",
     },
     {
-      title: "Role-Based Access Control",
+      title: "Intent-Based Transactions",
       content:
-        "Share vaults with multiple users and assign different roles such as viewer, initiator, or approver. Ensure proper access control and collaborative management of funds.",
+        "Execute complex cross-chain transactions with our simplified intent system. Focus on what you want to do, not how to do it across different protocols.",
     },
     {
-      title: "Multi-Party Transactions",
+      title: "Enterprise-Grade Security",
       content:
-        "Initiate, approve, and execute transactions with multiple signatories. Transactions require consensus from the predefined number of approvers before execution on the ICP blockchain.",
+        "Leverage Internet Computer's native cryptography for threshold ECDSA signatures, ensuring your assets remain secure with customizable approval requirements.",
     },
     {
-      title: "Token Support",
+      title: "Unified Dashboard",
       content:
-        "Manage $ICP and ICRC-1,2,3,4 tokens securely within your vaults. Keep track of balances and execute transactions across supported token types.",
+        "Track balances, approve transactions, and manage vault access across all supported chains from one intuitive interface. Perfect for DAOs and investment teams.",
     },
   ];
 
@@ -74,13 +74,12 @@ const Home = () => {
             fontWeight="bold"
             gutterBottom
           >
-            Transact on-chain with confidence
+            One Vault, All Chains
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Keygate provides practical applications of cryptography for secure
-            management of on-chain assets. Our multisignature vaults offer
-            enhanced security for both retail and enterprise users on the
-            Internet Computer Protocol (ICP) blockchain.
+            Keygate unifies multi-signature management across blockchains. Built
+            on Internet Computer Protocol, our platform enables secure
+            cross-chain asset management for teams and organizations.
           </Typography>
           <Grid container spacing={3}>
             {features.map((feature, index) => (
@@ -107,7 +106,7 @@ const Home = () => {
               color="primary"
               sx={{ py: 1.5, px: 3 }}
             >
-              Try out the demo
+              Connect with Internet Identity
             </Button>
           </Box>
         </Box>
