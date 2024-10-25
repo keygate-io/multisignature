@@ -57,15 +57,22 @@ const Transactions: React.FC = () => {
       if (vaultCanisterId && nativeAccountId) {
         setIsLoading(true);
         try {
-          const [executed, proposed, thresholdValue] = await Promise.all([
+          let [executed, proposed, thresholdValue] = await Promise.all([
             getTransactions(vaultCanisterId, identity!),
             getProposedTransactions(vaultCanisterId, identity!),
             getThreshold(vaultCanisterId, identity!),
           ]);
 
+          executed = executed.reverse();
+
           setExecutedTransactions(executed || []);
           setProposedTransactions(proposed || []);
           setThreshold(thresholdValue);
+
+          // Set initial tab value based on threshold
+          if (thresholdValue <= BigInt(1)) {
+            setTabValue(1);
+          }
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
@@ -78,7 +85,9 @@ const Transactions: React.FC = () => {
   }, [nativeAccountId, vaultCanisterId]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+    if (threshold > BigInt(1) || newValue === 1) {
+      setTabValue(newValue);
+    }
   };
 
   const renderIntentIcon = (type: { [key: string]: null }) => {
@@ -243,19 +252,6 @@ const Transactions: React.FC = () => {
 
     return (
       <>
-        {/* <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
-          <Chip
-            label={`Required Signatures: ${threshold.toString()}`}
-            color="primary"
-            sx={{
-              borderRadius: "16px",
-              height: "32px",
-              "& .MuiChip-label": {
-                px: 2,
-              },
-            }}
-          />
-        </Box> */}
         <List>
           {proposedTransactions.map((proposal, index) => (
             <React.Fragment key={index.toString()}>
@@ -354,7 +350,13 @@ const Transactions: React.FC = () => {
               "& .Mui-selected": { color: "primary.main" },
             }}
           >
-            <Tab label="Proposed" />
+            <Tab
+              label="Proposed"
+              disabled={threshold <= BigInt(1)}
+              sx={{
+                opacity: threshold <= BigInt(1) ? 0.5 : 1,
+              }}
+            />
             <Tab label="Executed" />
           </Tabs>
         </Box>

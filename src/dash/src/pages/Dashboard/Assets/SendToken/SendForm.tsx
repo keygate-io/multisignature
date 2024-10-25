@@ -13,6 +13,7 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
 import { useParams } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
+import { TOKEN_URN_TO_SYMBOL } from "../../../../util/constants";
 
 interface SendFormProps {
   recipient: string;
@@ -96,7 +97,7 @@ const SendForm: React.FC<SendFormProps> = ({
         >
           {tokenOptions.map((tokenOption) => (
             <MenuItem key={tokenOption} value={tokenOption}>
-              {tokenOption}
+              {TOKEN_URN_TO_SYMBOL[tokenOption]}
             </MenuItem>
           ))}
         </Select>

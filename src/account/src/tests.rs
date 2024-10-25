@@ -652,128 +652,128 @@ mod intent_tests {
 
     
     #[test]
-fn should_transfer_icrc1() {
-    let pic = PocketIcBuilder::new().with_application_subnet().build();
-    let caller = generate_principal();
+    fn should_transfer_icrc1() {
+        let pic = PocketIcBuilder::new().with_application_subnet().build();
+        let caller = generate_principal();
 
-    // Create and set up the account canister
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-    pic.add_cycles(account_id, 2_000_000_000_000);
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
+        // Create and set up the account canister
+        let account_id = pic.create_canister_with_settings(Some(caller), None);
+        pic.add_cycles(account_id, 2_000_000_000_000);
+        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    // Create a receiver principal
-    let receiver = generate_principal();
+        // Create a receiver principal
+        let receiver = generate_principal();
 
-    // Set up the ICRC1 token canister
-    let icrc_ledger = pic.create_canister_with_settings(Some(caller), None);
-    pic.add_cycles(icrc_ledger, 2_000_000_000_000);
-    let icrc_wasm_module = include_bytes!("../../../mock_icrc1_wasm_build.gz").to_vec();
+        // Set up the ICRC1 token canister
+        let icrc_ledger = pic.create_canister_with_settings(Some(caller), None);
+        pic.add_cycles(icrc_ledger, 2_000_000_000_000);
+        let icrc_wasm_module = include_bytes!("../../../mock_icrc1_wasm_build.gz").to_vec();
 
-    // Initialize ICRC1 ledger with initial balances and settings
-    let mint_amount_u64: u128 = 1000_000_000_000;
-    let icrc1_deploy_args = ICRC1Args::Init(ICRC1InitArgs {
-        token_symbol: "MCK".to_string(),
-        token_name: "Mock Token".to_string(),
-        minting_account: Account {
-            owner: caller,
-            subaccount: None,
-        },
-        transfer_fee: 1_000_000,
-        metadata: vec![],
-        initial_balances: vec![(
-            Account {
-                owner: account_id,
+        // Initialize ICRC1 ledger with initial balances and settings
+        let mint_amount_u64: u128 = 1000_000_000_000;
+        let icrc1_deploy_args = ICRC1Args::Init(ICRC1InitArgs {
+            token_symbol: "MCK".to_string(),
+            token_name: "Mock Token".to_string(),
+            minting_account: Account {
+                owner: caller,
                 subaccount: None,
             },
-            mint_amount_u64
-        )],
-        archive_options: ArchiveOptions {
-            num_blocks_to_archive: 10,
-            trigger_threshold: 5,
-            controller_id: account_id,
-            max_transactions_per_response: None,
-            max_message_size_bytes: None,
-            cycles_for_archive_creation: None,
-            node_max_memory_size_bytes: None,
-        },
-        feature_flags: Some(FeatureFlags { icrc2: false }),
-        decimals: Some(3),
-        maximum_number_of_accounts: None,
-        accounts_overflow_trim_quantity: None,
-        fee_collector_account: None,
-        max_memo_length: None,
-    });
+            transfer_fee: 1_000_000,
+            metadata: vec![],
+            initial_balances: vec![(
+                Account {
+                    owner: account_id,
+                    subaccount: None,
+                },
+                mint_amount_u64
+            )],
+            archive_options: ArchiveOptions {
+                num_blocks_to_archive: 10,
+                trigger_threshold: 5,
+                controller_id: account_id,
+                max_transactions_per_response: None,
+                max_message_size_bytes: None,
+                cycles_for_archive_creation: None,
+                node_max_memory_size_bytes: None,
+            },
+            feature_flags: Some(FeatureFlags { icrc2: false }),
+            decimals: Some(3),
+            maximum_number_of_accounts: None,
+            accounts_overflow_trim_quantity: None,
+            fee_collector_account: None,
+            max_memo_length: None,
+        });
 
-    pic.install_canister(
-        icrc_ledger,
-        icrc_wasm_module,
-        encode_one(icrc1_deploy_args).unwrap(),
-        Some(caller),
-    );
+        pic.install_canister(
+            icrc_ledger,
+            icrc_wasm_module,
+            encode_one(icrc1_deploy_args).unwrap(),
+            Some(caller),
+        );
 
-    // Create an intent to transfer ICRC1 tokens
-    let transfer_amount = 100_000_000_000;
-    let proposed_tx = ProposeTransactionArgs {
-        transaction_type: TransactionType::Transfer,
-        amount: transfer_amount,
-        network: SupportedNetwork::ICP,
-        to: receiver.to_text(),
-        token: format!("icp:icrc1:{}", icrc_ledger.to_text()),
-    };
+        // Create an intent to transfer ICRC1 tokens
+        let transfer_amount = 100_000_000_000;
+        let proposed_tx = ProposeTransactionArgs {
+            transaction_type: TransactionType::Transfer,
+            amount: transfer_amount,
+            network: SupportedNetwork::ICP,
+            to: receiver.to_text(),
+            token: format!("icp:icrc1:{}", icrc_ledger.to_text()),
+        };
 
-    // Add the intent
-    let add_intent_result: (ProposedTransaction,) = update_candid_as(
-        &pic,
-        account_id,
-        caller,
-        "propose_transaction",
-        (proposed_tx,)
-    )
-    .unwrap();
+        // Add the intent
+        let add_intent_result: (ProposedTransaction,) = update_candid_as(
+            &pic,
+            account_id,
+            caller,
+            "propose_transaction",
+            (proposed_tx,)
+        )
+        .unwrap();
 
-    // Execute the intent
-    let status: (IntentStatus, ) = update_candid_as(
-        &pic,
-        account_id,
-        caller,
-        "execute_transaction",
-        (add_intent_result.0.id,)
-    )
-    .unwrap();
+        // Execute the intent
+        let status: (IntentStatus, ) = update_candid_as(
+            &pic,
+            account_id,
+            caller,
+            "execute_transaction",
+            (add_intent_result.0.id,)
+        )
+        .unwrap();
 
-    assert_eq!(
-        status.0,
-        IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())
-    );
+        assert_eq!(
+            status.0,
+            IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())
+        );
 
-    // Check the receiver's balance
-    let receiver_balance: (u128,) = query_candid_as(
-        &pic,
-        icrc_ledger,
-        caller,
-        "icrc1_balance_of",
-        (ICRCAccount::new(receiver, None),)
-    )
-    .unwrap();
-    
-    assert_eq!(receiver_balance.0, transfer_amount as u128);
+        // Check the receiver's balance
+        let receiver_balance: (u128,) = query_candid_as(
+            &pic,
+            icrc_ledger,
+            caller,
+            "icrc1_balance_of",
+            (ICRCAccount::new(receiver, None),)
+        )
+        .unwrap();
+        
+        assert_eq!(receiver_balance.0, transfer_amount as u128);
 
-    // Check the account canister's balance
-    let account_balance: (u128, ) = query_candid_as(
-        &pic,
-        icrc_ledger,
-        caller,
-        "icrc1_balance_of",
-        (ICRCAccount::new(account_id, None),)
-    )
-    .unwrap();
-    
-    assert_eq!(
-        account_balance.0,
-        mint_amount_u64 as u128 - transfer_amount as u128 - 1_000_000 as u128 // Subtract transfer amount and fee
-    );
-}
+        // Check the account canister's balance
+        let account_balance: (u128, ) = query_candid_as(
+            &pic,
+            icrc_ledger,
+            caller,
+            "icrc1_balance_of",
+            (ICRCAccount::new(account_id, None),)
+        )
+        .unwrap();
+        
+        assert_eq!(
+            account_balance.0,
+            mint_amount_u64 as u128 - transfer_amount as u128 - 1_000_000 as u128 // Subtract transfer amount and fee
+        );
+    }
 
     #[test]
     fn should_transfer_icp() {

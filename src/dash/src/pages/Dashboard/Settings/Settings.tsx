@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -34,10 +35,7 @@ const Settings: React.FC = () => {
   const { identity } = useInternetIdentity();
 
   const [threshold, setThresholdValue] = useState<bigint>(BigInt(0));
-  const [isEditingThreshold, setIsEditingThreshold] = useState(false);
-  const [newThreshold, setNewThreshold] = useState("");
   const [signers, setSigners] = useState<Principal[]>([]);
-  const [newSigner, setNewSigner] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,60 +62,6 @@ const Settings: React.FC = () => {
 
     fetchSettings();
   }, [vaultCanisterId, identity]);
-
-  const handleThresholdSubmit = async () => {
-    if (!vaultCanisterId || !identity) return;
-
-    try {
-      const newThresholdBigInt = BigInt(newThreshold);
-      if (newThresholdBigInt <= BigInt(0)) {
-        setError("Threshold must be greater than 0");
-        return;
-      }
-      if (newThresholdBigInt > BigInt(signers.length)) {
-        setError("Threshold cannot be greater than the number of signers");
-        return;
-      }
-
-      await setThreshold(vaultCanisterId, newThresholdBigInt, identity);
-      setThresholdValue(newThresholdBigInt);
-      setIsEditingThreshold(false);
-      setError(null);
-    } catch (err) {
-      setError("Failed to update threshold");
-      console.error("Error updating threshold:", err);
-    }
-  };
-
-  const handleAddSigner = async () => {
-    if (!vaultCanisterId || !identity) return;
-
-    try {
-      // Validate principal
-      const newSignerPrincipal = Principal.fromText(newSigner);
-
-      // Check if signer already exists
-      if (
-        signers.some(
-          (signer) => signer.toString() === newSignerPrincipal.toString()
-        )
-      ) {
-        setError("Signer already exists");
-        return;
-      }
-
-      //   await import("../../../api/account").then(({ addSigner }) =>
-      //     addSigner(vaultCanisterId, newSignerPrincipal, identity)
-      //   );
-
-      setSigners([...signers, newSignerPrincipal]);
-      setNewSigner("");
-      setError(null);
-    } catch (err) {
-      setError("Invalid principal ID or failed to add signer");
-      console.error("Error adding signer:", err);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -149,52 +93,22 @@ const Settings: React.FC = () => {
         />
         <CardContent>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {isEditingThreshold ? (
-              <>
-                <TextField
-                  label="New Threshold"
-                  type="number"
-                  value={newThreshold}
-                  onChange={(e) => setNewThreshold(e.target.value)}
-                  size="small"
-                  sx={{ width: 150 }}
-                />
-                <Button
-                  startIcon={<SaveIcon />}
-                  onClick={handleThresholdSubmit}
-                  variant="contained"
-                  size="small"
-                >
-                  Save
-                </Button>
-                <Button
-                  startIcon={<CancelIcon />}
-                  onClick={() => setIsEditingThreshold(false)}
-                  variant="outlined"
-                  size="small"
-                >
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <>
-                <Typography>
-                  Current threshold: {threshold.toString()} of {signers.length}{" "}
-                  signers
-                </Typography>
+            <Typography>
+              Current threshold: {threshold.toString()} of {signers.length}{" "}
+              signers
+            </Typography>
+            <Tooltip title="This feature will be available in a future release">
+              <span>
                 <Button
                   startIcon={<EditIcon />}
-                  onClick={() => {
-                    setNewThreshold(threshold.toString());
-                    setIsEditingThreshold(true);
-                  }}
                   variant="outlined"
                   size="small"
+                  disabled
                 >
                   Edit
                 </Button>
-              </>
-            )}
+              </span>
+            </Tooltip>
           </Box>
         </CardContent>
       </Card>
@@ -210,19 +124,17 @@ const Settings: React.FC = () => {
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
               <TextField
                 label="Add Signer (Principal ID)"
-                value={newSigner}
-                onChange={(e) => setNewSigner(e.target.value)}
+                disabled
                 fullWidth
                 size="small"
               />
-              <Button
-                startIcon={<AddIcon />}
-                onClick={handleAddSigner}
-                variant="contained"
-                disabled={!newSigner}
-              >
-                Add
-              </Button>
+              <Tooltip title="This feature will be available in a future release">
+                <span>
+                  <Button startIcon={<AddIcon />} variant="contained" disabled>
+                    Add
+                  </Button>
+                </span>
+              </Tooltip>
             </Box>
           </Box>
 

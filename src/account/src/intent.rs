@@ -74,7 +74,10 @@ type ICPNativeTransferArgs = TransferArgs;
 /**
  * See TransferArgs in ic_ledger_types
  */
+#[cfg(test)]
 pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000; 
+#[cfg(not(test))]
+pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 1000000;
 pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {
