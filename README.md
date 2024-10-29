@@ -1,5 +1,5 @@
 # multisignature
-A cross-chain decentralized multisignature wallet.
+A cross-chain decentralized multisignature wallet. 
 
 ## Prerequisites
 * [Tsc compiler](https://www.typescriptlang.org/download/) 
