@@ -1,11 +1,6 @@
 [
     {
         "match": ".well-known",
-        "ignore": false,
-        "security_policy": "standard"
-    },
-    {
-        "match": "**",
-        "security_policy": "standard"
+        "ignore": false
     }
 ]
