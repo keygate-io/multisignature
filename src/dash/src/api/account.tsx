@@ -158,6 +158,24 @@ export async function getIcrcAccount(
   return getAccountActor(account_canister_id, identity).get_icrc_account();
 }
 
+export async function getBalance(
+  account_canister_id: Principal,
+  chain: string,
+  identity: Identity
+) {
+  return getAccountActor(account_canister_id, identity).get_balance(chain);
+}
+
+export function pubkeyBytesToAddress(
+  account_canister_id: Principal,
+  identity: Identity
+) {
+  return getAccountActor(
+    account_canister_id,
+    identity
+  ).pubkey_bytes_to_address();
+}
+
 export function getDebugInfo(
   account_canister_id: Principal,
   identity: Identity
