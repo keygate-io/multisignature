@@ -19,7 +19,14 @@ import { getTokenSymbol, getTokenDecimals } from "../../../../api/icrc";
 import { Principal } from "@dfinity/principal";
 import { extractTokenData } from "../../../../util/token";
 import { formatCommaSeparated, icpToE8s } from "../../../../util/units";
-import { ICP_DECIMALS, TOKEN_URN_TO_SYMBOL } from "../../../../util/constants";
+import {
+  CKETH_CANISTER_ID,
+  CKBTC_CANISTER_ID,
+  CKUSDC_CANISTER_ID,
+  ICP_DECIMALS,
+  TOKEN_URN_TO_SYMBOL,
+  MOCK_ICRC1_CANISTER,
+} from "../../../../util/constants";
 import { useVaultDetail } from "../../../../contexts/VaultDetailContext";
 import { useNavigate } from "react-router-dom";
 import { TransactionRequest } from "../../../../../../declarations/account/account.did";
@@ -189,13 +196,18 @@ const SendToken: React.FC = () => {
   useEffect(() => {
     async function fetchTokens() {
       if (vaultCanisterId && identity) {
-        const fetchedTokens = [
-          "icp:native",
-          `icp:icrc1:${process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER}`,
-          "icp:test2",
-          "icp:test3",
-        ];
-        setTokens(fetchedTokens);
+        if (process.env.DFX_NETWORK === "ic") {
+          const fetchedTokens = [
+            "icp:native",
+            `icp:icrc1:${CKETH_CANISTER_ID}`,
+            `icp:icrc1:${CKBTC_CANISTER_ID}`,
+            `icp:icrc1:${CKUSDC_CANISTER_ID}`,
+          ];
+
+          setTokens(fetchedTokens);
+        } else {
+          setTokens(["icp:native", `icp:icrc1:${MOCK_ICRC1_CANISTER}`]);
+        }
       }
     }
     fetchTokens();

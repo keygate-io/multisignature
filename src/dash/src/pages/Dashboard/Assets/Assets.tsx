@@ -26,7 +26,13 @@ import {
   getTokenSymbol,
 } from "../../../api/icrc";
 import { formatIcp, formatIcrc } from "../../../util/units";
-import { ICP_DECIMALS } from "../../../util/constants";
+import {
+  CKETH_CANISTER_ID,
+  CKUSDC_CANISTER_ID,
+  ICP_DECIMALS,
+  CKBTC_CANISTER_ID,
+  MOCK_ICRC1_CANISTER,
+} from "../../../util/constants";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
 
 interface Asset {
@@ -38,12 +44,6 @@ interface Asset {
   subaccount?: string;
   decimals: number;
 }
-
-const NATIVE_ICP_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-const MOCK_ICRC1_CANISTER = "bd3sg-teaaa-aaaaa-qaaba-cai";
-const CKETH_CANISTER_ID = "ss2fx-dyaaa-aaaar-qacoq-cai";
-const CKBTC_CANISTER_ID = "mxzaz-hqaaa-aaaar-qaada-cai";
-const CKUSDC_CANISTER_ID = "xevnm-gaaaa-aaaar-qafnq-cai";
 
 const Assets: React.FC = () => {
   const [showTokens, setShowTokens] = useState(true);
@@ -117,8 +117,6 @@ const Assets: React.FC = () => {
 
           setAssets([nativeIcp, ckBTC, ckETH, ckusdc]);
         } else {
-          console.log("fetching mockIcrc1");
-
           const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
           setAssets([nativeIcp, mockIcrc1]);
         }
