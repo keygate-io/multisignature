@@ -116,6 +116,8 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
         wasm.borrow().clone().unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded"))
     });
 
+    
+
     match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
             STABLE_VAULTS.with(|vaults| {

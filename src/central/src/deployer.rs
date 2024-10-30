@@ -34,7 +34,7 @@ pub async fn deploy(bytecode: Vec<u8>) -> Result<Principal, String> {
             management_canister,
             "create_canister",
             (),
-            200000000000u128,
+            240000000000u128,
         )
         .await;
 

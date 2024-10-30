@@ -41,6 +41,9 @@ interface Asset {
 
 const NATIVE_ICP_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
 const MOCK_ICRC1_CANISTER = "bd3sg-teaaa-aaaaa-qaaba-cai";
+const CKETH_CANISTER_ID = "ss2fx-dyaaa-aaaar-qacoq-cai";
+const CKBTC_CANISTER_ID = "mxzaz-hqaaa-aaaar-qaada-cai";
+const CKUSDC_CANISTER_ID = "xevnm-gaaaa-aaaar-qafnq-cai";
 
 const Assets: React.FC = () => {
   const [showTokens, setShowTokens] = useState(true);
@@ -106,9 +109,19 @@ const Assets: React.FC = () => {
     if (vaultCanisterId && identity) {
       try {
         const nativeIcp = await fetchNativeIcpInfo();
-        const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
 
-        setAssets([nativeIcp, mockIcrc1]);
+        if (process.env.DFX_NETWORK === "ic") {
+          const ckBTC = await fetchIcrcTokenInfo(CKBTC_CANISTER_ID);
+          const ckETH = await fetchIcrcTokenInfo(CKETH_CANISTER_ID);
+          const ckusdc = await fetchIcrcTokenInfo(CKUSDC_CANISTER_ID);
+
+          setAssets([nativeIcp, ckBTC, ckETH, ckusdc]);
+        } else {
+          console.log("fetching mockIcrc1");
+
+          const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
+          setAssets([nativeIcp, mockIcrc1]);
+        }
       } catch (error) {
         console.error("Error fetching assets:", error);
       } finally {
