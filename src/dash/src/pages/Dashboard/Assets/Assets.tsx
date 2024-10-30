@@ -106,9 +106,9 @@ const Assets: React.FC = () => {
     if (vaultCanisterId && identity) {
       try {
         const nativeIcp = await fetchNativeIcpInfo();
-        const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
+        //const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
 
-        setAssets([nativeIcp, mockIcrc1]);
+        setAssets([nativeIcp]);
       } catch (error) {
         console.error("Error fetching assets:", error);
       } finally {

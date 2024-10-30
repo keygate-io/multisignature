@@ -1,24 +1,33 @@
-mod types;
-mod ledger;
+mod alloy_services;
+mod evm;
+mod evm_types;
 mod intent;
+mod ledger;
 mod tests;
+mod types;
 
-use std::{cell::RefCell, collections::{HashMap, LinkedList}};
 use b3_utils::{ledger::ICRCAccount, Subaccount};
-use ic_cdk::{query, update};
 use candid::{CandidType, Principal};
+use ic_cdk::{query, update};
 use ic_ledger_types::AccountIdentifier;
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog};
+use ic_stable_structures::{
+    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    DefaultMemoryImpl, StableLog,
+};
 use intent::*;
-use serde::{Deserialize, Serialize};
 use ledger::*;
+use serde::{Deserialize, Serialize};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, LinkedList},
+};
 
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
 
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
-// Thread-local storage 
+// Thread-local storage
 thread_local! {
     pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
 
@@ -43,9 +52,7 @@ struct Error {
 }
 
 fn signee_exists(signee: Principal) -> bool {
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
-        signees.borrow().contains(&signee)
-    })
+    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| signees.borrow().contains(&signee))
 }
 
 #[update]
@@ -63,28 +70,26 @@ fn include_signee(signee: Principal) -> Result<(), Error> {
     Ok(())
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_signees() -> Vec<Principal> {
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
-        signees.borrow().clone()
-    })
+    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| signees.borrow().clone())
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_supported_blockchain_adapters() -> Vec<String> {
-    ADAPTERS.with(|adapters| {
-        adapters.borrow().keys().cloned().collect()
-    })
+    ADAPTERS.with(|adapters| adapters.borrow().keys().cloned().collect())
 }
 
 fn get_default_icrc_subaccount() -> Subaccount {
     let owner = ic_cdk::id();
     let subaccount = Subaccount::default();
 
-    ICRCAccount::new(owner, Some(subaccount)).subaccount().unwrap()
+    ICRCAccount::new(owner, Some(subaccount))
+        .subaccount()
+        .unwrap()
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_icrc_account() -> String {
     let owner = ic_cdk::id();
     let subaccount = Subaccount::default();
@@ -99,7 +104,7 @@ fn get_icp_account_id() -> AccountIdentifier {
     to_subaccount_id(subaccount)
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_icp_account() -> String {
     let subaccount = to_subaccount(0);
     let subaccountid: AccountIdentifier = to_subaccount_id(subaccount);
@@ -110,8 +115,14 @@ fn get_icp_account() -> String {
 #[ic_cdk::post_upgrade]
 fn post_upgrade() {
     ADAPTERS.with(|adapters| {
-        adapters.borrow_mut().insert("icp:native:transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
-        adapters.borrow_mut().insert("icp:icrc1:transfer".to_string(), Box::new(ICRC1TransferAdapter::new()))
+        adapters.borrow_mut().insert(
+            "icp:native:transfer".to_string(),
+            Box::new(ICPNativeTransferAdapter::new()),
+        );
+        adapters.borrow_mut().insert(
+            "icp:icrc1:transfer".to_string(),
+            Box::new(ICRC1TransferAdapter::new()),
+        )
     });
 }
 
@@ -120,8 +131,14 @@ async fn init() {
     let caller = ic_cdk::caller();
 
     ADAPTERS.with(|adapters| {
-        adapters.borrow_mut().insert("icp:native:transfer".to_string(), Box::new(ICPNativeTransferAdapter::new()));
-        adapters.borrow_mut().insert("icp:icrc1:transfer".to_string(), Box::new(ICRC1TransferAdapter::new()))
+        adapters.borrow_mut().insert(
+            "icp:native:transfer".to_string(),
+            Box::new(ICPNativeTransferAdapter::new()),
+        );
+        adapters.borrow_mut().insert(
+            "icp:icrc1:transfer".to_string(),
+            Box::new(ICRC1TransferAdapter::new()),
+        )
     });
 
     SIGNEES.with(|signees| {
@@ -129,7 +146,7 @@ async fn init() {
     });
 }
 
-#[update]
+#[ic_cdk::update]
 fn assume_control() {
     ic_cdk::println!("Assuming control");
     let controllers = vec![ic_cdk::id()];
