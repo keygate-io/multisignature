@@ -28,6 +28,7 @@ import {
 import { formatIcp, formatIcrc } from "../../../util/units";
 import { ICP_DECIMALS } from "../../../util/constants";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
+import { ICRC1_LEDGER_CANISTER_ID } from "../../../util/config";
 
 interface Asset {
   name: string;
@@ -40,7 +41,6 @@ interface Asset {
 }
 
 const NATIVE_ICP_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-const MOCK_ICRC1_CANISTER = "bd3sg-teaaa-aaaaa-qaaba-cai";
 
 const Assets: React.FC = () => {
   const [showTokens, setShowTokens] = useState(true);
@@ -106,9 +106,9 @@ const Assets: React.FC = () => {
     if (vaultCanisterId && identity) {
       try {
         const nativeIcp = await fetchNativeIcpInfo();
-        //const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
+        const mockIcrc1 = await fetchIcrcTokenInfo(ICRC1_LEDGER_CANISTER_ID);
 
-        setAssets([nativeIcp]);
+        setAssets([nativeIcp, mockIcrc1]);
       } catch (error) {
         console.error("Error fetching assets:", error);
       } finally {

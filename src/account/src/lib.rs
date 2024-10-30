@@ -6,34 +6,36 @@ mod ledger;
 mod tests;
 mod types;
 
-use b3_utils::{ledger::ICRCAccount, Subaccount};
-use candid::{CandidType, Principal};
+use std::{cell::RefCell, collections::{HashMap, LinkedList}};
+use b3_utils::{ledger::ICRCAccount, memory::types::{DefaultStableBTreeMap, DefaultStableVec, DefaultStableCell}, Subaccount};
 use ic_cdk::{query, update};
+use candid::{CandidType, Principal};
 use ic_ledger_types::AccountIdentifier;
-use ic_stable_structures::{
-    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
-    DefaultMemoryImpl, StableLog,
-};
+use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog, StableVec, StableCell};
 use intent::*;
 use ledger::*;
 use serde::{Deserialize, Serialize};
-use std::{
-    cell::RefCell,
-    collections::{HashMap, LinkedList},
-};
+
 
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
-
+const SIGNERS_MEMORY: MemoryId = MemoryId::new(4);
+const PROPOSED_TRANSACTIONS_MEMORY: MemoryId = MemoryId::new(5);
+const PROPOSED_TRANSACTIONS_LAST_ID_MEMORY: MemoryId = MemoryId::new(6);
+const THRESHOLD_MEMORY: MemoryId = MemoryId::new(7);
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
 // Thread-local storage
 thread_local! {
-    pub static SIGNEES: RefCell<Vec<Principal>> = RefCell::default();
+    pub static SIGNERS: RefCell<StableVec<Principal, VM>> = RefCell::new(DefaultStableVec::init(MEMORY_MANAGER.with(|m| m.borrow().get(SIGNERS_MEMORY))).expect("Failed to initialize SIGNERS StableVec"));
 
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
+    pub static PROPOSED_TRANSACTIONS: RefCell<StableVec<ProposedTransaction, VM>> = RefCell::new(DefaultStableVec::init(MEMORY_MANAGER.with(|m| m.borrow().get(PROPOSED_TRANSACTIONS_MEMORY))).expect("Failed to initialize PROPOSED_TRANSACTIONS StableVec"));
+
+    pub static PROPOSED_TRANSACTIONS_LAST_ID: RefCell<StableCell<u64, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(PROPOSED_TRANSACTIONS_LAST_ID_MEMORY)), 0).expect("Failed to initialize PROPOSED_TRANSACTIONS_LAST_ID StableCell"));
+        
     pub static TRANSACTIONS: RefCell<StableLog<Transaction, VM, VM>> = RefCell::new(
         StableLog::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_INDEX_MEMORY)),
@@ -41,8 +43,8 @@ thread_local! {
         ).expect("Failed to initialize INTENTS StableLog")
     );
 
-    pub static DECISIONS: RefCell<HashMap<u64, LinkedList<Decision>>> = RefCell::default();
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
+    pub static THRESHOLD: RefCell<StableCell<u64, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(THRESHOLD_MEMORY)), 1).expect("Failed to initialize THRESHOLD StableCell"));
 }
 
 // Structs and Traits
@@ -51,28 +53,32 @@ struct Error {
     message: String,
 }
 
-fn signee_exists(signee: Principal) -> bool {
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| signees.borrow().contains(&signee))
+fn signer_exists(signer: Principal) -> bool {
+    SIGNERS.with(|signers: &RefCell<StableVec<Principal, VM>>| {
+        signers.borrow().iter().any(|s| s == signer)
+    })
 }
 
 #[update]
-fn include_signee(signee: Principal) -> Result<(), Error> {
-    if signee_exists(signee) {
+fn add_signer(signer: Principal) -> Result<(), Error> {
+    if signer_exists(signer) {
         return Err(Error {
-            message: "Signee already exists".to_string(),
+            message: "Signer already exists".to_string(),
         });
     }
 
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| {
-        signees.borrow_mut().push(signee);
+    SIGNERS.with(|signers: &RefCell<StableVec<Principal, VM>>| {
+        signers.borrow_mut().push(&signer);
     });
 
     Ok(())
 }
 
-#[ic_cdk::query]
-fn get_signees() -> Vec<Principal> {
-    SIGNEES.with(|signees: &RefCell<Vec<Principal>>| signees.borrow().clone())
+#[query]
+fn get_signers() -> Vec<Principal> {
+    SIGNERS.with(|signers: &RefCell<StableVec<Principal, VM>>| {
+        signers.borrow().iter().map(|s| s.clone()).collect()
+    })
 }
 
 #[ic_cdk::query]
@@ -112,6 +118,123 @@ fn get_icp_account() -> String {
     subaccountid.to_hex()
 }
 
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
+struct ProposeTransactionArgs {
+    pub to: String,
+    pub token: TokenPath,
+    pub network: SupportedNetwork,
+    pub amount: u64,
+    pub transaction_type: TransactionType,
+}
+
+
+#[update]
+fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> ProposedTransaction {
+    let caller = ic_cdk::caller();
+    let last_id = PROPOSED_TRANSACTIONS_LAST_ID.with(|last_id| {
+        last_id.borrow().get().clone()
+    });
+
+    let proposed_transaction = ProposedTransaction {
+        id: last_id,
+        to: proposed_transaction.to,
+        token: proposed_transaction.token,
+        network: proposed_transaction.network,
+        amount: proposed_transaction.amount,
+        transaction_type: proposed_transaction.transaction_type,
+        signers: vec![caller],
+        rejections: vec![],
+    };
+
+    PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
+        proposed_transactions.borrow_mut().push(&proposed_transaction).map_err(|_| Error {
+            message: "Failed to push proposed transaction to memory.".to_string(),
+        }).unwrap();
+    });
+
+    PROPOSED_TRANSACTIONS_LAST_ID.with(|last_id| {
+        let result = last_id.borrow_mut().set(proposed_transaction.id + 1);
+        match result {
+            Ok(_) => (),
+            Err(e) => ic_cdk::trap(&format!("Failed to set proposed transaction last id: {:?}", e)),
+        }
+    });
+
+    proposed_transaction
+}
+
+#[query]
+fn get_proposed_transaction(id: u64) -> Option<ProposedTransaction> {
+    PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
+        proposed_transactions.borrow().iter().find(|p| p.id == id).clone()
+    })
+}
+
+#[query]
+fn get_proposed_transactions() -> Vec<ProposedTransaction> {
+    PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
+        proposed_transactions.borrow().iter().map(|p| p.clone()).collect()
+    })
+}
+
+#[update]
+fn set_threshold(threshold: u64) {
+    THRESHOLD.with(|current_threshold| {
+        current_threshold.borrow_mut().set(threshold);
+    });
+}
+
+#[query]
+fn get_threshold() -> u64 {
+    THRESHOLD.with(|current_threshold| {
+        current_threshold.borrow().get().clone()
+    })
+}
+
+#[update]
+fn approve_transaction(id: u64) -> ProposedTransaction {
+    let caller = ic_cdk::caller();
+
+    if !signer_exists(caller) {
+        ic_cdk::trap(&format!("Caller is not a signer"));
+    }
+
+    PROPOSED_TRANSACTIONS.with_borrow_mut(|proposed_transactions| {
+        let index_of = proposed_transactions.iter().position(|p| p.id == id).unwrap();
+        let mut dxdy = proposed_transactions.get(index_of as u64).unwrap_or_else(|| {
+            ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
+        });
+
+        dxdy.signers.push(caller);
+
+        proposed_transactions.set(index_of as u64, &dxdy);
+
+        dxdy
+    })
+}
+
+#[update]
+fn reject_transaction(id: u64) -> ProposedTransaction {
+    let caller = ic_cdk::caller();
+
+    if !signer_exists(caller) {
+        ic_cdk::trap(&format!("Caller is not a signer"));
+    }
+
+    PROPOSED_TRANSACTIONS.with_borrow_mut(|proposed_transactions| {
+        let index_of = proposed_transactions.iter().position(|p| p.id == id).unwrap();
+        let mut dxdy = proposed_transactions.get(index_of as u64).unwrap_or_else(|| {
+            ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
+        });
+
+        dxdy.rejections.push(caller);
+
+        proposed_transactions.set(index_of as u64, &dxdy);
+
+        dxdy
+    })
+}
+
 #[ic_cdk::post_upgrade]
 fn post_upgrade() {
     ADAPTERS.with(|adapters| {
@@ -141,15 +264,9 @@ async fn init() {
         )
     });
 
-    SIGNEES.with(|signees| {
-        signees.borrow_mut().push(caller);
+    SIGNERS.with(|signers| {
+        signers.borrow_mut().push(&caller);
     });
-}
-
-#[ic_cdk::update]
-fn assume_control() {
-    ic_cdk::println!("Assuming control");
-    let controllers = vec![ic_cdk::id()];
 }
 
 // Export candid

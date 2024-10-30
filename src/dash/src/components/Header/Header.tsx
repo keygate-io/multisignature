@@ -6,6 +6,7 @@ import {
   Box,
   IconButton,
   Chip,
+  capitalize,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +39,7 @@ const Header: React.FC = () => {
               Keygate
             </Typography>
             <Chip
-              label="Alpha version"
+              label={`Pre-alpha version`}
               color="secondary"
               size="small"
               sx={{ fontWeight: "bold" }}

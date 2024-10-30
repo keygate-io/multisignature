@@ -4,6 +4,8 @@ import { createActor as createCentralActor } from "../../../declarations/central
 import { createActor as createAccountActor } from "../../../declarations/account";
 import {
   IntentStatus,
+  ProposedTransaction,
+  ProposeTransactionArgs,
   TransactionRequest,
 } from "../../../declarations/account/account.did";
 import { Vault } from "../../../declarations/central/central.did";
@@ -76,14 +78,34 @@ export function getAdapters(
   return getAccountActor(account_canister_id, identity).get_adapters();
 }
 
+export function proposeTransaction(
+  account_canister_id: Principal,
+  request: ProposeTransactionArgs,
+  identity: Identity
+): Promise<ProposedTransaction> {
+  return getAccountActor(account_canister_id, identity).propose_transaction(
+    request
+  );
+}
+
 export function executeTransaction(
   account_canister_id: Principal,
-  request: TransactionRequest,
+  proposal_id: bigint,
   identity: Identity
 ): Promise<IntentStatus> {
   return getAccountActor(account_canister_id, identity).execute_transaction(
-    request
+    proposal_id
   );
+}
+
+export function getProposedTransactions(
+  account_canister_id: Principal,
+  identity: Identity
+) {
+  return getAccountActor(
+    account_canister_id,
+    identity
+  ).get_proposed_transactions();
 }
 
 export function getTransactions(
@@ -91,6 +113,27 @@ export function getTransactions(
   identity: Identity
 ) {
   return getAccountActor(account_canister_id, identity).get_transactions();
+}
+
+export function getThreshold(
+  account_canister_id: Principal,
+  identity: Identity
+) {
+  return getAccountActor(account_canister_id, identity).get_threshold();
+}
+
+export function setThreshold(
+  account_canister_id: Principal,
+  threshold: bigint,
+  identity: Identity
+) {
+  return getAccountActor(account_canister_id, identity).set_threshold(
+    threshold
+  );
+}
+
+export function getSigners(account_canister_id: Principal, identity: Identity) {
+  return getAccountActor(account_canister_id, identity).get_signers();
 }
 
 // export function getTokens(account_canister_id: Principal, identity: Identity) {

@@ -1,4 +1,3 @@
-// SendToken.tsx
 import React, { useState, useCallback, useEffect } from "react";
 import AccountPageLayout from "../../../VaultPageLayout";
 import {
@@ -20,11 +19,15 @@ import { getTokenSymbol, getTokenDecimals } from "../../../../api/icrc";
 import { Principal } from "@dfinity/principal";
 import { extractTokenData } from "../../../../util/token";
 import { formatCommaSeparated, icpToE8s } from "../../../../util/units";
-import { ICP_DECIMALS } from "../../../../util/constants";
+import { ICP_DECIMALS, TOKEN_URN_TO_SYMBOL } from "../../../../util/constants";
 import { useVaultDetail } from "../../../../contexts/VaultDetailContext";
 import { useNavigate } from "react-router-dom";
 import { TransactionRequest } from "../../../../../../declarations/account/account.did";
-import { executeTransaction } from "../../../../api/account";
+import {
+  executeTransaction,
+  proposeTransaction,
+  getThreshold,
+} from "../../../../api/account";
 import ConfirmationView from "./ConfirmationView";
 
 if (typeof window !== "undefined") {
@@ -80,7 +83,7 @@ const SendForm: React.FC<SendFormProps> = ({
       >
         {tokens.map((option) => (
           <MenuItem key={option} value={option}>
-            {option}
+            {TOKEN_URN_TO_SYMBOL[option]}
           </MenuItem>
         ))}
       </TextField>
@@ -115,6 +118,7 @@ const SendToken: React.FC = () => {
   const [formattedAmount, setFormattedAmount] = useState<string>("");
   const { vaultCanisterId, nativeAccountId } = useVaultDetail();
   const navigate = useNavigate();
+
   const handleRecipientChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -160,20 +164,20 @@ const SendToken: React.FC = () => {
 
       setCurrentStep(2);
 
-      const result = await executeTransaction(
+      const proposedTx = await proposeTransaction(
         vaultCanisterId,
         intent,
         identity!
       );
 
-      if ("Completed" in result) {
-        navigate(`/vaults/${vaultCanisterId}/transactions`);
-        setError(null);
-      } else if ("Failed" in result) {
-        setError(`Transaction failed: ${JSON.stringify(result)}`);
-      } else {
-        setError(`Unknown error: ${JSON.stringify(result)}`);
+      // If threshold is 0 or 1, immediately execute the transaction
+      const threshold = await getThreshold(vaultCanisterId, identity!);
+      if (threshold <= BigInt(1)) {
+        await executeTransaction(vaultCanisterId, proposedTx.id, identity!);
       }
+
+      navigate(`/vaults/${vaultCanisterId}/transactions`);
+      setError(null);
     } catch (err) {
       console.error(err);
       setError(`An error occurred: ${err}`);

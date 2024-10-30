@@ -98,7 +98,7 @@ pub enum MetadataValue {
     Text(String),
 }
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq)]
 pub struct ArchiveOptions {
     pub num_blocks_to_archive: u64,
     pub trigger_threshold: u64,
@@ -109,9 +109,27 @@ pub struct ArchiveOptions {
     pub controller_id: Principal,
 }
 
-#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+impl PartialEq for ArchiveOptions {
+    fn eq(&self, other: &Self) -> bool {
+        self.num_blocks_to_archive == other.num_blocks_to_archive &&
+        self.trigger_threshold == other.trigger_threshold &&
+        self.max_transactions_per_response == other.max_transactions_per_response &&
+        self.max_message_size_bytes == other.max_message_size_bytes &&
+        self.cycles_for_archive_creation == other.cycles_for_archive_creation &&
+        self.node_max_memory_size_bytes == other.node_max_memory_size_bytes &&
+        self.controller_id == other.controller_id
+    }   
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq)]
 pub struct FeatureFlags {
     pub icrc2: bool,
+}
+
+impl PartialEq for FeatureFlags {
+    fn eq(&self, other: &Self) -> bool {
+        self.icrc2 == other.icrc2
+    }
 }
 
 use std::str::FromStr;

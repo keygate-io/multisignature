@@ -22,6 +22,25 @@ type Transaction = record {
   status : IntentStatus;
 };
 
+type ProposedTransaction = record {
+  id : nat64;
+  to : text;
+  token : text;
+  network : SupportedNetwork;
+  amount : nat64;
+  transaction_type : TransactionType;
+  signers : vec principal;
+  rejections : vec principal;
+};
+
+type ProposeTransactionArgs = record {
+  to : text;
+  token : text;
+  network : SupportedNetwork;
+  amount : nat64;
+  transaction_type : TransactionType;
+};
+
 type IntentStatus = variant {
   Failed : text;
   Rejected : text;
@@ -35,13 +54,20 @@ type SupportedNetwork = variant { ETH; ICP };
 service : () -> {
   add_subaccount : (text) -> (Result);
   add_icrc_account : (text) -> (Result);
-  execute_transaction : (TransactionRequest) -> (IntentStatus);
+  execute_transaction : (nat64) -> (IntentStatus);
   get_adapters : () -> (vec text) query;
   get_transactions : () -> (vec Transaction) query;
-  get_signees : () -> (vec principal) query;
+  get_signers : () -> (vec principal) query;
   get_tokens : () -> (vec text) query;
   get_subaccount : (text) -> (Result) query;
   get_debug_info : () -> (text) query;
-  include_signee : (text) -> ();
   get_icrc_account : () -> (text) query;
+  propose_transaction : (ProposeTransactionArgs) -> (ProposedTransaction);
+  approve_transaction : (nat64) -> ();
+  reject_transaction : (nat64) -> ();
+  add_signer : (principal) -> (Result);
+  set_threshold : (nat64) -> ();
+  get_threshold : () -> (nat64) query;
+  get_proposed_transaction : (nat64) -> (opt ProposedTransaction) query;
+  get_proposed_transactions : () -> (vec ProposedTransaction) query;
 }

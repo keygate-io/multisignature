@@ -35,7 +35,6 @@ const Vaults = () => {
       try {
         setIsLoading(true);
         const fetchedVaults = await getVaults(identity);
-
         setVaults(fetchedVaults);
         setError("");
       } catch (err) {
@@ -74,7 +73,7 @@ const Vaults = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 800, mx: "auto", py: 4 }}>
+    <Box sx={{ maxWidth: 800, mx: "auto", py: 4, minWidth: 600 }}>
       <Box
         sx={{
           display: "flex",
@@ -101,37 +100,49 @@ const Vaults = () => {
         <Typography variant="h6" sx={{ mb: 2 }}>
           My accounts
         </Typography>
-        <List>
-          {vaults.map((vault, index) => (
-            <ListItem
-              key={index}
-              className="min-w-[500px] hover:cursor-pointer"
-              divider
-            >
-              <ListItemAvatar>
-                <Avatar sx={{ bgcolor: "primary.main" }}>
-                  {`${vault.name.charAt(0)}${index + 1}`}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={`${vault.name}`}
-                onClick={() => handleVaultClick(vault.id)}
-                secondary={
-                  <React.Fragment>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="text.primary"
-                    >
-                      {vault.id.toString()}
-                    </Typography>
-                    <br />
-                  </React.Fragment>
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
+        {vaults.length === 0 ? (
+          <Box sx={{ textAlign: "center", py: 4, color: "text.secondary" }}>
+            <Typography>
+              No vaults found. Create your first vault to get started.
+            </Typography>
+          </Box>
+        ) : (
+          <List>
+            {vaults.map((vault, index) => (
+              <ListItem
+                key={index}
+                sx={{
+                  minWidth: 500,
+                  cursor: "pointer",
+                  "&:hover": { bgcolor: "action.hover" },
+                }}
+                divider
+              >
+                <ListItemAvatar>
+                  <Avatar sx={{ bgcolor: "primary.main" }}>
+                    {`${vault.name.charAt(0)}${index + 1}`}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={`${vault.name}`}
+                  onClick={() => handleVaultClick(vault.id)}
+                  secondary={
+                    <React.Fragment>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        color="text.primary"
+                      >
+                        {vault.id.toString()}
+                      </Typography>
+                      <br />
+                    </React.Fragment>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
       </Paper>
     </Box>
   );

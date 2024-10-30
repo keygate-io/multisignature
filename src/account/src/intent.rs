@@ -12,11 +12,9 @@ use icrc_ledger_types::icrc1::{
 };
 use serde_bytes::ByteBuf;
 
-use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS};
-use std::{
-    borrow::Cow,
-    fmt::{self, Display},
-};
+use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS, PROPOSED_TRANSACTIONS, THRESHOLD};
+
+use std::{borrow::Cow, fmt::{self, Display}};
 
 use ic_cdk::{query, update};
 use ic_stable_structures::{storable::Bound, Storable};
@@ -36,7 +34,7 @@ pub(crate) trait BlockchainAdapter: DynClone {
 
 dyn_clone::clone_trait_object!(BlockchainAdapter);
 
-type TokenPath = String;
+pub type TokenPath = String;
 
 pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
     let it: &'static str = transaction.transaction_type.clone().into();
@@ -91,7 +89,11 @@ type ICPNativeTransferArgs = TransferArgs;
 /**
  * See TransferArgs in ic_ledger_types
  */
-const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000;
+#[cfg(test)]
+pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000; 
+#[cfg(not(test))]
+pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 1000000;
+pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {
     fn network(&self) -> SupportedNetwork {
@@ -116,7 +118,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(&transaction.to).unwrap(),
                 amount: Tokens::from_e8s(transaction.amount),
-                fee: Tokens::from_e8s(RECOMMENDED_TRANSACTION_FEE),
+                fee: Tokens::from_e8s(RECOMMENDED_ICP_TRANSACTION_FEE),
                 memo: Memo(0),
                 from_subaccount: Some(to_subaccount(0)),
                 created_at_time: None,
@@ -155,6 +157,26 @@ impl ICPNativeTransferAdapter {
                 Err(error_message)
             }
         }
+    }
+}
+
+struct ETHNativeTransferAdapter {
+    pub(crate) network: SupportedNetwork,
+    pub(crate) token: TokenPath,
+    pub(crate) intent_type: TransactionType,
+}
+
+impl ETHNativeTransferAdapter {
+    pub fn new() -> ETHNativeTransferAdapter {
+        ETHNativeTransferAdapter {
+            network: SupportedNetwork::ETH,
+            token: "eth:native".to_string(),
+            intent_type: TransactionType::Transfer,
+        }
+    }
+
+    async fn transfer(&self, transaction: &TransactionRequest) -> Result<String, String> {
+        Ok("0x....".to_string())
     }
 }
 
@@ -221,10 +243,8 @@ impl ICRC1TransferAdapter {
                 subaccount: None,
             },
             amount: Nat::from(transaction.amount),
-            fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
-            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(
-                vec![],
-            ))),
+            fee: Some(Nat::from(RECOMMENDED_ICRC1_TRANSACTION_FEE)),
+            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
             from_subaccount: Some(get_default_icrc_subaccount().0),
             created_at_time: None,
         };
@@ -352,6 +372,7 @@ pub struct Transaction {
     pub transaction_type: TransactionType,
 }
 
+
 impl Storable for Transaction {
     const BOUND: Bound = Bound::Bounded {
         max_size: 1024,
@@ -365,6 +386,35 @@ impl Storable for Transaction {
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         let deserialized: Transaction = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
+        deserialized
+    }
+}
+
+#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct ProposedTransaction {
+    pub id: u64,
+    pub to: String,
+    pub token: TokenPath,
+    pub network: SupportedNetwork,
+    pub amount: u64,
+    pub transaction_type: TransactionType,
+    pub signers: Vec<Principal>,
+    pub rejections: Vec<Principal>,
+}
+
+impl Storable for ProposedTransaction {
+    const BOUND: Bound = Bound::Bounded {
+        max_size: 1024,
+        is_fixed_size: false,
+    };
+
+    fn to_bytes(&self) -> Cow<[u8]> {
+        let serialized = serde_cbor::to_vec(self).expect("Serialization failed");
+        Cow::Owned(serialized)
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        let deserialized: ProposedTransaction = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
         deserialized
     }
 }
@@ -452,11 +502,42 @@ pub fn get_transactions() -> Vec<Transaction> {
     })
 }
 
-#[ic_cdk::update]
-pub async fn execute_transaction(transaction: TransactionRequest) -> IntentStatus {
-    ic_cdk::println!("Executing transaction: {:?}", transaction);
+
+#[update]
+pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
+    let proposal = PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
+        proposed_transactions.borrow().get(proposal_id)
+    });
+
+    if proposal.is_none() {
+        return IntentStatus::Failed(format!("Proposal not found: {}", proposal_id));
+    }
+
+    // check if threshold is met
+    let threshold = THRESHOLD.with(|threshold| {
+        threshold.borrow().get().clone()
+    });
+
+    let signers = proposal.clone().unwrap().signers;
+    let length = signers.len() as u64;
+    let proposal = proposal.unwrap();
+
+    if length < threshold {
+        return IntentStatus::Failed("Threshold not met".to_string());
+    }
+
+    let transaction = TransactionRequest {
+        transaction_type: proposal.transaction_type,
+        amount: proposal.amount,
+        token: proposal.token,
+        to: proposal.to,
+        network: proposal.network,
+    };
 
     let execution_result = super::execute(&transaction).await;
+
+    ic_cdk::println!("Executing transaction: {:?}", transaction);
+
 
     ic_cdk::println!("Execution result: {:?}", execution_result);
 
