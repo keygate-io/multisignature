@@ -20,10 +20,10 @@ thread_local! {
 }
 
 #[ic_cdk::update]
-pub async fn pubkey_bytes_to_address() -> Result<String, String> {
+pub async fn pubkey_bytes_to_address() -> String {
     let signer = alloy_services::create_icp_sepolia_signer().await;
     let address = signer.address();
-    Ok(address.to_string())
+    address.to_string()
 }
 
 #[ic_cdk::update]
@@ -126,21 +126,21 @@ pub async fn execute_transaction_evm(
 }
 
 #[ic_cdk::update]
-pub async fn get_balance(chain: String) -> Result<String, String> {
+pub async fn get_balance(chain: String) -> String {
     let address = alloy_services::create_icp_sepolia_signer().await.address();
     let config = match chain.as_str() {
         "eth" => IcpConfig::new(alloy_services::get_rpc_service_sepolia()),
         "base" => IcpConfig::new(alloy_services::get_rpc_service_base()),
         "polygon" => IcpConfig::new(alloy_services::get_rpc_service_polygon()),
         _ => {
-            return Err("Unsupported chain.".to_string());
+            return "Unsupported chain.".to_string();
         }
     };
     let provider = ProviderBuilder::new().on_icp(config);
     let result = provider.get_balance(address).await;
 
     match result {
-        Ok(balance) => Ok(balance.to_string()),
-        Err(e) => Err(e.to_string()),
+        Ok(balance) => balance.to_string(),
+        Err(e) => e.to_string(),
     }
 }
