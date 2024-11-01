@@ -6,16 +6,25 @@ mod ledger;
 mod tests;
 mod types;
 
-use std::{cell::RefCell, collections::{HashMap, LinkedList}};
-use b3_utils::{ledger::ICRCAccount, memory::types::{DefaultStableBTreeMap, DefaultStableVec, DefaultStableCell}, Subaccount};
-use ic_cdk::{query, update};
+use b3_utils::{
+    ledger::ICRCAccount,
+    memory::types::{DefaultStableBTreeMap, DefaultStableCell, DefaultStableVec},
+    Subaccount,
+};
 use candid::{CandidType, Principal};
+use ic_cdk::{query, update};
 use ic_ledger_types::AccountIdentifier;
-use ic_stable_structures::{memory_manager::{MemoryId, MemoryManager, VirtualMemory}, DefaultMemoryImpl, StableLog, StableVec, StableCell};
+use ic_stable_structures::{
+    memory_manager::{MemoryId, MemoryManager, VirtualMemory},
+    DefaultMemoryImpl, StableCell, StableLog, StableVec,
+};
 use intent::*;
 use ledger::*;
 use serde::{Deserialize, Serialize};
-
+use std::{
+    cell::RefCell,
+    collections::{HashMap, LinkedList},
+};
 
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
 const INTENT_LOG_DATA_MEMORY: MemoryId = MemoryId::new(3);
@@ -35,7 +44,7 @@ thread_local! {
     pub static PROPOSED_TRANSACTIONS: RefCell<StableVec<ProposedTransaction, VM>> = RefCell::new(DefaultStableVec::init(MEMORY_MANAGER.with(|m| m.borrow().get(PROPOSED_TRANSACTIONS_MEMORY))).expect("Failed to initialize PROPOSED_TRANSACTIONS StableVec"));
 
     pub static PROPOSED_TRANSACTIONS_LAST_ID: RefCell<StableCell<u64, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(PROPOSED_TRANSACTIONS_LAST_ID_MEMORY)), 0).expect("Failed to initialize PROPOSED_TRANSACTIONS_LAST_ID StableCell"));
-        
+
     pub static TRANSACTIONS: RefCell<StableLog<Transaction, VM, VM>> = RefCell::new(
         StableLog::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(INTENT_LOG_INDEX_MEMORY)),
@@ -127,13 +136,10 @@ struct ProposeTransactionArgs {
     pub transaction_type: TransactionType,
 }
 
-
 #[update]
 fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> ProposedTransaction {
     let caller = ic_cdk::caller();
-    let last_id = PROPOSED_TRANSACTIONS_LAST_ID.with(|last_id| {
-        last_id.borrow().get().clone()
-    });
+    let last_id = PROPOSED_TRANSACTIONS_LAST_ID.with(|last_id| last_id.borrow().get().clone());
 
     let proposed_transaction = ProposedTransaction {
         id: last_id,
@@ -147,16 +153,23 @@ fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> Proposed
     };
 
     PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
-        proposed_transactions.borrow_mut().push(&proposed_transaction).map_err(|_| Error {
-            message: "Failed to push proposed transaction to memory.".to_string(),
-        }).unwrap();
+        proposed_transactions
+            .borrow_mut()
+            .push(&proposed_transaction)
+            .map_err(|_| Error {
+                message: "Failed to push proposed transaction to memory.".to_string(),
+            })
+            .unwrap();
     });
 
     PROPOSED_TRANSACTIONS_LAST_ID.with(|last_id| {
         let result = last_id.borrow_mut().set(proposed_transaction.id + 1);
         match result {
             Ok(_) => (),
-            Err(e) => ic_cdk::trap(&format!("Failed to set proposed transaction last id: {:?}", e)),
+            Err(e) => ic_cdk::trap(&format!(
+                "Failed to set proposed transaction last id: {:?}",
+                e
+            )),
         }
     });
 
@@ -166,14 +179,22 @@ fn propose_transaction(proposed_transaction: ProposeTransactionArgs) -> Proposed
 #[query]
 fn get_proposed_transaction(id: u64) -> Option<ProposedTransaction> {
     PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
-        proposed_transactions.borrow().iter().find(|p| p.id == id).clone()
+        proposed_transactions
+            .borrow()
+            .iter()
+            .find(|p| p.id == id)
+            .clone()
     })
 }
 
 #[query]
 fn get_proposed_transactions() -> Vec<ProposedTransaction> {
     PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
-        proposed_transactions.borrow().iter().map(|p| p.clone()).collect()
+        proposed_transactions
+            .borrow()
+            .iter()
+            .map(|p| p.clone())
+            .collect()
     })
 }
 
@@ -186,9 +207,7 @@ fn set_threshold(threshold: u64) {
 
 #[query]
 fn get_threshold() -> u64 {
-    THRESHOLD.with(|current_threshold| {
-        current_threshold.borrow().get().clone()
-    })
+    THRESHOLD.with(|current_threshold| current_threshold.borrow().get().clone())
 }
 
 #[update]
@@ -200,10 +219,15 @@ fn approve_transaction(id: u64) -> ProposedTransaction {
     }
 
     PROPOSED_TRANSACTIONS.with_borrow_mut(|proposed_transactions| {
-        let index_of = proposed_transactions.iter().position(|p| p.id == id).unwrap();
-        let mut dxdy = proposed_transactions.get(index_of as u64).unwrap_or_else(|| {
-            ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
-        });
+        let index_of = proposed_transactions
+            .iter()
+            .position(|p| p.id == id)
+            .unwrap();
+        let mut dxdy = proposed_transactions
+            .get(index_of as u64)
+            .unwrap_or_else(|| {
+                ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
+            });
 
         dxdy.signers.push(caller);
 
@@ -222,10 +246,15 @@ fn reject_transaction(id: u64) -> ProposedTransaction {
     }
 
     PROPOSED_TRANSACTIONS.with_borrow_mut(|proposed_transactions| {
-        let index_of = proposed_transactions.iter().position(|p| p.id == id).unwrap();
-        let mut dxdy = proposed_transactions.get(index_of as u64).unwrap_or_else(|| {
-            ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
-        });
+        let index_of = proposed_transactions
+            .iter()
+            .position(|p| p.id == id)
+            .unwrap();
+        let mut dxdy = proposed_transactions
+            .get(index_of as u64)
+            .unwrap_or_else(|| {
+                ic_cdk::trap(&format!("Proposed transaction with id {} not found", id));
+            });
 
         dxdy.rejections.push(caller);
 
@@ -261,7 +290,11 @@ async fn init() {
         adapters.borrow_mut().insert(
             "icp:icrc1:transfer".to_string(),
             Box::new(ICRC1TransferAdapter::new()),
-        )
+        );
+        adapters.borrow_mut().insert(
+            "eth:native:transfer".to_string(),
+            Box::new(ETHNativeTransferAdapter::new()),
+        );
     });
 
     SIGNERS.with(|signers| {

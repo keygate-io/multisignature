@@ -16,4 +16,5 @@ if (!process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER) {
 export const TOKEN_URN_TO_SYMBOL = {
   "icp:native": "ICP",
   [`icp:icrc1:${process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER}`]: "MCK",
+  "eth:native": "ETH",
 };

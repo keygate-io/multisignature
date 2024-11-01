@@ -157,7 +157,7 @@ const SendToken: React.FC = () => {
         amount: icpToE8s(BigInt(amount)),
         token,
         to: recipient,
-        network: { ICP: null },
+        network: token.toLowerCase().includes("eth") ? { ETH: null } : { ICP: null },
         transaction_type: { Transfer: null },
         from: nativeAccountId,
       };
@@ -192,6 +192,7 @@ const SendToken: React.FC = () => {
         const fetchedTokens = [
           "icp:native",
           `icp:icrc1:${process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER}`,
+          "eth:native",
           "icp:test2",
           "icp:test3",
         ];
@@ -211,6 +212,10 @@ const SendToken: React.FC = () => {
           setTokenSymbol("ICP");
           setTokenCanisterId("");
           setTokenDecimals(ICP_DECIMALS);
+        } else if (token.toLowerCase().includes("eth:native")) {
+          setTokenSymbol("ETH");
+          setTokenCanisterId("");
+          setTokenDecimals(18);
         } else {
           const symbol = await getTokenSymbol(
             Principal.fromText(tokenInfo.principalId)

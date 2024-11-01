@@ -1,5 +1,6 @@
 use std::{collections::HashMap, future::Future, pin::Pin};
 
+use crate::evm;
 use candid::{CandidType, Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
@@ -12,9 +13,15 @@ use icrc_ledger_types::icrc1::{
 };
 use serde_bytes::ByteBuf;
 
-use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS, PROPOSED_TRANSACTIONS, THRESHOLD};
+use crate::{
+    evm_types::TransactionRequestBasic, get_default_icrc_subaccount, to_subaccount, ADAPTERS,
+    PROPOSED_TRANSACTIONS, THRESHOLD,
+};
 
-use std::{borrow::Cow, fmt::{self, Display}};
+use std::{
+    borrow::Cow,
+    fmt::{self, Display},
+};
 
 use ic_cdk::{query, update};
 use ic_stable_structures::{storable::Bound, Storable};
@@ -90,7 +97,7 @@ type ICPNativeTransferArgs = TransferArgs;
  * See TransferArgs in ic_ledger_types
  */
 #[cfg(test)]
-pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000; 
+pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000;
 #[cfg(not(test))]
 pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 1000000;
 pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
@@ -160,7 +167,8 @@ impl ICPNativeTransferAdapter {
     }
 }
 
-struct ETHNativeTransferAdapter {
+#[derive(Clone)]
+pub struct ETHNativeTransferAdapter {
     pub(crate) network: SupportedNetwork,
     pub(crate) token: TokenPath,
     pub(crate) intent_type: TransactionType,
@@ -176,7 +184,46 @@ impl ETHNativeTransferAdapter {
     }
 
     async fn transfer(&self, transaction: &TransactionRequest) -> Result<String, String> {
-        Ok("0x....".to_string())
+        ic_cdk::println!("Executing ETHAdapter");
+        let request = TransactionRequestBasic {
+            to: transaction.to.clone(),
+            value: transaction.amount.to_string(),
+            chain: "eth".to_string(),
+        };
+        let result = evm::execute_transaction_evm(request).await;
+        match result.status.as_str() {
+            "Success" => Ok(result.hash),
+            _ => Err(result.status),
+        }
+    }
+}
+
+impl BlockchainAdapter for ETHNativeTransferAdapter {
+    fn network(&self) -> SupportedNetwork {
+        self.network.clone()
+    }
+
+    fn token(&self) -> String {
+        self.token.clone()
+    }
+
+    fn intent_type(&self) -> TransactionType {
+        self.intent_type.clone()
+    }
+
+    fn execute<'a>(
+        &'a self,
+        transaction: &'a TransactionRequest,
+    ) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
+        Box::pin(async move {
+            ic_cdk::println!("Executing ETHAdapter");
+            match self.transfer(transaction).await {
+                Ok(result) => Ok(IntentStatus::Completed(
+                    "Successfully transferred native ETH: ".to_string() + &result,
+                )),
+                Err(e) => Err(e.to_string()),
+            }
+        })
     }
 }
 
@@ -244,7 +291,9 @@ impl ICRC1TransferAdapter {
             },
             amount: Nat::from(transaction.amount),
             fee: Some(Nat::from(RECOMMENDED_ICRC1_TRANSACTION_FEE)),
-            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
+            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(
+                vec![],
+            ))),
             from_subaccount: Some(get_default_icrc_subaccount().0),
             created_at_time: None,
         };
@@ -371,7 +420,6 @@ pub struct Transaction {
     pub amount: u64,
     pub transaction_type: TransactionType,
 }
-
 
 impl Storable for Transaction {
     const BOUND: Bound = Bound::Bounded {
@@ -502,21 +550,17 @@ pub fn get_transactions() -> Vec<Transaction> {
     })
 }
 
-
 #[update]
 pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
-    let proposal = PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
-        proposed_transactions.borrow().get(proposal_id)
-    });
+    let proposal = PROPOSED_TRANSACTIONS
+        .with(|proposed_transactions| proposed_transactions.borrow().get(proposal_id));
 
     if proposal.is_none() {
         return IntentStatus::Failed(format!("Proposal not found: {}", proposal_id));
     }
 
     // check if threshold is met
-    let threshold = THRESHOLD.with(|threshold| {
-        threshold.borrow().get().clone()
-    });
+    let threshold = THRESHOLD.with(|threshold| threshold.borrow().get().clone());
 
     let signers = proposal.clone().unwrap().signers;
     let length = signers.len() as u64;
@@ -537,7 +581,6 @@ pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
     let execution_result = super::execute(&transaction).await;
 
     ic_cdk::println!("Executing transaction: {:?}", transaction);
-
 
     ic_cdk::println!("Execution result: {:?}", execution_result);
 

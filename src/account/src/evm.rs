@@ -112,15 +112,7 @@ pub async fn execute_transaction_evm(
         }
         Err(_e) => evm_types::TransactionResult {
             hash: String::new(),
-            status: "Failed: failed xd.".to_string()
-                + " "
-                + &chain_id.to_string()
-                + " "
-                + &request.chain
-                + " "
-                + &request.to
-                + " "
-                + &request.value,
+            status: "Failed: Could not get transaction.".to_string(),
         },
     }
 }
