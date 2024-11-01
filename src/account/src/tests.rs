@@ -1,23 +1,25 @@
 use b3_utils::{ledger::ICRCAccount, Subaccount};
+use candid::{encode_one, CandidType, Decode, Principal};
 use ic_ledger_types::{AccountIdentifier, Tokens};
 use icrc_ledger_types::icrc1::account::Account;
+#[cfg(test)]
+use pocket_ic::PocketIc;
 #[cfg(test)]
 use pocket_ic::WasmResult;
 #[cfg(test)]
 use pocket_ic::{query_candid_as, update_candid, update_candid_as};
-#[cfg(test)]
-use pocket_ic::PocketIc;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::{error::Error, fmt::format, io::Write};
-use candid::{encode_one, CandidType, Decode, Principal};
 
-use crate::types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs};
-use crate::{IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork, TransactionRequest, TransactionType};
 #[cfg(test)]
-use crate::{to_subaccount};
-
+use crate::to_subaccount;
+use crate::types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs};
+use crate::{
+    IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork,
+    TransactionRequest, TransactionType,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
 pub struct NnsLedgerCanisterInitPayload {
@@ -45,15 +47,12 @@ pub struct NnsLedgerCanisterUpgradePayload {
     pub feature_flags: Option<FeatureFlags>,
 }
 
-
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
 pub enum LedgerCanisterPayload {
     Init(NnsLedgerCanisterInitPayload),
     Upgrade(Option<NnsLedgerCanisterUpgradePayload>),
 }
-
-
 
 #[cfg(test)]
 pub fn get_icp_balance(env: &PocketIc, user_id: Principal) -> u64 {
@@ -101,40 +100,45 @@ fn should_initialize_with_default_values() {
     let account_id = pic.create_canister_with_settings(Some(caller), None);
 
     pic.add_cycles(account_id, 2_000_000_000_000);
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let wasm_result = pic.query_call(account_id, caller,"get_signers",  encode_one(()).unwrap());
+    let wasm_result = pic.query_call(account_id, caller, "get_signers", encode_one(()).unwrap());
     match wasm_result.unwrap() {
-       pocket_ic::WasmResult::Reject(reject_message) => {
-           panic!("Query call failed: {}", reject_message);
-       },
-         pocket_ic::WasmResult::Reply(reply) => {
+        pocket_ic::WasmResult::Reject(reject_message) => {
+            panic!("Query call failed: {}", reject_message);
+        }
+        pocket_ic::WasmResult::Reply(reply) => {
             let signers = Decode!(&reply, Vec<Principal>);
 
             // caller should be included in signers vector
             match signers {
                 Ok(signers) => assert_eq!(signers, vec![caller]),
-                Err(e) => panic!("Error decoding signers: {}", e)
+                Err(e) => panic!("Error decoding signers: {}", e),
             }
-         }
+        }
     }
 
     // check if supported blockchain adapters have icp:native:transfer
-    let wasm_result = pic.query_call(account_id, caller,"get_supported_blockchain_adapters",  encode_one(()).unwrap());
+    let wasm_result = pic.query_call(
+        account_id,
+        caller,
+        "get_supported_blockchain_adapters",
+        encode_one(()).unwrap(),
+    );
 
     match wasm_result.unwrap() {
         pocket_ic::WasmResult::Reject(reject_message) => {
             panic!("Query call failed: {}", reject_message);
-        },
+        }
         pocket_ic::WasmResult::Reply(reply) => {
             let adapters = Decode!(&reply, Vec<String>);
 
             match adapters {
                 Ok(adapters) => assert!(adapters.contains(&"icp:native:transfer".to_string())),
-                Err(e) => panic!("Error decoding adapters: {}", e)
+                Err(e) => panic!("Error decoding adapters: {}", e),
             }
         }
     }
@@ -148,35 +152,42 @@ fn should_add_signer() {
     let account_id = pic.create_canister_with_settings(Some(caller), None);
 
     pic.add_cycles(account_id, 2_000_000_000_000);
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     let signer = generate_principal();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let wasm_result = pic.update_call(account_id, caller, "add_signer", encode_one(signer).unwrap());
+    let wasm_result = pic.update_call(
+        account_id,
+        caller,
+        "add_signer",
+        encode_one(signer).unwrap(),
+    );
 
     match wasm_result.unwrap() {
         pocket_ic::WasmResult::Reject(reject_message) => {
             panic!("Update call failed: {}", reject_message);
-        },
+        }
         pocket_ic::WasmResult::Reply(_) => {
-            let wasm_result = pic.query_call(account_id, caller,"get_signers",  encode_one(()).unwrap());
+            let wasm_result =
+                pic.query_call(account_id, caller, "get_signers", encode_one(()).unwrap());
             match wasm_result.unwrap() {
                 pocket_ic::WasmResult::Reject(reject_message) => {
                     panic!("Query call failed: {}", reject_message);
-                },
+                }
                 pocket_ic::WasmResult::Reply(reply) => {
                     let signers = Decode!(&reply, Vec<Principal>);
 
                     // caller should be included in signers vector
                     match signers {
                         Ok(signers) => assert_eq!(signers, vec![caller, signer]),
-                        Err(e) => panic!("Error decoding signers: {}", e)
+                        Err(e) => panic!("Error decoding signers: {}", e),
                     }
                 }
             }
-        },
+        }
     }
 }
 
@@ -189,24 +200,35 @@ fn should_propose_transaction() {
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let proposed_transaction: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (ProposeTransactionArgs {
-        to: "test".to_string(),
-        token: "test".to_string(),
-        network: SupportedNetwork::ICP,
-        amount: 100_000_000,
-        transaction_type: TransactionType::Transfer,
-    }, )).unwrap();
+    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "propose_transaction",
+        (ProposeTransactionArgs {
+            to: "test".to_string(),
+            token: "test".to_string(),
+            network: SupportedNetwork::ICP,
+            amount: 100_000_000,
+            transaction_type: TransactionType::Transfer,
+        },),
+    )
+    .unwrap();
 
     assert_eq!(proposed_transaction.0.id, 0);
     assert_eq!(proposed_transaction.0.to, "test");
     assert_eq!(proposed_transaction.0.token, "test");
     assert_eq!(proposed_transaction.0.network, SupportedNetwork::ICP);
     assert_eq!(proposed_transaction.0.amount, 100_000_000);
-    assert_eq!(proposed_transaction.0.transaction_type, TransactionType::Transfer);
+    assert_eq!(
+        proposed_transaction.0.transaction_type,
+        TransactionType::Transfer
+    );
     assert_eq!(proposed_transaction.0.signers, vec![caller]);
 }
 
@@ -219,23 +241,38 @@ fn should_get_proposed_transaction() {
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let proposed_transaction: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (ProposeTransactionArgs {
-        to: "test".to_string(),
-        token: "test".to_string(),
-        network: SupportedNetwork::ICP,
-        amount: 100_000_000,
-        transaction_type: TransactionType::Transfer,
-    }, )).unwrap();
+    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "propose_transaction",
+        (ProposeTransactionArgs {
+            to: "test".to_string(),
+            token: "test".to_string(),
+            network: SupportedNetwork::ICP,
+            amount: 100_000_000,
+            transaction_type: TransactionType::Transfer,
+        },),
+    )
+    .unwrap();
 
-    let proposed_transaction_2: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+    let proposed_transaction_2: (Option<ProposedTransaction>,) = query_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "get_proposed_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
     match proposed_transaction_2.0 {
         Some(proposed_transaction_2) => assert_eq!(proposed_transaction.0, proposed_transaction_2),
-        None => panic!("Proposed transaction not found")
+        None => panic!("Proposed transaction not found"),
     }
 }
 
@@ -248,19 +285,28 @@ fn should_get_proposed_transactions() {
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let proposed_transaction: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (ProposeTransactionArgs {
-        to: "test".to_string(),
-        token: "test".to_string(),
-        network: SupportedNetwork::ICP,
-        amount: 100_000_000,
-        transaction_type: TransactionType::Transfer,
-    }, )).unwrap();
+    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "propose_transaction",
+        (ProposeTransactionArgs {
+            to: "test".to_string(),
+            token: "test".to_string(),
+            network: SupportedNetwork::ICP,
+            amount: 100_000_000,
+            transaction_type: TransactionType::Transfer,
+        },),
+    )
+    .unwrap();
 
-    let proposed_transactions: (Vec<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transactions", ()).unwrap();
+    let proposed_transactions: (Vec<ProposedTransaction>,) =
+        query_candid_as(&pic, account_id, caller, "get_proposed_transactions", ()).unwrap();
 
     assert_eq!(proposed_transactions.0.len(), 1);
     assert_eq!(proposed_transactions.0[0], proposed_transaction.0);
@@ -273,44 +319,85 @@ fn should_approve_transaction() {
 
     let account_id = pic.create_canister_with_settings(Some(caller), None);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let proposed_transaction: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (ProposeTransactionArgs {
-        to: "test".to_string(),
-        token: "test".to_string(),
-        network: SupportedNetwork::ICP,
-        amount: 100_000_000,
-        transaction_type: TransactionType::Transfer,
-    }, )).unwrap();
+    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "propose_transaction",
+        (ProposeTransactionArgs {
+            to: "test".to_string(),
+            token: "test".to_string(),
+            network: SupportedNetwork::ICP,
+            amount: 100_000_000,
+            transaction_type: TransactionType::Transfer,
+        },),
+    )
+    .unwrap();
 
     let signer_2 = generate_principal();
 
     let signer_3 = generate_principal();
 
-    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2, )).unwrap();
+    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2,)).unwrap();
 
-    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3, )).unwrap();
+    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3,)).unwrap();
 
-    let approve_result: () = update_candid_as(&pic, account_id, signer_2, "approve_transaction", (proposed_transaction.0.id, )).unwrap();
+    let approve_result: () = update_candid_as(
+        &pic,
+        account_id,
+        signer_2,
+        "approve_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
-    let proposed_transaction_2: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+    let proposed_transaction_2: (Option<ProposedTransaction>,) = query_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "get_proposed_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
     match proposed_transaction_2.0 {
-        Some(proposed_transaction_2) => assert_eq!(proposed_transaction_2.signers, vec![caller, signer_2]),
-        None => panic!("Proposed transaction not found")
+        Some(proposed_transaction_2) => {
+            assert_eq!(proposed_transaction_2.signers, vec![caller, signer_2])
+        }
+        None => panic!("Proposed transaction not found"),
     }
 
-    let approve_result_2: () = update_candid_as(&pic, account_id, signer_3, "approve_transaction", (proposed_transaction.0.id, )).unwrap();
+    let approve_result_2: () = update_candid_as(
+        &pic,
+        account_id,
+        signer_3,
+        "approve_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
-    let proposed_transaction_3: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+    let proposed_transaction_3: (Option<ProposedTransaction>,) = query_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "get_proposed_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
     match proposed_transaction_3.0 {
-        Some(proposed_transaction_3) => assert_eq!(proposed_transaction_3.signers, vec![caller, signer_2, signer_3]),
-        None => panic!("Proposed transaction not found")
+        Some(proposed_transaction_3) => assert_eq!(
+            proposed_transaction_3.signers,
+            vec![caller, signer_2, signer_3]
+        ),
+        None => panic!("Proposed transaction not found"),
     }
 }
 
@@ -321,45 +408,84 @@ fn should_reject_transaction() {
 
     let account_id = pic.create_canister_with_settings(Some(caller), None);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let proposed_transaction: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (ProposeTransactionArgs {
-        to: "test".to_string(),
-        token: "test".to_string(),
-        network: SupportedNetwork::ICP,
-        amount: 100_000_000,
-        transaction_type: TransactionType::Transfer,
-    }, )).unwrap();
+    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "propose_transaction",
+        (ProposeTransactionArgs {
+            to: "test".to_string(),
+            token: "test".to_string(),
+            network: SupportedNetwork::ICP,
+            amount: 100_000_000,
+            transaction_type: TransactionType::Transfer,
+        },),
+    )
+    .unwrap();
 
     let signer_2 = generate_principal();
     let signer_3 = generate_principal();
 
-    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2, )).unwrap();
-    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3, )).unwrap();
+    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2,)).unwrap();
+    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3,)).unwrap();
 
-    let reject_result: () = update_candid_as(&pic, account_id, signer_2, "reject_transaction", (proposed_transaction.0.id, )).unwrap();
+    let reject_result: () = update_candid_as(
+        &pic,
+        account_id,
+        signer_2,
+        "reject_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
-    let proposed_transaction_2: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+    let proposed_transaction_2: (Option<ProposedTransaction>,) = query_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "get_proposed_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
     match proposed_transaction_2.0 {
-        Some(proposed_transaction_2) => assert_eq!(proposed_transaction_2.rejections, vec![signer_2]),
-        None => panic!("Proposed transaction not found")
+        Some(proposed_transaction_2) => {
+            assert_eq!(proposed_transaction_2.rejections, vec![signer_2])
+        }
+        None => panic!("Proposed transaction not found"),
     }
 
-    let reject_result_2: () = update_candid_as(&pic, account_id, signer_3, "reject_transaction", (proposed_transaction.0.id, )).unwrap();
+    let reject_result_2: () = update_candid_as(
+        &pic,
+        account_id,
+        signer_3,
+        "reject_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
-    let proposed_transaction_3: (Option<ProposedTransaction>, ) = query_candid_as(&pic, account_id, caller, "get_proposed_transaction", (proposed_transaction.0.id, )).unwrap();
+    let proposed_transaction_3: (Option<ProposedTransaction>,) = query_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "get_proposed_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
     match proposed_transaction_3.0 {
-        Some(proposed_transaction_3) => assert_eq!(proposed_transaction_3.rejections, vec![signer_2, signer_3]),
-        None => panic!("Proposed transaction not found")
+        Some(proposed_transaction_3) => {
+            assert_eq!(proposed_transaction_3.rejections, vec![signer_2, signer_3])
+        }
+        None => panic!("Proposed transaction not found"),
     }
 }
-
 
 #[test]
 fn should_set_threshold() {
@@ -370,13 +496,21 @@ fn should_set_threshold() {
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let result: () = update_candid_as(&pic, account_id, caller, "set_threshold", (100_000_000 as u64, )).unwrap();
+    let result: () = update_candid_as(
+        &pic,
+        account_id,
+        caller,
+        "set_threshold",
+        (100_000_000 as u64,),
+    )
+    .unwrap();
 
-    let threshold: (u64, ) = query_candid_as(&pic, account_id, caller, "get_threshold", ()).unwrap();
+    let threshold: (u64,) = query_candid_as(&pic, account_id, caller, "get_threshold", ()).unwrap();
 
     assert_eq!(threshold.0, 100_000_000);
 }
@@ -412,7 +546,7 @@ fn should_not_allow_tx_if_threshold_not_met() {
                 owner: account_id,
                 subaccount: None,
             },
-            mint_amount_u64
+            mint_amount_u64,
         )],
         archive_options: ArchiveOptions {
             num_blocks_to_archive: 10,
@@ -432,10 +566,16 @@ fn should_not_allow_tx_if_threshold_not_met() {
     });
 
     // Install ICRC ledger
-    pic.install_canister(icrc_ledger, icrc_wasm_module, encode_one(icrc1_deploy_args).unwrap(), Some(caller));
+    pic.install_canister(
+        icrc_ledger,
+        icrc_wasm_module,
+        encode_one(icrc1_deploy_args).unwrap(),
+        Some(caller),
+    );
 
     // Install account canister
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
     // Add additional signers
@@ -462,15 +602,16 @@ fn should_not_allow_tx_if_threshold_not_met() {
             network: SupportedNetwork::ICP,
             amount: 100_000_000_000,
             transaction_type: TransactionType::Transfer,
-        },)
-    ).unwrap();
+        },),
+    )
+    .unwrap();
 
     // Try to execute with only one signer (should fail)
     let execute_result = pic.update_call(
         account_id,
         caller,
         "execute_transaction",
-        encode_one(proposed_transaction.0.id).unwrap()
+        encode_one(proposed_transaction.0.id).unwrap(),
     );
 
     // Verify that the execution was rejected due to threshold not being met
@@ -479,9 +620,10 @@ fn should_not_allow_tx_if_threshold_not_met() {
             let status = Decode!(&reply, IntentStatus).unwrap();
             assert!(
                 matches!(status.clone(), IntentStatus::Failed(msg) if msg.contains("Threshold not met")),
-                "Expected failure due to threshold not met, found: {:?}", status.clone()
+                "Expected failure due to threshold not met, found: {:?}",
+                status.clone()
             );
-        },
+        }
         WasmResult::Reject(msg) => panic!("Unexpected rejection: {}", msg),
     }
 
@@ -491,20 +633,31 @@ fn should_not_allow_tx_if_threshold_not_met() {
         icrc_ledger,
         caller,
         "icrc1_balance_of",
-        (ICRCAccount::new(receiver, None),)
-    ).unwrap();
+        (ICRCAccount::new(receiver, None),),
+    )
+    .unwrap();
 
-    assert_eq!(balance.0, 0, "Receiver balance should be 0 as transfer should have failed");
+    assert_eq!(
+        balance.0, 0,
+        "Receiver balance should be 0 as transfer should have failed"
+    );
 
     // Have second signer approve the transaction
-    let _: () = update_candid_as(&pic, account_id, signer_2, "approve_transaction", (proposed_transaction.0.id,)).unwrap();
+    let _: () = update_candid_as(
+        &pic,
+        account_id,
+        signer_2,
+        "approve_transaction",
+        (proposed_transaction.0.id,),
+    )
+    .unwrap();
 
     // Now try executing the transaction again with two signers (should succeed)
     let execute_result = pic.update_call(
         account_id,
         caller,
         "execute_transaction",
-        encode_one(proposed_transaction.0.id).unwrap()
+        encode_one(proposed_transaction.0.id).unwrap(),
     );
 
     // Verify successful execution
@@ -515,7 +668,7 @@ fn should_not_allow_tx_if_threshold_not_met() {
                 matches!(status, IntentStatus::Completed(_)),
                 "Expected successful completion after meeting threshold"
             );
-        },
+        }
         WasmResult::Reject(msg) => panic!("Unexpected rejection after meeting threshold: {}", msg),
     }
 
@@ -525,10 +678,14 @@ fn should_not_allow_tx_if_threshold_not_met() {
         icrc_ledger,
         caller,
         "icrc1_balance_of",
-        (ICRCAccount::new(receiver, None),)
-    ).unwrap();
+        (ICRCAccount::new(receiver, None),),
+    )
+    .unwrap();
 
-    assert_eq!(balance.0, 100_000_000_000, "Receiver should have received the transfer amount");
+    assert_eq!(
+        balance.0, 100_000_000_000,
+        "Receiver should have received the transfer amount"
+    );
 }
 
 #[test]
@@ -540,25 +697,36 @@ fn should_not_add_signer_if_exists() {
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     let signer = generate_principal();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let wasm_result = pic.update_call(account_id, caller, "add_signer", encode_one(signer).unwrap());
+    let wasm_result = pic.update_call(
+        account_id,
+        caller,
+        "add_signer",
+        encode_one(signer).unwrap(),
+    );
 
     match wasm_result.unwrap() {
         pocket_ic::WasmResult::Reject(reject_message) => {
             panic!("Update call failed: {}", reject_message);
-        },
+        }
         pocket_ic::WasmResult::Reply(_) => {
-            let wasm_result = pic.update_call(account_id, caller, "add_signer", encode_one(signer).unwrap());
+            let wasm_result = pic.update_call(
+                account_id,
+                caller,
+                "add_signer",
+                encode_one(signer).unwrap(),
+            );
 
             match wasm_result.unwrap() {
                 pocket_ic::WasmResult::Reject(reject_message) => {
                     assert_eq!(reject_message, "signer already exists");
-                },
+                }
                 pocket_ic::WasmResult::Reply(bytes) => {
                     let reply = Decode!(&bytes, String);
 
@@ -579,16 +747,22 @@ fn should_get_default_account_for_icp() {
     let subaccountid = AccountIdentifier::new(&account_id, &to_subaccount(0)).to_hex();
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let wasm_result = pic.query_call(account_id, caller,"get_icp_account",  encode_one(()).unwrap());
+    let wasm_result = pic.query_call(
+        account_id,
+        caller,
+        "get_icp_account",
+        encode_one(()).unwrap(),
+    );
 
     match wasm_result.unwrap() {
         pocket_ic::WasmResult::Reject(reject_message) => {
             panic!("Query call failed: {}", reject_message);
-        },
+        }
         pocket_ic::WasmResult::Reply(reply) => {
             println!("{:?}", reply);
 
@@ -596,7 +770,7 @@ fn should_get_default_account_for_icp() {
 
             match account {
                 Ok(y_account) => assert_eq!(y_account, subaccountid),
-                Err(e) => panic!("Error decoding account: {}", e)
+                Err(e) => panic!("Error decoding account: {}", e),
             }
         }
     }
@@ -615,22 +789,28 @@ fn should_get_default_account_for_icrc() {
 
     pic.add_cycles(account_id, 2_000_000_000_000);
 
-    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let wasm_module =
+        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
 
     pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
-    let wasm_result = pic.query_call(account_id, caller,"get_icrc_account",  encode_one(()).unwrap());
+    let wasm_result = pic.query_call(
+        account_id,
+        caller,
+        "get_icrc_account",
+        encode_one(()).unwrap(),
+    );
 
     match wasm_result.unwrap() {
         pocket_ic::WasmResult::Reject(reject_message) => {
             panic!("Query call failed: {}", reject_message);
-        },
+        }
         pocket_ic::WasmResult::Reply(reply) => {
             let account = Decode!(&reply, String);
 
             match account {
                 Ok(y_account) => assert_eq!(y_account, subaccountid),
-                Err(e) => panic!("Error decoding account: {}", e)
+                Err(e) => panic!("Error decoding account: {}", e),
             }
         }
     }
@@ -645,12 +825,15 @@ mod intent_tests {
     use num_bigint::ToBigUint;
     use pocket_ic::{common::rest::base64, query_candid, PocketIcBuilder, WasmResult};
 
-    use crate::{ledger, types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs}, Intent, IntentStatus, SupportedNetwork, TransactionRequest, TransactionType, RECOMMENDED_ICP_TRANSACTION_FEE};
+    use crate::{
+        ledger,
+        types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs},
+        Intent, IntentStatus, SupportedNetwork, TransactionRequest, TransactionType,
+        RECOMMENDED_ICP_TRANSACTION_FEE,
+    };
 
     use super::*;
 
-
-    
     #[test]
     fn should_transfer_icrc1() {
         let pic = PocketIcBuilder::new().with_application_subnet().build();
@@ -659,7 +842,8 @@ mod intent_tests {
         // Create and set up the account canister
         let account_id = pic.create_canister_with_settings(Some(caller), None);
         pic.add_cycles(account_id, 2_000_000_000_000);
-        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+        let wasm_module =
+            include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
         pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
         // Create a receiver principal
@@ -686,7 +870,7 @@ mod intent_tests {
                     owner: account_id,
                     subaccount: None,
                 },
-                mint_amount_u64
+                mint_amount_u64,
             )],
             archive_options: ArchiveOptions {
                 num_blocks_to_archive: 10,
@@ -728,17 +912,17 @@ mod intent_tests {
             account_id,
             caller,
             "propose_transaction",
-            (proposed_tx,)
+            (proposed_tx,),
         )
         .unwrap();
 
         // Execute the intent
-        let status: (IntentStatus, ) = update_candid_as(
+        let status: (IntentStatus,) = update_candid_as(
             &pic,
             account_id,
             caller,
             "execute_transaction",
-            (add_intent_result.0.id,)
+            (add_intent_result.0.id,),
         )
         .unwrap();
 
@@ -753,22 +937,22 @@ mod intent_tests {
             icrc_ledger,
             caller,
             "icrc1_balance_of",
-            (ICRCAccount::new(receiver, None),)
+            (ICRCAccount::new(receiver, None),),
         )
         .unwrap();
-        
+
         assert_eq!(receiver_balance.0, transfer_amount as u128);
 
         // Check the account canister's balance
-        let account_balance: (u128, ) = query_candid_as(
+        let account_balance: (u128,) = query_candid_as(
             &pic,
             icrc_ledger,
             caller,
             "icrc1_balance_of",
-            (ICRCAccount::new(account_id, None),)
+            (ICRCAccount::new(account_id, None),),
         )
         .unwrap();
-        
+
         assert_eq!(
             account_balance.0,
             mint_amount_u64 as u128 - transfer_amount as u128 - 1_000_000 as u128 // Subtract transfer amount and fee
@@ -777,13 +961,18 @@ mod intent_tests {
 
     #[test]
     fn should_transfer_icp() {
-        let pic = PocketIcBuilder::new().with_application_subnet().with_nns_subnet().with_ii_subnet().build();
+        let pic = PocketIcBuilder::new()
+            .with_application_subnet()
+            .with_nns_subnet()
+            .with_ii_subnet()
+            .build();
         let caller = generate_principal();
 
         // Create and set up the account canister
         let account_id = pic.create_canister_with_settings(Some(caller), None);
         pic.add_cycles(account_id, 2_000_000_000_000);
-        let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+        let wasm_module =
+            include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
         pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
 
         // Create a receiver principal
@@ -791,11 +980,11 @@ mod intent_tests {
 
         // Set up the ICP ledger canister
         let specified_nns_ledger_canister_id =
-                Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
-            let nns_ledger_canister_id = pic
-                .create_canister_with_id(Some(caller), None, specified_nns_ledger_canister_id)
-                .unwrap();
-            assert_eq!(nns_ledger_canister_id, specified_nns_ledger_canister_id);
+            Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
+        let nns_ledger_canister_id = pic
+            .create_canister_with_id(Some(caller), None, specified_nns_ledger_canister_id)
+            .unwrap();
+        assert_eq!(nns_ledger_canister_id, specified_nns_ledger_canister_id);
 
         let icp_ledger_canister_wasm: Vec<u8> = include_bytes!("icp-ledger.wasm.gz").to_vec(); // get the ICP ledger wasm
         let minter = generate_principal(); // some principal not used anywhere else
@@ -803,7 +992,20 @@ mod intent_tests {
         let icp_ledger_init_args = LedgerCanisterPayload::Init(NnsLedgerCanisterInitPayload {
             minting_account: minting_account.to_string(),
             icrc1_minting_account: None,
-            initial_values: vec![(minting_account.to_string(), Tokens::from_e8s(100_000_000_000_000)), (AccountIdentifier::new(&caller, &DEFAULT_SUBACCOUNT).to_string(), Tokens::from_e8s(100_000_000_000_000)), (AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT).to_string(), Tokens::from_e8s(100_000_000_000_000))], // fill in some initial account balances
+            initial_values: vec![
+                (
+                    minting_account.to_string(),
+                    Tokens::from_e8s(100_000_000_000_000),
+                ),
+                (
+                    AccountIdentifier::new(&caller, &DEFAULT_SUBACCOUNT).to_string(),
+                    Tokens::from_e8s(100_000_000_000_000),
+                ),
+                (
+                    AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT).to_string(),
+                    Tokens::from_e8s(100_000_000_000_000),
+                ),
+            ], // fill in some initial account balances
             max_message_size_bytes: None,
             transaction_window: None,
             archive_options: None,
@@ -822,7 +1024,7 @@ mod intent_tests {
             encode_one(icp_ledger_init_args).unwrap(),
             Some(caller),
         );
-        
+
         // Create an intent to transfer ICP
         let transfer_amount = 100_000_000; // 1 ICP
         let receiver_account = AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT);
@@ -835,36 +1037,68 @@ mod intent_tests {
         };
 
         // Add the intent
-        let add_intent_result: (ProposedTransaction, ) = update_candid_as(&pic, account_id, caller, "propose_transaction", (proposed_tx,)).unwrap();
+        let add_intent_result: (ProposedTransaction,) = update_candid_as(
+            &pic,
+            account_id,
+            caller,
+            "propose_transaction",
+            (proposed_tx,),
+        )
+        .unwrap();
 
         // Execute the intent
-        let execute_result = pic.update_call(account_id, caller, "execute_transaction", encode_one(add_intent_result.0.id).unwrap());
+        let execute_result = pic.update_call(
+            account_id,
+            caller,
+            "execute_transaction",
+            encode_one(add_intent_result.0.id).unwrap(),
+        );
         let status = match execute_result {
             Ok(WasmResult::Reply(reply)) => Decode!(&reply, IntentStatus).unwrap(),
-            Ok(WasmResult::Reject(reject_message)) => panic!("Execute intent call rejected: {}", reject_message),
+            Ok(WasmResult::Reject(reject_message)) => {
+                panic!("Execute intent call rejected: {}", reject_message)
+            }
             Err(err) => panic!("Execute intent call failed: {:?}", err),
         };
 
-        assert_eq!(status, IntentStatus::Completed("Successfully transferred native ICP.".to_string()));
+        assert_eq!(
+            status,
+            IntentStatus::Completed("Successfully transferred native ICP.".to_string())
+        );
 
         // Check the receiver's balance
         let receiver_balance_args = AccountBalanceArgs {
-            account: AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT)
+            account: AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT),
         };
-        let receiver_balance_result: (Tokens,) = query_candid_as(&pic, specified_nns_ledger_canister_id, caller, "account_balance", (receiver_balance_args, )).unwrap();
+        let receiver_balance_result: (Tokens,) = query_candid_as(
+            &pic,
+            specified_nns_ledger_canister_id,
+            caller,
+            "account_balance",
+            (receiver_balance_args,),
+        )
+        .unwrap();
         let receiver_balance = receiver_balance_result.0;
-        
+
         assert_eq!(receiver_balance.e8s(), transfer_amount);
 
         // Check the account canister's balance
         let account_balance_args = AccountBalanceArgs {
-            account: AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT)
+            account: AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT),
         };
-        let account_balance_result: (Tokens,) = query_candid_as(&pic, specified_nns_ledger_canister_id, caller, "account_balance", (account_balance_args, )).unwrap();
+        let account_balance_result: (Tokens,) = query_candid_as(
+            &pic,
+            specified_nns_ledger_canister_id,
+            caller,
+            "account_balance",
+            (account_balance_args,),
+        )
+        .unwrap();
         let account_balance = account_balance_result.0;
-        
-        assert_eq!(account_balance.e8s(), 100_000_000_000_000 - transfer_amount - RECOMMENDED_ICP_TRANSACTION_FEE);
+
+        assert_eq!(
+            account_balance.e8s(),
+            100_000_000_000_000 - transfer_amount - RECOMMENDED_ICP_TRANSACTION_FEE
+        );
     }
 }
-
-

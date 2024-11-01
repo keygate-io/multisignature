@@ -1,13 +1,13 @@
+use candid::{CandidType, Nat, Principal};
 use ic_cdk::api::call::CallResult;
+use ic_ledger_types::Subaccount;
+use ic_stable_structures::storable::{Bound, Storable};
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
 use serde::{Deserialize, Serialize};
-use candid::{CandidType, Nat, Principal};
-use ic_ledger_types::{Subaccount};
-use ic_stable_structures::storable::{Bound, Storable};
 use serde_bytes::ByteBuf;
 use std::any::Any;
-use std::{borrow::Cow};
+use std::borrow::Cow;
 
 #[derive(Default, CandidType, Deserialize, Serialize)]
 pub struct Cbor32(pub [u8; 32]);
@@ -111,14 +111,14 @@ pub struct ArchiveOptions {
 
 impl PartialEq for ArchiveOptions {
     fn eq(&self, other: &Self) -> bool {
-        self.num_blocks_to_archive == other.num_blocks_to_archive &&
-        self.trigger_threshold == other.trigger_threshold &&
-        self.max_transactions_per_response == other.max_transactions_per_response &&
-        self.max_message_size_bytes == other.max_message_size_bytes &&
-        self.cycles_for_archive_creation == other.cycles_for_archive_creation &&
-        self.node_max_memory_size_bytes == other.node_max_memory_size_bytes &&
-        self.controller_id == other.controller_id
-    }   
+        self.num_blocks_to_archive == other.num_blocks_to_archive
+            && self.trigger_threshold == other.trigger_threshold
+            && self.max_transactions_per_response == other.max_transactions_per_response
+            && self.max_message_size_bytes == other.max_message_size_bytes
+            && self.cycles_for_archive_creation == other.cycles_for_archive_creation
+            && self.node_max_memory_size_bytes == other.node_max_memory_size_bytes
+            && self.controller_id == other.controller_id
+    }
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq)]
@@ -178,7 +178,10 @@ impl FromStr for URN {
             _ => return Err("Unsupported token type".to_string()),
         };
 
-        Ok(URN { network, token_type })
+        Ok(URN {
+            network,
+            token_type,
+        })
     }
 }
 
@@ -191,14 +194,13 @@ struct ICRC1TxArgs {
     pub intent_type: String,
 }
 
-
 // Define the TransactionExecutor
 struct TransactionExecutor {
     urn: URN,
 }
 
 const LEDGER_PRINCIPAL: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000; 
+const RECOMMENDED_TRANSACTION_FEE: u64 = 1000000;
 
 impl TransactionExecutor {
     fn new(urn_str: &str) -> Result<Self, String> {
@@ -215,26 +217,33 @@ impl TransactionExecutor {
 
     async fn execute_icp(&self, args: &dyn Any) -> Result<(), String> {
         if let Some(icp_args) = args.downcast_ref::<ICRC1TxArgs>() {
-
             let args = TransferArg {
                 to: icp_args.to,
                 amount: Nat::from(icp_args.amount),
                 fee: Some(Nat::from(RECOMMENDED_TRANSACTION_FEE)),
-                memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
+                memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(
+                    vec![],
+                ))),
                 from_subaccount: Some(get_default_icrc_subaccount().0),
                 created_at_time: None,
             };
 
             let token_principal = Principal::from_str(&icp_args.token).unwrap();
 
-            let transfer_result: CallResult<(Result<Nat, TransferError>,)> = ic_cdk::call(token_principal, "icrc1_transfer", (args,)).await;
-            
+            let transfer_result: CallResult<(Result<Nat, TransferError>,)> =
+                ic_cdk::call(token_principal, "icrc1_transfer", (args,)).await;
+
             match transfer_result {
                 Ok((inner_result,)) => match inner_result {
                     Ok(_) => Ok(()),
-                    Err(transfer_error) => Err(format!("ICRC-1 transfer error: {:?}", transfer_error)),
+                    Err(transfer_error) => {
+                        Err(format!("ICRC-1 transfer error: {:?}", transfer_error))
+                    }
                 },
-                Err((rejection_code, message)) => Err(format!("Call to token failed: {:?} {:?}", rejection_code, message)),
+                Err((rejection_code, message)) => Err(format!(
+                    "Call to token failed: {:?} {:?}",
+                    rejection_code, message
+                )),
             }
         } else {
             Err("Invalid argument type for ICP transaction".to_string())

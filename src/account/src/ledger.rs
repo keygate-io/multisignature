@@ -13,6 +13,9 @@ pub fn to_subaccount_id(subaccount: Subaccount) -> LedgerAccountIdentifier {
     LedgerAccountIdentifier::new(&principal_id, &subaccount)
 }
 
-pub fn to_subaccount_id_from_principal(principal_id: Principal, subaccount: Subaccount) -> LedgerAccountIdentifier {
+pub fn to_subaccount_id_from_principal(
+    principal_id: Principal,
+    subaccount: Subaccount,
+) -> LedgerAccountIdentifier {
     LedgerAccountIdentifier::new(&principal_id, &subaccount)
 }

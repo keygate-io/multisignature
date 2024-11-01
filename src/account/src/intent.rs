@@ -3,25 +3,38 @@ use std::{collections::HashMap, future::Future, pin::Pin};
 use candid::{CandidType, Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
-use ic_ledger_types::{AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID};
-use icrc_ledger_types::icrc1::{account::Account, transfer::{TransferArg as ICRC1TransferArgs, TransferError}};
+use ic_ledger_types::{
+    AccountIdentifier, BlockIndex, Memo, Tokens, TransferArgs, MAINNET_LEDGER_CANISTER_ID,
+};
+use icrc_ledger_types::icrc1::{
+    account::Account,
+    transfer::{TransferArg as ICRC1TransferArgs, TransferError},
+};
 use serde_bytes::ByteBuf;
 
-use crate::{get_default_icrc_subaccount, to_subaccount, ADAPTERS, PROPOSED_TRANSACTIONS, THRESHOLD};
+use crate::{
+    get_default_icrc_subaccount, to_subaccount, ADAPTERS, PROPOSED_TRANSACTIONS, THRESHOLD,
+};
 
-use std::{borrow::Cow, fmt::{self, Display}};
+use std::{
+    borrow::Cow,
+    fmt::{self, Display},
+};
 
 use ic_cdk::{query, update};
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
-use crate::{TRANSACTIONS};
+use crate::TRANSACTIONS;
 
 pub(crate) trait BlockchainAdapter: DynClone {
     fn network(&self) -> SupportedNetwork;
     fn token(&self) -> String;
     fn intent_type(&self) -> TransactionType;
-    fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>>;
+    fn execute<'a>(
+        &'a self,
+        transaction: &'a TransactionRequest,
+    ) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>>;
 }
 
 dyn_clone::clone_trait_object!(BlockchainAdapter);
@@ -47,10 +60,17 @@ pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
     ic_cdk::println!("Token key: {:?}", token_key);
 
     ic_cdk::println!("Searching for adapter...");
-    let adapter = ADAPTERS.with(|adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
-        dyn_clone::clone_box(adapters.borrow().get(&token_key).expect(&format!("Adapter not found for {}", token_key)))
-    });
-    
+    let adapter = ADAPTERS.with(
+        |adapters: &std::cell::RefCell<HashMap<String, Box<dyn BlockchainAdapter>>>| {
+            dyn_clone::clone_box(
+                adapters
+                    .borrow()
+                    .get(&token_key)
+                    .expect(&format!("Adapter not found for {}", token_key)),
+            )
+        },
+    );
+
     ic_cdk::println!("Adapter found.");
 
     match adapter.execute(transaction).await {
@@ -75,7 +95,7 @@ type ICPNativeTransferArgs = TransferArgs;
  * See TransferArgs in ic_ledger_types
  */
 #[cfg(test)]
-pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000; 
+pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000;
 #[cfg(not(test))]
 pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 1000000;
 pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
@@ -93,7 +113,10 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
         self.intent_type.clone()
     }
 
-    fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
+    fn execute<'a>(
+        &'a self,
+        transaction: &'a TransactionRequest,
+    ) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             ic_cdk::println!("Executing ICPAdapter");
 
@@ -109,7 +132,9 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
             ic_cdk::println!("Args: {:?}", args);
 
             match ICPNativeTransferAdapter::transfer(args).await {
-                Ok(_) => Ok(IntentStatus::Completed("Successfully transferred native ICP.".to_string())),
+                Ok(_) => Ok(IntentStatus::Completed(
+                    "Successfully transferred native ICP.".to_string(),
+                )),
                 Err(e) => Err(e.to_string()),
             }
         })
@@ -160,12 +185,17 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
         self.intent_type.clone()
     }
 
-    fn execute<'a>(&'a self, transaction: &'a TransactionRequest) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
+    fn execute<'a>(
+        &'a self,
+        transaction: &'a TransactionRequest,
+    ) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
         Box::pin(async move {
             ic_cdk::println!("Executing ICRC1Adapter");
             match self.transfer(transaction).await {
                 // TODO: include the name or symbol of the token
-                Ok(_) => Ok(IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())),
+                Ok(_) => Ok(IntentStatus::Completed(
+                    "Successfully transferred an ICRC-1 token.".to_string(),
+                )),
                 Err(e) => Err(e.to_string()),
             }
         })
@@ -173,7 +203,6 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
 }
 
 impl ICRC1TransferAdapter {
-
     pub fn new() -> ICRC1TransferAdapter {
         ICRC1TransferAdapter {
             network: SupportedNetwork::ICP,
@@ -181,7 +210,7 @@ impl ICRC1TransferAdapter {
             intent_type: TransactionType::Transfer,
         }
     }
-    
+
     pub fn extract_token_identifier(token: TokenPath) -> Result<String, String> {
         let parts: Vec<&str> = token.split(':').collect();
         if parts.len() != 3 {
@@ -196,42 +225,49 @@ impl ICRC1TransferAdapter {
         let args = ICRC1TransferArgs {
             to: Account {
                 owner: Principal::from_text(&transaction.to).unwrap(),
-                subaccount: None
+                subaccount: None,
             },
             amount: Nat::from(transaction.amount),
             fee: Some(Nat::from(RECOMMENDED_ICRC1_TRANSACTION_FEE)),
-            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(vec![]))),
+            memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(
+                vec![],
+            ))),
             from_subaccount: Some(get_default_icrc_subaccount().0),
             created_at_time: None,
         };
 
         ic_cdk::println!("Args: {:?}", args);
 
-        let token_identifier  = ICRC1TransferAdapter::extract_token_identifier(transaction.token.clone())?;
+        let token_identifier =
+            ICRC1TransferAdapter::extract_token_identifier(transaction.token.clone())?;
         let principal = Principal::from_text(&token_identifier).unwrap();
 
-        let transfer_result: CallResult<(Result<Nat, TransferError>,)> = ic_cdk::call(principal, "icrc1_transfer", (args,)).await;
+        let transfer_result: CallResult<(Result<Nat, TransferError>,)> =
+            ic_cdk::call(principal, "icrc1_transfer", (args,)).await;
         match transfer_result {
             Ok((inner_result,)) => match inner_result {
                 Ok(block_index) => Ok(block_index),
                 Err(transfer_error) => Err(format!("ICRC-1 transfer error: {:?}", transfer_error)),
             },
-            Err((rejection_code, message)) => {
-                Err(format!("Canister call rejected: {:?} - {}", rejection_code, message))
-            }
+            Err((rejection_code, message)) => Err(format!(
+                "Canister call rejected: {:?} - {}",
+                rejection_code, message
+            )),
         }
     }
 }
 
-
-
-#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
+#[derive(
+    CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr,
+)]
 pub enum TransactionType {
     Swap,
     Transfer,
 }
 
-#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
+#[derive(
+    CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr,
+)]
 pub enum IntentStatus {
     Pending(String),
     InProgress(String),
@@ -240,10 +276,12 @@ pub enum IntentStatus {
     Failed(String),
 }
 
-#[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr)]
+#[derive(
+    CandidType, Deserialize, Serialize, Debug, Clone, PartialEq, strum_macros::IntoStaticStr,
+)]
 pub enum SupportedNetwork {
     ICP,
-    ETH
+    ETH,
 }
 
 // Formats for tokens:
@@ -258,7 +296,6 @@ impl Display for Token {
         write!(f, "{}", self.0)
     }
 }
-
 
 /// Represents an intent for a blockchain transaction.
 ///
@@ -300,9 +337,8 @@ pub struct Intent {
     pub token: TokenPath,
     pub to: String,
     pub network: SupportedNetwork,
-    pub status: IntentStatus
+    pub status: IntentStatus,
 }
-
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct TransactionRequest {
@@ -322,7 +358,6 @@ pub struct Transaction {
     pub amount: u64,
     pub transaction_type: TransactionType,
 }
-
 
 impl Storable for Transaction {
     const BOUND: Bound = Bound::Bounded {
@@ -394,7 +429,6 @@ impl Intent {
     pub fn amount(&self) -> u64 {
         self.amount
     }
-    
 }
 
 impl Storable for Intent {
@@ -419,7 +453,7 @@ pub struct Decision {
     id: u64,
     intent_id: u64,
     signee: Principal,
-    approved: bool
+    approved: bool,
 }
 
 impl Decision {
@@ -428,7 +462,7 @@ impl Decision {
             id,
             intent_id,
             signee,
-            approved
+            approved,
         }
     }
 
@@ -443,9 +477,7 @@ impl Decision {
 
 #[query]
 pub fn get_adapters() -> Vec<String> {
-    ADAPTERS.with(|adapters| {
-        adapters.borrow().keys().cloned().collect()
-    })
+    ADAPTERS.with(|adapters| adapters.borrow().keys().cloned().collect())
 }
 
 #[query]
@@ -456,21 +488,17 @@ pub fn get_transactions() -> Vec<Transaction> {
     })
 }
 
-
 #[update]
 pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
-    let proposal = PROPOSED_TRANSACTIONS.with(|proposed_transactions| {
-        proposed_transactions.borrow().get(proposal_id)
-    });
+    let proposal = PROPOSED_TRANSACTIONS
+        .with(|proposed_transactions| proposed_transactions.borrow().get(proposal_id));
 
     if proposal.is_none() {
         return IntentStatus::Failed(format!("Proposal not found: {}", proposal_id));
     }
 
     // check if threshold is met
-    let threshold = THRESHOLD.with(|threshold| {
-        threshold.borrow().get().clone()
-    });
+    let threshold = THRESHOLD.with(|threshold| threshold.borrow().get().clone());
 
     let signers = proposal.clone().unwrap().signers;
     let length = signers.len() as u64;
@@ -492,9 +520,8 @@ pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
 
     ic_cdk::println!("Executing transaction: {:?}", transaction);
 
-
     ic_cdk::println!("Execution result: {:?}", execution_result);
-    
+
     TRANSACTIONS.with(|transactions| {
         let transactions = transactions.borrow_mut();
         let transaction = Transaction {
