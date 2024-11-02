@@ -94,3 +94,8 @@ dfx canister call icrc1_ledger_canister icrc1_balance_of '(
 )'
 ```
 
+Send ICP balance to a vault.
+```
+dfx ledger transfer <vault_account_id> --amount 100  --memo 1 --network local --identity minter --fee 0
+```
+

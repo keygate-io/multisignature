@@ -22,6 +22,7 @@ use intent::*;
 use ledger::*;
 use serde::{Deserialize, Serialize};
 use std::{
+    borrow::BorrowMut,
     cell::RefCell,
     collections::{HashMap, LinkedList},
 };

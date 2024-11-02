@@ -26,7 +26,13 @@ import {
   getTokenSymbol,
 } from "../../../api/icrc";
 import { formatIcp, formatIcrc } from "../../../util/units";
-import { ICP_DECIMALS } from "../../../util/constants";
+import {
+  CKETH_CANISTER_ID,
+  CKUSDC_CANISTER_ID,
+  ICP_DECIMALS,
+  CKBTC_CANISTER_ID,
+  MOCK_ICRC1_CANISTER,
+} from "../../../util/constants";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
 import { ICRC1_LEDGER_CANISTER_ID } from "../../../util/config";
 
@@ -40,8 +46,6 @@ interface Asset {
   subaccount?: string;
   decimals: number;
 }
-
-const NATIVE_ICP_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
 
 const Assets: React.FC = () => {
   const [showTokens, setShowTokens] = useState(true);
@@ -133,10 +137,18 @@ const Assets: React.FC = () => {
     if (vaultCanisterId && identity) {
       try {
         const nativeIcp = await fetchNativeIcpInfo();
-        const mockIcrc1 = await fetchIcrcTokenInfo(ICRC1_LEDGER_CANISTER_ID);
-        const nativeEth = await fetchNativeEthInfo();
 
-        setAssets([nativeIcp, mockIcrc1, nativeEth]);
+        if (process.env.DFX_NETWORK === "ic") {
+          const ckBTC = await fetchIcrcTokenInfo(CKBTC_CANISTER_ID);
+          const ckETH = await fetchIcrcTokenInfo(CKETH_CANISTER_ID);
+          const ckusdc = await fetchIcrcTokenInfo(CKUSDC_CANISTER_ID);
+
+          setAssets([nativeIcp, ckBTC, ckETH, ckusdc]);
+        } else {
+          const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
+          const nativeEth = await fetchNativeEthInfo();
+          setAssets([nativeIcp, mockIcrc1, nativeEth]);
+        }
       } catch (error) {
         console.error("Error fetching assets:", error);
       } finally {
