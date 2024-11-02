@@ -154,7 +154,7 @@ const SendToken: React.FC = () => {
 
     try {
       const intent = {
-        amount: icpToE8s(BigInt(amount)),
+        amount: Number(amount),
         token,
         to: recipient,
         network: token.toLowerCase().includes("eth") ? { ETH: null } : { ICP: null },
@@ -173,6 +173,7 @@ const SendToken: React.FC = () => {
       // If threshold is 0 or 1, immediately execute the transaction
       const threshold = await getThreshold(vaultCanisterId, identity!);
       if (threshold <= BigInt(1)) {
+        console.log(proposedTx);
         await executeTransaction(vaultCanisterId, proposedTx.id, identity!);
       }
 
@@ -244,7 +245,7 @@ const SendToken: React.FC = () => {
   }, [vaultCanisterId, nativeAccountId, identity, token]);
 
   useEffect(() => {
-    setFormattedAmount(formatCommaSeparated(BigInt(amount)));
+    setFormattedAmount(amount);
   }, [amount, tokenDecimals, token]);
 
   if (isLoading) {

@@ -124,7 +124,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
 
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(&transaction.to).unwrap(),
-                amount: Tokens::from_e8s(transaction.amount),
+                amount: Tokens::from_e8s(transaction.amount as u64),
                 fee: Tokens::from_e8s(RECOMMENDED_ICP_TRANSACTION_FEE),
                 memo: Memo(0),
                 from_subaccount: Some(to_subaccount(0)),
@@ -289,7 +289,7 @@ impl ICRC1TransferAdapter {
                 owner: Principal::from_text(&transaction.to).unwrap(),
                 subaccount: None,
             },
-            amount: Nat::from(transaction.amount),
+            amount: Nat::from(transaction.amount as u64),
             fee: Some(Nat::from(RECOMMENDED_ICRC1_TRANSACTION_FEE)),
             memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(
                 vec![],
@@ -395,7 +395,7 @@ impl Display for Token {
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Intent {
     pub transaction_type: TransactionType,
-    pub amount: u64,
+    pub amount: f64,
     pub token: TokenPath,
     pub to: String,
     pub network: SupportedNetwork,
@@ -405,7 +405,7 @@ pub struct Intent {
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct TransactionRequest {
     pub transaction_type: TransactionType,
-    pub amount: u64,
+    pub amount: f64,
     pub token: TokenPath,
     pub to: String,
     pub network: SupportedNetwork,
@@ -417,7 +417,7 @@ pub struct Transaction {
     pub to: String,
     pub token: TokenPath,
     pub network: SupportedNetwork,
-    pub amount: u64,
+    pub amount: f64,
     pub transaction_type: TransactionType,
 }
 
@@ -444,7 +444,7 @@ pub struct ProposedTransaction {
     pub to: String,
     pub token: TokenPath,
     pub network: SupportedNetwork,
-    pub amount: u64,
+    pub amount: f64,
     pub transaction_type: TransactionType,
     pub signers: Vec<Principal>,
     pub rejections: Vec<Principal>,
@@ -488,7 +488,7 @@ impl Intent {
         self.to.clone()
     }
 
-    pub fn amount(&self) -> u64 {
+    pub fn amount(&self) -> f64 {
         self.amount
     }
 }

@@ -100,11 +100,10 @@ const Transactions: React.FC = () => {
     }
   };
 
-  const formatAmount = (amount: bigint, token: string) => {
-    const formattedAmount = Number(E8sToIcp(amount));
-    return `${formattedAmount.toFixed(2).toLocaleString()} ${
-      TOKEN_URN_TO_SYMBOL[token]
-    }`;
+  const formatAmount = (amount: number, token: string) => {
+    const formattedAmount = (amount);
+    return `${formattedAmount.toFixed(4).toLocaleString()} ${TOKEN_URN_TO_SYMBOL[token]
+      }`;
   };
 
   const getIntentStatus = (status: IntentStatus): string => {
@@ -296,9 +295,8 @@ const Transactions: React.FC = () => {
                           size="small"
                         />
                         <Chip
-                          label={`${
-                            proposal.signers.length
-                          }/${threshold.toString()} signatures`}
+                          label={`${proposal.signers.length
+                            }/${threshold.toString()} signatures`}
                           size="small"
                           color={
                             proposal.signers.length >= Number(threshold)

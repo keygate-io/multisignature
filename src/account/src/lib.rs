@@ -132,7 +132,7 @@ struct ProposeTransactionArgs {
     pub to: String,
     pub token: TokenPath,
     pub network: SupportedNetwork,
-    pub amount: u64,
+    pub amount: f64,
     pub transaction_type: TransactionType,
 }
 

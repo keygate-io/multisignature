@@ -9,7 +9,7 @@ type TransactionRequest = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
 };
 
@@ -17,7 +17,7 @@ type Transaction = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
   status : IntentStatus;
 };
@@ -27,7 +27,7 @@ type ProposedTransaction = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
   signers : vec principal;
   rejections : vec principal;
@@ -37,7 +37,7 @@ type ProposeTransactionArgs = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
 };
 

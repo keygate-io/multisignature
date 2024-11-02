@@ -33,6 +33,15 @@ pub async fn get_public_key() -> Result<evm_types::PublicKeyReply, String> {
     Ok(evm_types::PublicKeyReply { public_key })
 }
 
+fn eth_to_wei(eth: f64) -> U256 {
+    let eth_scaled = (eth * 1_000_000.0) as u64;
+    let eth_u256 = U256::from(eth_scaled);
+
+    // Multiplica en `U256` para evitar overflow en f64
+    let wei_per_eth = U256::from(1e18); // 10^18 en wei
+    (eth_u256 * wei_per_eth) / U256::from(1_000_000)
+}
+
 #[ic_cdk::update]
 pub async fn execute_transaction_evm(
     request: evm_types::TransactionRequestBasic,
@@ -80,7 +89,7 @@ pub async fn execute_transaction_evm(
 
     let tx = TransactionRequest::default()
         .with_to(Address::from_str(&request.to).unwrap())
-        .with_value(U256::from_str(&request.value).unwrap())
+        .with_value(eth_to_wei(request.value.parse::<f64>().unwrap()))
         .with_nonce(nonce)
         .with_gas_limit(21_000)
         .with_chain_id(chain_id);
