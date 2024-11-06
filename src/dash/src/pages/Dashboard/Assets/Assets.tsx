@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { VisibilityOff, ContentCopy } from "@mui/icons-material";
-import { getIcrcAccount } from "../../../api/account";
+import { getBalance, getIcrcAccount, pubkeyBytesToAddress } from "../../../api/account";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { Principal } from "@dfinity/principal";
 import {
@@ -34,6 +34,7 @@ import {
   MOCK_ICRC1_CANISTER,
 } from "../../../util/constants";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
+import { ICRC1_LEDGER_CANISTER_ID } from "../../../util/config";
 
 interface Asset {
   name: string;
@@ -41,6 +42,7 @@ interface Asset {
   balance: string;
   value: string;
   isIcrc: boolean;
+  address: string;
   subaccount?: string;
   decimals: number;
 }
@@ -51,6 +53,30 @@ const Assets: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { identity } = useInternetIdentity();
   const { vaultCanisterId, nativeAccountId, nativeBalance } = useVaultDetail();
+
+
+
+  const fetchNativeEthInfo = async (): Promise<Asset> => {
+    let balance = "Unknown";
+
+    const rawBalance = await getBalance(vaultCanisterId, "eth", identity!);
+    if (rawBalance === undefined) {
+      throw new Error(`Error fetching balance for ETH`);
+    }
+
+    const address = await pubkeyBytesToAddress(vaultCanisterId, identity!);
+
+    balance = (Number(rawBalance) / Math.pow(10, 18)).toString();
+    return {
+      name: "ETH",
+      icon: "🔸",
+      balance: balance,
+      value: "N/A",
+      isIcrc: false,
+      address,
+      decimals: 18,
+    };
+  }
 
   const fetchIcrcTokenInfo = async (canisterId: string): Promise<Asset> => {
     let balance = "Unknown";
@@ -88,6 +114,7 @@ const Assets: React.FC = () => {
       balance: formatIcrc(BigInt(balance), decimals),
       value: "N/A",
       isIcrc: true,
+      address: 'N/A',
       decimals,
     };
   };
@@ -101,6 +128,7 @@ const Assets: React.FC = () => {
       balance: formatIcp(nativeBalance || 0n),
       value: "N/A",
       isIcrc: false,
+      address: "N/A",
       decimals: ICP_DECIMALS,
     };
   };
@@ -117,8 +145,9 @@ const Assets: React.FC = () => {
 
           setAssets([nativeIcp, ckBTC, ckETH, ckusdc]);
         } else {
-          const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
-          setAssets([nativeIcp, mockIcrc1]);
+          //const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
+          const nativeEth = await fetchNativeEthInfo();
+          setAssets([nativeIcp, nativeEth]); //add mockIcrc1 when uncommented
         }
       } catch (error) {
         console.error("Error fetching assets:", error);
@@ -209,6 +238,21 @@ const Assets: React.FC = () => {
                         color={asset.isIcrc ? "primary" : "secondary"}
                       />
                       {asset.name}
+                      {asset.address !== "N/A" && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            ({asset.address})
+                          </Typography>
+                          <Tooltip title="Copy address">
+                            <IconButton
+                              size="small"
+                              onClick={() => navigator.clipboard.writeText(asset.address)}
+                            >
+                              <ContentCopy fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      )}
                     </Box>
                   </TableCell>
                   <TableCell align="center">

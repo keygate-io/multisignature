@@ -9,7 +9,7 @@ type TransactionRequest = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
 };
 
@@ -17,7 +17,7 @@ type Transaction = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
   status : IntentStatus;
 };
@@ -27,7 +27,7 @@ type ProposedTransaction = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
   signers : vec principal;
   rejections : vec principal;
@@ -37,7 +37,7 @@ type ProposeTransactionArgs = record {
   to : text;
   token : text;
   network : SupportedNetwork;
-  amount : nat64;
+  amount : float64;
   transaction_type : TransactionType;
 };
 
@@ -68,6 +68,8 @@ service : () -> {
   add_signer : (principal) -> (Result);
   set_threshold : (nat64) -> ();
   get_threshold : () -> (nat64) query;
+  get_balance: (text) -> (text);
+  pubkey_bytes_to_address: () -> (text);
   get_proposed_transaction : (nat64) -> (opt ProposedTransaction) query;
   get_proposed_transactions : () -> (vec ProposedTransaction) query;
 }

@@ -37,17 +37,17 @@ thread_local! {
     );
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_wasm() -> Vec<u8> {
     WALLET_WASM.with(|wasm| wasm.borrow().clone().unwrap())
 }
 
-#[init]
+#[ic_cdk::init]
 fn init() {
     load_wallet_wasm();
 }
 
-#[update]
+#[ic_cdk::update]
 fn register_user() {
     let principal = ic_cdk::caller();
 
@@ -60,7 +60,7 @@ fn register_user() {
     });
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_vault_by_id(vault_id: Principal) -> Option<Vault> {
     let owner = STABLE_VAULTS.with(|vaults| vaults.borrow().get(&vault_id));
 
@@ -80,7 +80,7 @@ fn get_vault_by_id(vault_id: Principal) -> Option<Vault> {
     }
 }
 
-#[update]
+#[ic_cdk::update]
 async fn upgrade_account(canister_id: Principal) -> Result<(), String> {
     let owner_principal = ic_cdk::caller();
 
@@ -112,7 +112,7 @@ fn user_exists(principal: Principal) -> bool {
 /**
  * TODO: Add vault name to init args of the vault canister.
  */
-#[update]
+#[ic_cdk::update]
 async fn deploy_account(args: VaultInitArgs) -> Principal {
     let owner_principal = ic_cdk::caller();
     if !user_exists(owner_principal) {
@@ -158,7 +158,7 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
     }
 }
 
-#[update]
+#[ic_cdk::update]
 fn load_wallet_wasm() {
     let wasm_module: Vec<u8> =
         include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
@@ -169,14 +169,14 @@ fn load_wallet_wasm() {
     ic_cdk::println!("Loaded wallet wasm");
 }
 
-#[update]
+#[ic_cdk::update]
 fn load_wallet_wasm_blob(wasm_blob: Vec<u8>) {
     WALLET_WASM.with(|wasm| {
         *wasm.borrow_mut() = Some(wasm_blob);
     });
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_user() -> Option<UserInfo> {
     let principal = ic_cdk::caller();
 
@@ -187,7 +187,7 @@ fn get_user() -> Option<UserInfo> {
     STABLE_USERS.with(|users| users.borrow().get(&principal))
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_user_vaults() -> Vec<Vault> {
     let owner_principal = ic_cdk::caller();
 

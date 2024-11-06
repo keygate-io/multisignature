@@ -1,5 +1,6 @@
 use std::{collections::HashMap, future::Future, pin::Pin};
 
+use crate::evm;
 use candid::{CandidType, Nat, Principal};
 use dyn_clone::DynClone;
 use ic_cdk::api::call::CallResult;
@@ -13,7 +14,8 @@ use icrc_ledger_types::icrc1::{
 use serde_bytes::ByteBuf;
 
 use crate::{
-    get_default_icrc_subaccount, to_subaccount, ADAPTERS, PROPOSED_TRANSACTIONS, THRESHOLD,
+    evm_types::TransactionRequestBasic, get_default_icrc_subaccount, to_subaccount, ADAPTERS,
+    PROPOSED_TRANSACTIONS, THRESHOLD,
 };
 
 use std::{
@@ -122,7 +124,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
 
             let args = ICPNativeTransferArgs {
                 to: AccountIdentifier::from_hex(&transaction.to).unwrap(),
-                amount: Tokens::from_e8s(transaction.amount),
+                amount: Tokens::from_e8s(transaction.amount as u64),
                 fee: Tokens::from_e8s(RECOMMENDED_ICP_TRANSACTION_FEE),
                 memo: Memo(0),
                 from_subaccount: Some(to_subaccount(0)),
@@ -162,6 +164,66 @@ impl ICPNativeTransferAdapter {
                 Err(error_message)
             }
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct ETHNativeTransferAdapter {
+    pub(crate) network: SupportedNetwork,
+    pub(crate) token: TokenPath,
+    pub(crate) intent_type: TransactionType,
+}
+
+impl ETHNativeTransferAdapter {
+    pub fn new() -> ETHNativeTransferAdapter {
+        ETHNativeTransferAdapter {
+            network: SupportedNetwork::ETH,
+            token: "eth:native".to_string(),
+            intent_type: TransactionType::Transfer,
+        }
+    }
+
+    async fn transfer(&self, transaction: &TransactionRequest) -> Result<String, String> {
+        ic_cdk::println!("Executing ETHAdapter");
+        let request = TransactionRequestBasic {
+            to: transaction.to.clone(),
+            value: transaction.amount.to_string(),
+            chain: "eth".to_string(),
+        };
+        let result = evm::execute_transaction_evm(request).await;
+        match result.status.as_str() {
+            "Success" => Ok(result.hash),
+            _ => Err(result.status),
+        }
+    }
+}
+
+impl BlockchainAdapter for ETHNativeTransferAdapter {
+    fn network(&self) -> SupportedNetwork {
+        self.network.clone()
+    }
+
+    fn token(&self) -> String {
+        self.token.clone()
+    }
+
+    fn intent_type(&self) -> TransactionType {
+        self.intent_type.clone()
+    }
+
+    fn execute<'a>(
+        &'a self,
+        transaction: &'a TransactionRequest,
+    ) -> Pin<Box<dyn Future<Output = Result<IntentStatus, String>> + 'a>> {
+        Box::pin(async move {
+            ic_cdk::println!("Executing ETHAdapter");
+            match self.transfer(transaction).await {
+                Ok(result) => Ok(IntentStatus::Completed(
+                    "Successfully transferred native ETH: ".to_string() + &result,
+                )),
+                Err(e) => Err(e.to_string()),
+            }
+        })
     }
 }
 
@@ -227,7 +289,7 @@ impl ICRC1TransferAdapter {
                 owner: Principal::from_text(&transaction.to).unwrap(),
                 subaccount: None,
             },
-            amount: Nat::from(transaction.amount),
+            amount: Nat::from(transaction.amount as u64),
             fee: Some(Nat::from(RECOMMENDED_ICRC1_TRANSACTION_FEE)),
             memo: Some(icrc_ledger_types::icrc1::transfer::Memo(ByteBuf::from(
                 vec![],
@@ -333,7 +395,7 @@ impl Display for Token {
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct Intent {
     pub transaction_type: TransactionType,
-    pub amount: u64,
+    pub amount: f64,
     pub token: TokenPath,
     pub to: String,
     pub network: SupportedNetwork,
@@ -343,7 +405,7 @@ pub struct Intent {
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct TransactionRequest {
     pub transaction_type: TransactionType,
-    pub amount: u64,
+    pub amount: f64,
     pub token: TokenPath,
     pub to: String,
     pub network: SupportedNetwork,
@@ -355,7 +417,7 @@ pub struct Transaction {
     pub to: String,
     pub token: TokenPath,
     pub network: SupportedNetwork,
-    pub amount: u64,
+    pub amount: f64,
     pub transaction_type: TransactionType,
 }
 
@@ -382,7 +444,7 @@ pub struct ProposedTransaction {
     pub to: String,
     pub token: TokenPath,
     pub network: SupportedNetwork,
-    pub amount: u64,
+    pub amount: f64,
     pub transaction_type: TransactionType,
     pub signers: Vec<Principal>,
     pub rejections: Vec<Principal>,
@@ -426,7 +488,7 @@ impl Intent {
         self.to.clone()
     }
 
-    pub fn amount(&self) -> u64 {
+    pub fn amount(&self) -> f64 {
         self.amount
     }
 }
@@ -475,12 +537,12 @@ impl Decision {
     }
 }
 
-#[query]
+#[ic_cdk::query]
 pub fn get_adapters() -> Vec<String> {
     ADAPTERS.with(|adapters| adapters.borrow().keys().cloned().collect())
 }
 
-#[query]
+#[ic_cdk::query]
 pub fn get_transactions() -> Vec<Transaction> {
     TRANSACTIONS.with(|transactions| {
         let transactions = transactions.borrow();

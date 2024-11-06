@@ -22,6 +22,7 @@ export const CKUSDC_CANISTER_ID = "xevnm-gaaaa-aaaar-qafnq-cai";
 export const TOKEN_URN_TO_SYMBOL = {
   "icp:native": "ICP",
   [`icp:icrc1:${process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER}`]: "MCK",
+  "eth:native": "ETH",
   [`icp:icrc1:${CKETH_CANISTER_ID}`]: "ckETH",
   [`icp:icrc1:${CKBTC_CANISTER_ID}`]: "ckBTC",
   [`icp:icrc1:${CKUSDC_CANISTER_ID}`]: "ckUSDC",

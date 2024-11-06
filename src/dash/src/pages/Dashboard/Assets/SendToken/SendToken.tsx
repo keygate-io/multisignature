@@ -161,10 +161,10 @@ const SendToken: React.FC = () => {
 
     try {
       const intent = {
-        amount: icpToE8s(BigInt(amount)),
+        amount: Number(amount),
         token,
         to: recipient,
-        network: { ICP: null },
+        network: token.toLowerCase().includes("eth") ? { ETH: null } : { ICP: null },
         transaction_type: { Transfer: null },
         from: nativeAccountId,
       };
@@ -180,6 +180,7 @@ const SendToken: React.FC = () => {
       // If threshold is 0 or 1, immediately execute the transaction
       const threshold = await getThreshold(vaultCanisterId, identity!);
       if (threshold <= BigInt(1)) {
+        console.log(proposedTx);
         await executeTransaction(vaultCanisterId, proposedTx.id, identity!);
       }
 
@@ -206,7 +207,7 @@ const SendToken: React.FC = () => {
 
           setTokens(fetchedTokens);
         } else {
-          setTokens(["icp:native", `icp:icrc1:${MOCK_ICRC1_CANISTER}`]);
+          setTokens(["icp:native", `icp:icrc1:${MOCK_ICRC1_CANISTER}`, "eth:native"]);
         }
       }
     }
@@ -223,6 +224,10 @@ const SendToken: React.FC = () => {
           setTokenSymbol("ICP");
           setTokenCanisterId("");
           setTokenDecimals(ICP_DECIMALS);
+        } else if (token.toLowerCase().includes("eth:native")) {
+          setTokenSymbol("ETH");
+          setTokenCanisterId("");
+          setTokenDecimals(18);
         } else {
           const symbol = await getTokenSymbol(
             Principal.fromText(tokenInfo.principalId)
@@ -251,7 +256,7 @@ const SendToken: React.FC = () => {
   }, [vaultCanisterId, nativeAccountId, identity, token]);
 
   useEffect(() => {
-    setFormattedAmount(formatCommaSeparated(BigInt(amount)));
+    setFormattedAmount(amount);
   }, [amount, tokenDecimals, token]);
 
   if (isLoading) {

@@ -9,6 +9,7 @@ import {
   TransactionRequest,
 } from "../../../declarations/account/account.did";
 import { Vault } from "../../../declarations/central/central.did";
+import { Result } from "../../../declarations/account/account.did";
 
 // Create maps to cache the actors
 const centralActorMap = new Map<
@@ -156,6 +157,27 @@ export async function getIcrcAccount(
   identity: Identity
 ) {
   return getAccountActor(account_canister_id, identity).get_icrc_account();
+}
+
+export async function getBalance(
+  account_canister_id: Principal,
+  chain: string,
+  identity: Identity
+) {
+  const result = await getAccountActor(account_canister_id, identity).get_balance(chain);
+  return result;
+
+}
+
+export async function pubkeyBytesToAddress(
+  account_canister_id: Principal,
+  identity: Identity
+) {
+  const result = getAccountActor(
+    account_canister_id,
+    identity
+  ).pubkey_bytes_to_address();
+  return result;
 }
 
 export function getDebugInfo(

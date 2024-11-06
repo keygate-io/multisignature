@@ -14,6 +14,13 @@ dfx stop
 
 # Step 5: Start a local replica
 dfx start --background --clean
+dfx canister create internet_identity
+dfx canister create dash
+dfx canister create central
+dfx canister create account
+
+mkdir -p .dfx/local/canisters/dash && \
+curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
 
 dfx identity use default
 export DEFAULT_PRINCIPAL=$(dfx identity get-principal)
@@ -104,7 +111,7 @@ dfx canister install icrc1_ledger_canister --argument "(variant { Init = record 
 
 # Step 11: Deploy the remaining canisters in the specified order
 deploy_canisters() {
-    local canisters=("landing", "ledger" "icrc1_ledger_canister" "internet_identity" "dash" "account" "central")
+    local canisters=("internet_identity" "landing" "ledger" "icrc1_ledger_canister" "dash" "account" "central")
     for canister in "${canisters[@]}"; do
         echo "Deploying $canister..."
         deploy_output=$(dfx deploy "$canister" 2>&1)

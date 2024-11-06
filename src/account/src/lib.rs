@@ -1,3 +1,6 @@
+mod alloy_services;
+mod evm;
+mod evm_types;
 mod intent;
 mod ledger;
 mod tests;
@@ -88,7 +91,7 @@ fn get_signers() -> Vec<Principal> {
     })
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_supported_blockchain_adapters() -> Vec<String> {
     ADAPTERS.with(|adapters| adapters.borrow().keys().cloned().collect())
 }
@@ -102,7 +105,7 @@ fn get_default_icrc_subaccount() -> Subaccount {
         .unwrap()
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_icrc_account() -> String {
     let owner = ic_cdk::id();
     let subaccount = Subaccount::default();
@@ -117,7 +120,7 @@ fn get_icp_account_id() -> AccountIdentifier {
     to_subaccount_id(subaccount)
 }
 
-#[query]
+#[ic_cdk::query]
 fn get_icp_account() -> String {
     let subaccount = to_subaccount(0);
     let subaccountid: AccountIdentifier = to_subaccount_id(subaccount);
@@ -130,7 +133,7 @@ struct ProposeTransactionArgs {
     pub to: String,
     pub token: TokenPath,
     pub network: SupportedNetwork,
-    pub amount: u64,
+    pub amount: f64,
     pub transaction_type: TransactionType,
 }
 
@@ -288,7 +291,11 @@ async fn init() {
         adapters.borrow_mut().insert(
             "icp:icrc1:transfer".to_string(),
             Box::new(ICRC1TransferAdapter::new()),
-        )
+        );
+        adapters.borrow_mut().insert(
+            "eth:native:transfer".to_string(),
+            Box::new(ETHNativeTransferAdapter::new()),
+        );
     });
 
     SIGNERS.with(|signers| {
