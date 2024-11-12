@@ -11,6 +11,7 @@ ICRC1_WASM_URL="https://download.dfinity.systems/ic/$ICRC1_REVISION/canisters/ic
 ICRC1_DID_URL="https://raw.githubusercontent.com/dfinity/ic/$ICRC1_REVISION/rs/rosetta-api/icrc1/ledger/ledger.did"
 
 dfx stop
+dfx killall
 
 # Step 5: Start a local replica
 dfx start --background --clean
