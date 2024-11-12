@@ -1,182 +1,187 @@
 #!/bin/bash
 
-# Step 3: Determine ledger file locations
-REVISION="1ac5439c6da1aafe8156c667c313344c0245fea3"
-LEDGER_WASM_URL="https://download.dfinity.systems/ic/$REVISION/canisters/ledger-canister.wasm.gz"
-LEDGER_DID_URL="https://raw.githubusercontent.com/dfinity/ic/$REVISION/rs/rosetta-api/icp_ledger/ledger.did"
+# Colors for status messages
+BLUE='\033[1;34m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# ICRC-1 Ledger canister URLs
-ICRC1_REVISION="d87954601e4b22972899e9957e800406a0a6b929"
-ICRC1_WASM_URL="https://download.dfinity.systems/ic/$ICRC1_REVISION/canisters/ic-icrc1-ledger.wasm.gz"
-ICRC1_DID_URL="https://raw.githubusercontent.com/dfinity/ic/$ICRC1_REVISION/rs/rosetta-api/icrc1/ledger/ledger.did"
-
-dfx stop
-
-# Step 5: Start a local replica
-dfx start --background --clean
-dfx canister create internet_identity
-dfx canister create dash
-dfx canister create central
-dfx canister create account
-
-mkdir -p .dfx/local/canisters/dash && \
-curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
-
-dfx identity use default
-export DEFAULT_PRINCIPAL=$(dfx identity get-principal)
-
-# Step 6: Create a new identity that will work as a minting account
-dfx identity new minter
-dfx identity use minter
-export MINT_ACC=$(dfx identity get-principal)
-export ACCOUNT_ID=$(dfx ledger account-id)
-dfx identity get-principal
-
-# Create three additional identities for testing
-for i in {1..3}
-do
-    dfx identity new test_identity_$i
-    dfx identity use test_identity_$i
-    export TEST_ACCOUNT_ID_$i=$(dfx ledger account-id)
-done
-
-# Step 7: Switch back to your default identity and record its ledger account identifier
-dfx identity use default  
-export LEDGER_ACC=$(dfx identity get-principal)
-
-# Step 8: Obtain the principal of the identity you use for development
-export ARCHIVE_CONTROLLER=$(dfx identity get-principal)
-
-# Step 9: Deploy the ICP ledger canister with archiving options
-dfx canister create ledger --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai
-dfx build ledger
-dfx canister install ledger --argument "(variant {
-  Init = record {
-    minting_account = \"$ACCOUNT_ID\";
-    icrc1_minting_account = opt record {
-      owner = principal \"$MINT_ACC\";
-      subaccount = null;
-    };
-    initial_values = vec {
-      record {
-        \"$ACCOUNT_ID\";
-        record {
-          e8s = 100000000 : nat64;
-        };
-      };
-    };
-    max_message_size_bytes = opt(2560000 : nat64);
-    transaction_window = opt record {
-      secs = 10 : nat64;
-      nanos = 0 : nat32;
-    };
-    archive_options = opt record {
-      trigger_threshold = 1000000 : nat64;
-      num_blocks_to_archive = 1000000 : nat64;
-      node_max_memory_size_bytes = null;
-      max_message_size_bytes = null;
-      controller_id = principal \"$ARCHIVE_CONTROLLER\";
-      cycles_for_archive_creation = null;
-    };
-    send_whitelist = vec {
-      principal \"$LEDGER_ACC\";
-    };
-    transfer_fee = opt record {
-      e8s = 1000000 : nat64;
-    };
-    token_symbol = opt \"SYB\";
-    token_name = opt \"NAME\";
-  }})";
-
-# Step 10: Deploy the ICRC-1 ledger canister
-dfx canister create icrc1_ledger_canister
-dfx build icrc1_ledger_canister
-dfx canister install icrc1_ledger_canister --argument "(variant { Init = record {
-  token_symbol = \"MCK\";
-  token_name = \"Mock Token\";
-  minting_account = record { owner = principal \"$LEDGER_ACC\"; subaccount = null };
-  transfer_fee = 1_000_000 : nat;
-  metadata = vec {};
-  initial_balances = vec { 
-    record { record { owner = principal \"$LEDGER_ACC\"; subaccount = null }; 100_000_000_000 : nat };
-    record { record { owner = principal \"$DEFAULT_PRINCIPAL\"; subaccount = null }; 1_000_000_000_000 : nat };
-  };
-  archive_options = record {
-    num_blocks_to_archive = 10 : nat64;
-    trigger_threshold = 5 : nat64;
-    controller_id = principal \"$ARCHIVE_CONTROLLER\";
-  };
-  feature_flags = null;
-}})"
-
-# Step 11: Deploy the remaining canisters in the specified order
-deploy_canisters() {
-    local canisters=("internet_identity" "landing" "ledger" "icrc1_ledger_canister" "dash" "account" "central")
-    for canister in "${canisters[@]}"; do
-        echo "Deploying $canister..."
-        deploy_output=$(dfx deploy "$canister" 2>&1)
-        if echo "$deploy_output" | grep -q "Deployed canisters"; then
-            echo "$canister deployed successfully."
-        else
-            echo "$deploy_output"
-            echo "Deployment of $canister failed. Please check the error messages above."
-            return 1
-        fi
-    done
-    return 0
+# Step 1: Utility functions
+print_status() {
+    echo -e "${BLUE}>>> $1${NC}"
 }
 
-if deploy_canisters; then
-    echo "All canisters deployed successfully."
-else
-    echo "Deployment process encountered errors. Please review the output above."
-fi
+print_success() {
+    echo -e "${GREEN}✓ $1${NC}"
+}
 
-# Capture canister IDs
-LEDGER_CANISTER_ID=$(dfx canister id ledger)
-ICRC1_LEDGER_CANISTER_ID=$(dfx canister id icrc1_ledger_canister)
-DASHBOARD_CANISTER_ID=$(dfx canister id dash)
-ACCOUNT_CANISTER_ID=$(dfx canister id account)
-CENTRAL_CANISTER_ID=$(dfx canister id central)
-INTERNET_IDENTITY_CANISTER_ID=$(dfx canister id internet_identity)
+print_error() {
+    echo -e "${RED}✗ $1${NC}"
+}
 
-# Extract URLs from deploy output
-FRONTEND_URLS=$(dfx canister info dash | grep "Frontend canister via browser" -A 1 | tail -n 1)
-BACKEND_URLS=$(dfx canister info dash | grep "Backend canister via Candid interface:" -A 1 | tail -n 1)
+# Step 2: Check API status and restart if needed
+check_dfx_status() {
+    print_status "Checking DFX status..."
+    
+    if ! curl -s -X GET "http://127.0.0.1:4943/api/v2/status" > /dev/null; then
+        print_status "DFX is not running properly. Attempting restart..."
+        
+        print_status "Stopping DFX..."
+        dfx stop
+        
+        print_status "Killing all DFX processes..."
+        dfx killall
+        
+        print_status "Starting DFX..."
+        dfx start --background
+        
+        # Wait for DFX to start
+        sleep 5
+        
+        # Verify DFX is now running
+        if ! curl -s -X GET "http://127.0.0.1:4943/api/v2/status" > /dev/null; then
+            print_error "Failed to start DFX properly"
+            exit 1
+        fi
+        
+        print_success "DFX restarted successfully"
+    else
+        print_success "DFX is running properly"
+    fi
+}
 
-# Create .debug file with exported variables, canister IDs, and URLs
-cat << EOF > .debug
-Exported variables:
+# Step 3: Environment setup
+setup_environment() {
+    print_status "Setting up environment variables..."
+    
+    # Ledger configuration
+    REVISION="1ac5439c6da1aafe8156c667c313344c0245fea3"
+    LEDGER_WASM_URL="https://download.dfinity.systems/ic/$REVISION/canisters/ledger-canister.wasm.gz"
+    LEDGER_DID_URL="https://raw.githubusercontent.com/dfinity/ic/$REVISION/rs/rosetta-api/icp_ledger/ledger.did"
+    
+    print_success "Environment variables set"
+}
+
+# Step 4: Identity management
+setup_identities() {
+    print_status "Setting up identities..."
+    
+    # Create and configure minter identity
+    dfx identity new minter --force || print_error "Failed to create minter identity"
+    dfx identity use minter
+    export MINT_ACC=$(dfx identity get-principal)
+    export ACCOUNT_ID=$(dfx ledger account-id)
+    
+    # Switch back to default identity
+    dfx identity use default
+    export LEDGER_ACC=$(dfx identity get-principal)
+    export ARCHIVE_CONTROLLER=$(dfx identity get-principal)
+    
+    print_success "Identities configured"
+}
+
+# Step 5: Ledger deployment
+deploy_ledger() {
+    print_status "Deploying ledger canister..."
+    
+    # Create and build ledger canister
+    dfx canister create ledger --specified-id ryjl3-tyaaa-aaaaa-aaaba-cai || {
+        print_error "Failed to create ledger canister"
+        exit 1
+    }
+    
+    dfx build ledger || {
+        print_error "Failed to build ledger canister"
+        exit 1
+    }
+    
+    # Install ledger with initialization arguments
+    dfx canister install ledger --argument "(variant {
+        Init = record {
+            minting_account = \"$ACCOUNT_ID\";
+            icrc1_minting_account = opt record {
+                owner = principal \"$MINT_ACC\";
+                subaccount = null;
+            };
+            initial_values = vec {
+                record {
+                    \"$ACCOUNT_ID\";
+                    record {
+                        e8s = 100000000 : nat64;
+                    };
+                };
+            };
+            max_message_size_bytes = opt(2560000 : nat64);
+            transaction_window = opt record {
+                secs = 10 : nat64;
+                nanos = 0 : nat32;
+            };
+            archive_options = opt record {
+                trigger_threshold = 1000000 : nat64;
+                num_blocks_to_archive = 1000000 : nat64;
+                node_max_memory_size_bytes = null;
+                max_message_size_bytes = null;
+                controller_id = principal \"$ARCHIVE_CONTROLLER\";
+                cycles_for_archive_creation = null;
+            };
+            send_whitelist = vec {
+                principal \"$LEDGER_ACC\";
+            };
+            transfer_fee = opt record {
+                e8s = 1000000 : nat64;
+            };
+            token_symbol = opt \"SYB\";
+            token_name = opt \"NAME\";
+        }})" --mode=reinstall || {
+            print_error "Failed to install ledger canister"
+            exit 1
+        }
+    
+    print_success "Ledger deployed successfully"
+}
+
+# Step 6: Create debug information
+create_debug_info() {
+    print_status "Creating debug information..."
+    
+    # Capture canister ID
+    LEDGER_CANISTER_ID=$(dfx canister id ledger)
+    
+    # Create .debug file
+    cat << EOF > .debug
+Deployment Information:
+----------------------
 REVISION=$REVISION
 LEDGER_WASM_URL=$LEDGER_WASM_URL
 LEDGER_DID_URL=$LEDGER_DID_URL
-ICRC1_REVISION=$ICRC1_REVISION
-ICRC1_WASM_URL=$ICRC1_WASM_URL
-ICRC1_DID_URL=$ICRC1_DID_URL
+
+Identity Information:
+-------------------
 MINT_ACC=$MINT_ACC
-ACCOUNT_ID=$ACCOUNT_ID 
+ACCOUNT_ID=$ACCOUNT_ID
 LEDGER_ACC=$LEDGER_ACC
 ARCHIVE_CONTROLLER=$ARCHIVE_CONTROLLER
 
-Test Identities Account IDs:
-TEST_ACCOUNT_ID_1=$TEST_ACCOUNT_ID_1
-TEST_ACCOUNT_ID_2=$TEST_ACCOUNT_ID_2
-TEST_ACCOUNT_ID_3=$TEST_ACCOUNT_ID_3
-
-Canister Principal IDs:
+Canister Information:
+-------------------
 LEDGER_CANISTER_ID=$LEDGER_CANISTER_ID
-ICRC1_LEDGER_CANISTER_ID=$ICRC1_LEDGER_CANISTER_ID
-DASHBOARD_CANISTER_ID=$DASHBOARD_CANISTER_ID
-ACCOUNT_CANISTER_ID=$ACCOUNT_CANISTER_ID
-CENTRAL_CANISTER_ID=$CENTRAL_CANISTER_ID
-INTERNET_IDENTITY_CANISTER_ID=$INTERNET_IDENTITY_CANISTER_ID
-DEFAULT_PRINCIPAL=$DEFAULT_PRINCIPAL
-
-Frontend URLs:
-$FRONTEND_URLS
-
-Backend URLs:
-$BACKEND_URLS
 EOF
+    
+    print_success "Debug information written to .debug file"
+}
 
-echo "Debug information has been written to .debug file"
+# Main execution
+main() {
+    print_status "Starting ledger deployment process..."
+    
+    check_dfx_status
+    setup_environment
+    setup_identities
+    deploy_ledger
+    create_debug_info
+    
+    print_success "Deployment completed successfully!"
+}
+
+# Execute main function
+main
