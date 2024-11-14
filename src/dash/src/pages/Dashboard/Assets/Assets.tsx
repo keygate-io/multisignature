@@ -146,8 +146,8 @@ const Assets: React.FC = () => {
           setAssets([nativeIcp, ckBTC, ckETH, ckusdc]);
         } else {
           //const mockIcrc1 = await fetchIcrcTokenInfo(MOCK_ICRC1_CANISTER);
-          const nativeEth = await fetchNativeEthInfo();
-          setAssets([nativeIcp, nativeEth]); //add mockIcrc1 when uncommented
+          // const nativeEth = await fetchNativeEthInfo();
+          setAssets([nativeIcp]); //add mockIcrc1 when uncommented
         }
       } catch (error) {
         console.error("Error fetching assets:", error);

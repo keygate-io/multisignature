@@ -67,7 +67,28 @@ setup_environment() {
     print_success "Environment variables set"
 }
 
-# Step 4: Identity management
+# Step 4: Internet Identity deployment
+deploy_internet_identity() {
+    print_status "Deploying Internet Identity canister..."
+    
+    # Create and build Internet Identity canister
+    dfx canister create internet_identity || {
+        print_error "Failed to create Internet Identity canister"
+    }
+    
+    dfx build internet_identity || {
+        print_error "Failed to build Internet Identity canister"
+    }
+    
+    # Install Internet Identity canister with --yes flag
+    dfx canister install internet_identity --mode=reinstall --yes || {
+        print_error "Failed to install Internet Identity canister"
+    }
+    
+    print_success "Internet Identity deployed successfully"
+}
+
+# Step 5: Identity management
 setup_identities() {
     print_status "Setting up identities..."
     
@@ -86,7 +107,7 @@ setup_identities() {
     print_success "Identities configured"
 }
 
-# Step 5: Ledger deployment
+# Step 6: Ledger deployment
 deploy_ledger() {
     print_status "Deploying ledger canister..."
     
@@ -99,7 +120,7 @@ deploy_ledger() {
         print_error "Failed to build ledger canister"
     }
     
-    # Install ledger with initialization arguments
+    # Install ledger with initialization arguments and --yes flag
     dfx canister install ledger --argument "(variant {
         Init = record {
             minting_account = \"$ACCOUNT_ID\";
@@ -136,14 +157,14 @@ deploy_ledger() {
             };
             token_symbol = opt \"SYB\";
             token_name = opt \"NAME\";
-        }})" --mode=reinstall || {
+        }})" --mode=reinstall --yes || {
             print_error "Failed to install ledger canister"
         }
     
     print_success "Ledger deployed successfully"
 }
 
-# Step 6: ICRC1 Ledger deployment
+# Step 7: ICRC1 Ledger deployment
 deploy_icrc1_ledger() {
     print_status "Deploying ICRC1 ledger canister..."
     
@@ -156,7 +177,7 @@ deploy_icrc1_ledger() {
         print_error "Failed to build ICRC1 ledger canister"
     }
     
-    # Install ICRC1 ledger with initialization arguments
+    # Install ICRC1 ledger with initialization arguments and --yes flag
     dfx canister install icrc1_ledger_canister --argument "(variant { Init = record {
         token_symbol = \"MCK\";
         token_name = \"Mock Token\";
@@ -173,20 +194,75 @@ deploy_icrc1_ledger() {
             controller_id = principal \"$ARCHIVE_CONTROLLER\";
         };
         feature_flags = null;
-    }})" --mode=reinstall || {
+    }})" --mode=reinstall --yes || {
         print_error "Failed to install ICRC1 ledger canister"
     }
     
     print_success "ICRC1 Ledger deployed successfully"
 }
 
-# Step 7: Create debug information
+# Step 8: EVM RPC deployment
+deploy_evm_rpc() {
+    print_status "Deploying EVM RPC canister..."
+    
+    # Create EVM RPC canister with specified ID
+    dfx canister create evm_rpc --specified-id 7hfb6-caaaa-aaaar-qadga-cai || {
+        print_error "Failed to create EVM RPC canister"
+    }
+
+    # Deploy the EVM RPC canister with initialization argument and --yes flag
+    dfx deploy evm_rpc --argument "(record { nodesInSubnet = 28 })" --yes || {
+        print_error "Failed to deploy EVM RPC canister"
+    }
+    
+    print_success "EVM RPC deployed successfully"
+}
+
+# Step 9: Landing deployment
+deploy_landing() {
+    print_status "Deploying landing canister..."
+    
+    # Create landing canister
+    dfx canister create landing || {
+        print_error "Failed to create landing canister"
+    }
+
+    # Deploy the landing canister with --yes flag
+    dfx deploy landing --yes || {
+        print_error "Failed to deploy landing canister"
+    }
+    
+    print_success "Landing deployed successfully"
+}
+
+# Step 10: Dashboard deployment
+deploy_dashboard() {
+    print_status "Deploying dashboard canister..."
+    
+    # Create dashboard canister
+    dfx canister create dash || {
+        print_error "Failed to create dashboard canister"
+    }
+
+    # Deploy the dashboard canister with --yes flag
+    dfx deploy dash --yes || {
+        print_error "Failed to deploy dashboard canister"
+    }
+    
+    print_success "Dashboard deployed successfully"
+}
+
+# Step 11: Create debug information
 create_debug_info() {
     print_status "Creating debug information..."
     
     # Capture canister IDs
     LEDGER_CANISTER_ID=$(dfx canister id ledger)
     ICRC1_LEDGER_CANISTER_ID=$(dfx canister id icrc1_ledger_canister)
+    INTERNET_IDENTITY_CANISTER_ID=$(dfx canister id internet_identity)
+    EVM_RPC_CANISTER_ID=$(dfx canister id evm_rpc)
+    LANDING_CANISTER_ID=$(dfx canister id landing)
+    DASHBOARD_CANISTER_ID=$(dfx canister id dash)
     
     # Create .debug file
     cat << EOF > .debug
@@ -211,6 +287,17 @@ Canister Information:
 -------------------
 LEDGER_CANISTER_ID=$LEDGER_CANISTER_ID
 ICRC1_LEDGER_CANISTER_ID=$ICRC1_LEDGER_CANISTER_ID
+INTERNET_IDENTITY_CANISTER_ID=$INTERNET_IDENTITY_CANISTER_ID
+EVM_RPC_CANISTER_ID=$EVM_RPC_CANISTER_ID
+LANDING_CANISTER_ID=$LANDING_CANISTER_ID
+DASHBOARD_CANISTER_ID=$DASHBOARD_CANISTER_ID
+
+Frontend URLs:
+------------
+Internet Identity URL: http://${INTERNET_IDENTITY_CANISTER_ID}.localhost:4943/
+EVM RPC URL: http://${EVM_RPC_CANISTER_ID}.localhost:4943/
+Landing URL: http://${LANDING_CANISTER_ID}.localhost:4943/
+Dashboard URL: http://${DASHBOARD_CANISTER_ID}.localhost:4943/
 EOF
     
     print_success "Debug information written to .debug file"
@@ -218,16 +305,22 @@ EOF
 
 # Main execution
 main() {
-    print_status "Starting ledger deployment process..."
+    print_status "Starting deployment process..."
     
     check_dfx_status
     setup_environment
     setup_identities
+    deploy_internet_identity
     deploy_ledger
     deploy_icrc1_ledger
+    deploy_evm_rpc
+    deploy_landing
+    deploy_dashboard
     create_debug_info
     
     print_success "Deployment completed successfully!"
+    print_status "Landing is available at: http://${LANDING_CANISTER_ID}.localhost:4943/"
+    print_status "Dashboard is available at: http://${DASHBOARD_CANISTER_ID}.localhost:4943/"
 }
 
 # Execute main function
