@@ -24,20 +24,22 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
+import ThresholdModal from "./modal/ThresholdModal";
 import AccountPageLayout from "../../VaultPageLayout";
 import { useInternetIdentity } from "../../../hooks/use-internet-identity";
 import { useVaultDetail } from "../../../contexts/VaultDetailContext";
 import { Principal } from "@dfinity/principal";
-import { getThreshold, getSigners, setThreshold } from "../../../api/account";
+import { getThreshold, getSigners, setThreshold, addSigner } from "../../../api/account";
 
 const Settings: React.FC = () => {
   const { vaultCanisterId } = useVaultDetail();
   const { identity } = useInternetIdentity();
-
   const [threshold, setThresholdValue] = useState<bigint>(BigInt(0));
   const [signers, setSigners] = useState<Principal[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [newSigner, setNewSigner] = useState("");
+  const [thresholdModalOpen, setThresholdModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -63,6 +65,12 @@ const Settings: React.FC = () => {
     fetchSettings();
   }, [vaultCanisterId, identity]);
 
+  const addNewSigner = async () => {
+    if (!newSigner || !identity || !vaultCanisterId || newSigner.length < 1) return;
+
+    addSigner(vaultCanisterId, identity, Principal.fromText(newSigner))
+  }
+
   if (isLoading) {
     return (
       <AccountPageLayout>
@@ -85,6 +93,19 @@ const Settings: React.FC = () => {
         </Alert>
       )}
 
+
+      <ThresholdModal
+        visible={thresholdModalOpen}
+        onClose={() => setThresholdModalOpen(false)}
+        onUpdate={async (value) => {
+          if (!vaultCanisterId || !identity)
+            await setThreshold(vaultCanisterId, value, identity!);
+          setThresholdValue(value);
+        }}
+        currentThreshold={threshold}
+      />
+
+
       {/* Threshold Management */}
       <Card sx={{ mb: 4, bgcolor: "background.paper" }}>
         <CardHeader
@@ -97,18 +118,16 @@ const Settings: React.FC = () => {
               Current threshold: {threshold.toString()} of {signers.length}{" "}
               signers
             </Typography>
-            <Tooltip title="This feature will be available in a future release">
-              <span>
-                <Button
-                  startIcon={<EditIcon />}
-                  variant="outlined"
-                  size="small"
-                  disabled
-                >
-                  Edit
-                </Button>
-              </span>
-            </Tooltip>
+            <span>
+              <Button
+                startIcon={<EditIcon />}
+                variant="outlined"
+                size="small"
+                onClick={() => setThresholdModalOpen(true)}
+              >
+                Edit
+              </Button>
+            </span>
           </Box>
         </CardContent>
       </Card>
@@ -124,17 +143,16 @@ const Settings: React.FC = () => {
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
               <TextField
                 label="Add Signer (Principal ID)"
-                disabled
                 fullWidth
                 size="small"
+                value={newSigner}
+                onChange={(e) => setNewSigner(e.target.value)}
               />
-              <Tooltip title="This feature will be available in a future release">
-                <span>
-                  <Button startIcon={<AddIcon />} variant="contained" disabled>
-                    Add
-                  </Button>
-                </span>
-              </Tooltip>
+              <span>
+                <Button startIcon={<AddIcon />} variant="contained" onClick={addNewSigner}>
+                  Add
+                </Button>
+              </span>
             </Box>
           </Box>
 
