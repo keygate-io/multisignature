@@ -137,6 +137,10 @@ export function getSigners(account_canister_id: Principal, identity: Identity) {
   return getAccountActor(account_canister_id, identity).get_signers();
 }
 
+export function addSigner(account_canister_id: Principal, identity: Identity, signer: Principal) {
+  return getAccountActor(account_canister_id, identity).add_signer(signer);
+}
+
 // export function getTokens(account_canister_id: Principal, identity: Identity) {
 //   return getAccountActor(account_canister_id, identity).get_tokens();
 // }
