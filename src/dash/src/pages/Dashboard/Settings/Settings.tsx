@@ -45,7 +45,6 @@ const Settings: React.FC = () => {
     const fetchSettings = async () => {
       if (!vaultCanisterId || !identity) return;
 
-      setIsLoading(true);
       try {
         const [thresholdValue, signersValue] = await Promise.all([
           getThreshold(vaultCanisterId, identity),
@@ -54,11 +53,12 @@ const Settings: React.FC = () => {
 
         setThresholdValue(thresholdValue);
         setSigners(signersValue);
+        setIsLoading(false);
       } catch (err) {
         setError("Failed to load settings");
         console.error("Error loading settings:", err);
       } finally {
-        setIsLoading(false);
+
       }
     };
 
@@ -81,13 +81,14 @@ const Settings: React.FC = () => {
     );
   }
 
+
   return (
     <AccountPageLayout>
       <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
         Settings
       </Typography>
 
-      {error && (
+      {(error && !(identity && vaultCanisterId)) && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
@@ -98,11 +99,13 @@ const Settings: React.FC = () => {
         visible={thresholdModalOpen}
         onClose={() => setThresholdModalOpen(false)}
         onUpdate={async (value) => {
-          if (!vaultCanisterId || !identity)
-            await setThreshold(vaultCanisterId, value, identity!);
+          console.log(value)
+          await setThreshold(vaultCanisterId, value, identity!);
           setThresholdValue(value);
-        }}
+        }
+        }
         currentThreshold={threshold}
+        maxThreshold={BigInt(signers.length)}
       />
 
 

@@ -7,13 +7,14 @@ interface ThresholdModalProps {
     onClose: () => void;
     onUpdate: (value: bigint) => void;
     currentThreshold: bigint;
+    maxThreshold: bigint;
 }
 
-const ThresholdModal: React.FC<ThresholdModalProps> = ({ visible, onClose, onUpdate, currentThreshold }) => {
-    const [threshold, setThreshold] = useState<bigint>(currentThreshold);
+const ThresholdModal: React.FC<ThresholdModalProps> = ({ visible, onClose, onUpdate, currentThreshold, maxThreshold }) => {
+    const [threshold, setThreshold] = useState<string>(currentThreshold.toString());
 
     const handleUpdate = () => {
-        onUpdate(threshold);
+        onUpdate(BigInt(threshold));
         onClose();
     };
 
@@ -27,11 +28,17 @@ const ThresholdModal: React.FC<ThresholdModalProps> = ({ visible, onClose, onUpd
                 <Typography variant="h6">Update Threshold</Typography>
                 <Box mt={2}>
                     <TextField
-                        value={Number(threshold)}
-                        type='number'
-                        onChange={(event) => setThreshold(event.target.value !== '' ? BigInt(event.target.value) : currentThreshold)}
+                        value={threshold}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            if (/^\d*$/.test(value)) {
+                                setThreshold(value);
+                            }
+                        }}
                         fullWidth
                         size="small"
+                        error={Number(threshold) > maxThreshold || Number(threshold) < 1}
+                        helperText={Number(threshold) > maxThreshold || Number(threshold) < 1 ? `You only have ${maxThreshold} signers` : ''}
                     />
                 </Box>
                 <Box mt={2} display="flex" justifyContent="flex-end">

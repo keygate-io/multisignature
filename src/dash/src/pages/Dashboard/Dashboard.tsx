@@ -20,19 +20,21 @@ const Dashboard = () => {
   const [currentApprovals, setCurrentApproval] = useState(1);
   const [totalApprovals, setTotalApprovals] = useState(1);
   const [requiredApprovals, setRequiredApprovals] = useState(1);
+  const [ApprovalsLoading, setApprovalsLoading] = useState(false);
 
   // Generate marks with labels for each number in totalApprovals
   const marks = useMemo(() => {
-    return Array.from({ length: totalApprovals }, (_, index) => ({
-      value: index + 1,
-      label: (index + 1).toString(),
+    return Array.from({ length: totalApprovals + 1 }, (_, index) => ({
+      value: index,
+      label: index.toString(),
     }));
   }, [totalApprovals, requiredApprovals]);
 
-  const [currentPercentage, setCurrentPercentage] = useState(((currentApprovals - 1) / (totalApprovals - 1)) * 100);
-  const [requiredPercentage, setRequiredPercentage] = useState(((requiredApprovals - 1) / (totalApprovals - 1)) * 100);
+  const [currentPercentage, setCurrentPercentage] = useState(((currentApprovals) / (totalApprovals)) * 100);
+  const [requiredPercentage, setRequiredPercentage] = useState(((requiredApprovals) / (totalApprovals)) * 100);
 
   useEffect(() => {
+    setApprovalsLoading(true);
     if (!vaultCanisterId || !identity) { return; }
     getThreshold(vaultCanisterId, identity!).then((threshold) => {
       setRequiredApprovals(Number(threshold));
@@ -41,11 +43,12 @@ const Dashboard = () => {
     getSigners(vaultCanisterId, identity!).then((signers) => {
       setTotalApprovals(signers.length);
     })
+    setApprovalsLoading(false);
   }, [vaultCanisterId]);
 
   useEffect(() => {
-    setRequiredPercentage(((requiredApprovals - 1) / (totalApprovals - 1)) * 100);
-    setCurrentPercentage(((currentApprovals - 1) / (totalApprovals - 1)) * 100);
+    setRequiredPercentage(((requiredApprovals) / (totalApprovals)) * 100);
+    setCurrentPercentage(((currentApprovals) / (totalApprovals)) * 100);
   }, [currentApprovals, totalApprovals, requiredApprovals]);
 
   const copyToClipboard = (text: string) => {
@@ -98,14 +101,16 @@ const Dashboard = () => {
       </Box>
       <Box sx={{ backgroundColor: '#121212', width: '50%', backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))', padding: '16px', borderRadius: '8px', color: 'white', marginTop: '10px' }}>
         <Typography variant="h6" gutterBottom>Approval threshold</Typography>
-        {currentApprovals === 1 && totalApprovals === 1 ? (
+        {ApprovalsLoading ? (
+          <CircularProgress size={24} sx={{ mr: 2 }} />
+        ) : currentApprovals <= 1 && totalApprovals <= 1 ? (
           <Typography gutterBottom sx={{ marginTop: "15px" }}>No other signers have been added to the vault.</Typography>
         ) : (
           <Box>
             <Typography gutterBottom><span style={{ fontWeight: 900 }}>{requiredApprovals}</span> of <span style={{ fontWeight: 900 }}>{totalApprovals}</span> approvals are required to initiate transactions and changes to Keygate Vault settings.</Typography>
             <Slider
-              value={currentApprovals}
-              min={1}
+              value={requiredApprovals}
+              min={0}
               max={totalApprovals}
               marks={marks}
               step={1}
@@ -125,7 +130,7 @@ const Dashboard = () => {
                 '& .MuiSlider-track': {
                   display: 'none'
                 },
-                '& .MuiSlider-mark': { height: '10px', backgroundColor: '#121212', backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))' },
+                '& .MuiSlider-mark': { height: '10px', backgroundColor: '#1E1E1E' },
 
               }}
             />
