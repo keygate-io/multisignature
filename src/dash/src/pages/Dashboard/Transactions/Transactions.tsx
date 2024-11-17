@@ -291,14 +291,15 @@ const Transactions: React.FC = () => {
                           sx={{
                             mt: 1,
                           }}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => executeTransaction(vaultCanisterId, proposal.id, identity!)}
-                            disabled={proposal.signers.length < Number(threshold)}
-                          >
-                            Execute
-                          </Button>
+                          {proposal.signers.length >= Number(threshold) && (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => executeTransaction(vaultCanisterId, proposal.id, identity!)}
+                            >
+                              Execute
+                            </Button>
+                          )}
                         </Box>
                       </Box>
                       {renderSignersInfo(proposal.signers, proposal.rejections)}
