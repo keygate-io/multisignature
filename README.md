@@ -4,8 +4,7 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?logo=apache&style=for-the-badge)](LICENSE)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/keygate-vault/multisignature/tests.yaml?logo=githubactions&logoColor=white&style=for-the-badge&label=tests)](./actions/workflows/tests.yaml)
 
-![ezgif-5-0973157a41](https://github.com/user-attachments/assets/1404a993-adb6-49c4-9800-c97891e83d3f)
-
+![ezgif-5-dfd7aa9f99](https://github.com/user-attachments/assets/c63e8461-a5fd-4485-85e1-9e693d395fcf)
 
 # Keygate Vault
 
