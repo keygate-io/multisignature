@@ -1,151 +1,90 @@
-# Keygate Multisignature Wallet
+> This project is **still in Beta**. We are happy to answer questions if they are raised as issues in this github repo.
 
-A secure, cross-chain decentralized multisignature wallet built on the Internet Computer Protocol (ICP). This system enables multiple parties to jointly manage digital assets with customizable approval thresholds and cross-chain compatibility.
+[![Internet Computer portal](https://img.shields.io/badge/InternetComputer-grey?logo=internet%20computer&style=for-the-badge)](https://internetcomputer.org)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?logo=apache&style=for-the-badge)](LICENSE)
+[![Tests Status](https://img.shields.io/github/actions/workflow/status/keygate-vault/multisignature/tests.yaml?logo=githubactions&logoColor=white&style=for-the-badge&label=tests)](./actions/workflows/tests.yaml)
 
-## Features
+# Keygate Multisignature
 
-- **Multi-Chain Support**: Native support for ICP with extensible architecture for other blockchains
-- **Flexible Signing Rules**: Customizable threshold for transaction approvals
-- **Secure Architecture**: Decentralized design with canister-based security
-- **Multiple Wallet Types**: Support for both ICRC1 and native ICP transactions
-- **User-Friendly Interface**: Web-based dashboard for easy wallet management
-- **Transaction Monitoring**: Real-time tracking of transaction status and approvals
+A cross-chain decentralized multisignature platform built for the Internet Computer Protocol (ICP). Keygate simplifies the management of multi-party digital assets by providing a secure, flexible, and user-friendly infrastructure for creating and managing multisignature wallets.
 
-## Prerequisites
+## Overview
 
-Before you begin, ensure you have the following installed:
+Keygate is an innovative multisignature platform built natively for the Internet Computer Protocol (ICP) with cross-chain capabilities. Inspired by traditional banking's multi-approval systems, Keygate aims to bring enterprise-grade security and flexibility to digital asset management, enabling both individuals and organizations to manage their assets with customizable approval workflows.
 
-* [TypeScript Compiler (tsc)](https://www.typescriptlang.org/download/) - For frontend development
-* [Rust Toolchain](https://www.rust-lang.org/tools/install) - Via rustup, for canister development
-* [DFX](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/#installing-dfx-via-dfxvm) - DFINITY's command-line tool for Internet Computer development
-* [Node.js](https://nodejs.org/) (v14 or higher)
-* [Git](https://git-scm.com/downloads)
+## Vision
 
-## Quick Start
-
-1. Clone the repository:
-   ```bash
-   git clone git@github.com:keygate-vault/multisignature.git
-   cd multisignature
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Deploy the system:
-   ```bash
-   ./deployment.sh
-   ```
+Our vision with Keygate is to democratize institutional-grade digital asset management. The multisignature wallet is our flagship application, demonstrating the potential of ICP's secure architecture while providing essential functionality for multi-party asset management. The core of our innovation lies in the platform's flexibility, which enables users to create anything from simple dual-signature wallets to complex enterprise approval systems.
 
 ## System Architecture
 
-The system consists of three main components working together to provide secure multisignature functionality:
-
 ```mermaid
-sequenceDiagram
-    participant User as User 🧑
-    participant Dashboard as Dashboard Canister 🖥️
-    participant Account as Account Canister 🏦
-    participant Ledger as Ledger Canister 💰
-    
-    rect rgb(240, 245, 255)
-        Note over User,Ledger: Transaction Initiation
-        User->>+Dashboard: Propose Transaction
-        Dashboard->>Account: Create Transaction Intent
-        Account-->>Dashboard: Return Intent ID
-        Dashboard-->>-User: Show Pending Status
+block-beta
+  columns 1
+    block:FRONTEND
+      dashboard["Dashboard Canister<br />(User Interface)"]
+      central["Central Canister<br />Wallet Management"]
     end
-    
-    rect rgb(255, 245, 240)
-        Note over User,Ledger: Approval Process
-        User->>+Account: Submit Approval
-        Account->>Account: Verify Signer
-        Account->>Account: Update Approvals
-        Account-->>-User: Confirmation
+    space
+    block:CORE
+      account["Account Canister<br/>Multi-signature Logic"]
     end
-    
-    rect rgb(240, 255, 245)
-        Note over User,Ledger: Execution
-        User->>+Account: Execute Transaction
-        Account->>Account: Check Threshold
-        Account->>Ledger: Process Transfer
-        Ledger-->>Account: Confirm Transfer
-        Account-->>-User: Final Status
+    space
+    block:LEDGER
+      icp["ICP Ledger<br />Native Transfers"]
+      icrc["ICRC Ledger<br />Token Standards"]
     end
+    dashboard --> account
+    central --> account
+    account --> icp
+    account --> icrc
+    style account stroke:#00ffcc,stroke-width:2px
+    style dashboard stroke:#00ffcc,stroke-width:2px
+    style central stroke:#00ffcc,stroke-width:2px
 ```
 
-### Components
+## Components
 
-1. **Ledger Canister**
-   - Core DFINITY native ICP ledger integration
-   - Handles actual token transfers
-   - Manages balance tracking
+- **Dashboard Canister**: The main interface for users to interact with their multisignature wallets. Handles user management, transaction visualization, and approval workflows.
+- **Central Canister**: Manages wallet deployment and upgrades. Controls the lifecycle of account canisters.
+- **Account Canister**: The core multisignature implementation. Handles transaction proposals, approvals, and execution.
+- **Ledger Integration**: Native support for both ICP and ICRC token standards.
 
-2. **Dashboard Canister** (`dash`)
-   - User interface for wallet interaction
-   - Transaction proposal and monitoring
-   - Approval management interface
+## Build and Deploy
 
-3. **Account Canister**
-   - Core multisignature functionality
-   - Transaction proposal handling
-   - Approval tracking and threshold management
-   - Cross-chain adapter management
+### Requirements
 
-## Development Guide
+Please make sure you have the following installed:
 
-### Local Development Setup
+- [TypeScript Compiler (tsc)](https://www.typescriptlang.org/download/)
+- [Rust](https://www.rust-lang.org/tools/install)
+- [DFX](https://internetcomputer.org/docs/current/developer-docs/getting-started/install/#installing-dfx-via-dfxvm)
 
-1. Start the local Internet Computer replica:
+### Quick Start
+
+1. Clone and setup:
+   ```bash
+   git clone git@github.com:keygate-vault/multisignature.git
+   cd multisignature
+   npm install
+   ```
+
+2. Deploy locally:
    ```bash
    dfx start --clean --background
+   ./deployment.sh
    ```
 
-2. Deploy the canisters:
-   ```bash
-   dfx deploy
-   ```
+### Development Commands
 
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-
-### Testing
-
-Run the test suite:
+Test ICP transfers:
 ```bash
-dfx test
-npm test
+dfx ledger transfer <vault_account_id> --amount 100 --memo 1 --network local --identity minter --fee 0
 ```
 
-## Usage Examples
-
-### Managing Wallets
-
-1. Create a new wallet:
-   ```bash
-   dfx canister call account_canister deploy_account '(record { name = "My Wallet" })'
-   ```
-
-2. Add a signer:
-   ```bash
-   dfx canister call account_canister add_signer '(principal "<PRINCIPAL_ID>")'
-   ```
-
-3. Set approval threshold:
-   ```bash
-   dfx canister call account_canister set_threshold '(2)'
-   ```
-
-### Transaction Management
-
-#### ICRC1 Token Operations
-
-Send ICRC1 tokens to a vault:
+Test ICRC1 operations:
 ```bash
+# Transfer
 dfx canister call icrc1_ledger_canister icrc1_transfer '(
   record {
     from_subaccount = null;
@@ -158,10 +97,8 @@ dfx canister call icrc1_ledger_canister icrc1_transfer '(
     created_at_time = null;
   }
 )'
-```
 
-Check ICRC1 balance:
-```bash
+# Check balance
 dfx canister call icrc1_ledger_canister icrc1_balance_of '(
   record {
     owner = principal "avqkn-guaaa-aaaaa-qaaea-cai";
@@ -170,25 +107,30 @@ dfx canister call icrc1_ledger_canister icrc1_balance_of '(
 )'
 ```
 
-#### ICP Operations
+## Security Features
 
-Send ICP to a vault:
-```bash
-dfx ledger transfer <vault_account_id> --amount 100 --memo 1 --network local --identity minter --fee 0
-```
+- Multi-layer approval system
+- Customizable transaction thresholds
+- Secure canister architecture
+- Comprehensive transaction logging
+- Identity-based access control
 
-## Security Considerations
+## Roadmap
 
-- Always verify transaction details before approval
-- Keep private keys secure and never share them
-- Regularly audit the list of approved signers
-- Test threshold changes with small transactions first
-- Monitor transaction logs for suspicious activity
+- [x] Basic multisignature functionality
+- [x] ICP and ICRC1 support
+- [X] Ethereum L1 and L2 support
+- [ ] Additional blockchain integrations
+- [ ] Advanced approval workflows
+- [ ] Hardware wallet support
+- [ ] Mobile application
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/AmazingFeature`
-3. Commit your changes: `git commit -m 'Add AmazingFeature'`
-4. Push to the branch: `git push origin feature/AmazingFeature`
-5. Open a Pull Request
+This project is currently in beta and welcomes contributions. Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+
+## Show your support
+
+If you find this project valuable, please give it a star ⭐️
+
+Your support motivates us to continue improving the platform and bringing institutional-grade security to digital asset management.
