@@ -1,4 +1,4 @@
-> This project is **still in Beta**. We are happy to answer questions if they are raised as issues in this github repo.
+> This project is **still in Alpha**. We are happy to answer questions if they are raised as issues in this github repo.
 
 [![Internet Computer portal](https://img.shields.io/badge/InternetComputer-grey?logo=internet%20computer&style=for-the-badge)](https://internetcomputer.org)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?logo=apache&style=for-the-badge)](LICENSE)
