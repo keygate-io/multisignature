@@ -20,13 +20,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Needed for full git history if dfx requires it
+        fetch-depth: 0
 
     - name: Install DFX
       uses: dfinity/setup-dfx@main
+
+    - name: Start DFX
+      run: dfx start --background
+
+    - name: Create canisters
+      run: |
+        dfx identity new default --force
+        dfx canister create --all
 
     - name: Generate wasm artifacts
       run: dfx build
 
     - name: Run tests
       run: cargo test --verbose
+
+    - name: Stop DFX
+      if: always()  # Run even if previous steps fail
+      run: dfx stop
