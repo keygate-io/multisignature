@@ -37,9 +37,11 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
       - name: Build with mdBook
-        run: cd docs && mdbook build
+        working-directory: ./docs
+        run: mdbook build
       - name: Add CNAME file
-        run: echo "docs.keygate.io" > docs/book/CNAME
+        working-directory: ./docs/book
+        run: echo "docs.keygate.io" > CNAME
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
