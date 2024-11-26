@@ -31,11 +31,11 @@ jobs:
     - name: Setup DFX identity
       run: |
         mkdir -p ~/.config/dfx/identity/default
-        echo '-----BEGIN EC PRIVATE KEY-----
-        MHQCAQEEICJxApEbuZznKFpV+VKAXI5llcJnF6V4kqPTL3dGQNKDoAcGBSuBBAAK
-        oUQDQgAELXtf4OHoFAwf9HK0IHgmKNLmS4p/2FxEfY/g6ZSwMDxu7mLbsxidH5Dq
-        hvAHHRD+n5KkX0Ny9xIB29tEHYxDPQ==
-        -----END EC PRIVATE KEY-----' > ~/.config/dfx/identity/default/identity.pem
+        echo '-----BEGIN PRIVATE KEY-----
+        MFMCAQEwBQYDK2VwBCIEIJ5MV1cHWxGG+tR3QbO7t+MhiWx7TzRLvX1Q9pFHFcAN
+        oSMDIQCDuaUeEk4R5y3eBHyBNzHGeKafyC3cK1Wd+kY5T4OsRg==
+        -----END PRIVATE KEY-----' > ~/.config/dfx/identity/default/identity.pem
+        chmod 600 ~/.config/dfx/identity/default/identity.pem
 
     - name: Create canisters
       run: dfx canister create --all
