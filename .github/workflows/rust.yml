@@ -1,0 +1,32 @@
+name: Rust
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/account/**'
+      - 'src/central/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/account/**'
+      - 'src/central/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Needed for full git history if dfx requires it
+
+    - name: Install DFX
+      uses: dfinity/setup-dfx@main
+
+    - name: Generate wasm artifacts
+      run: dfx build
+
+    - name: Run tests
+      run: cargo test --verbose
