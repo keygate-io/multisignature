@@ -31,10 +31,8 @@ jobs:
     - name: Setup DFX identity
       run: |
         mkdir -p ~/.config/dfx/identity/default
-        echo '-----BEGIN PRIVATE KEY-----
-        MFMCAQEwBQYDK2VwBCIEIJ5MV1cHWxGG+tR3QbO7t+MhiWx7TzRLvX1Q9pFHFcAN
-        oSMDIQCDuaUeEk4R5y3eBHyBNzHGeKafyC3cK1Wd+kY5T4OsRg==
-        -----END PRIVATE KEY-----' > ~/.config/dfx/identity/default/identity.pem
+        # Generate Ed25519 private key
+        openssl genpkey -algorithm Ed25519 -out ~/.config/dfx/identity/default/identity.pem
         chmod 600 ~/.config/dfx/identity/default/identity.pem
 
     - name: Create canisters
