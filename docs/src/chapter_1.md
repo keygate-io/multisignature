@@ -1,1 +1,2 @@
-# Chapter 1
+# Smart Accounts Should Be Cross-Chain
+
