@@ -1,5 +1,5 @@
 import { Principal } from "@dfinity/principal";
-import { central } from "../../../declarations/central";
+import { central } from "../../../declarations/central/index.js";
 
 export interface UserInfo {
   first_name: string;

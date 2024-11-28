@@ -8,10 +8,10 @@ import React, {
 } from "react";
 import { Principal } from "@dfinity/principal";
 import { AccountIdentifier } from "@dfinity/ledger-icp";
-import { DEFAULT_SUBACCOUNT } from "../util/constants";
+import { DEFAULT_SUBACCOUNT } from "../util/constants.js";
 import { useParams } from "react-router-dom";
-import { useInternetIdentity } from "../hooks/use-internet-identity";
-import { balanceOf } from "../api/ledger";
+import { useInternetIdentity } from "../hooks/use-internet-identity/index.js";
+import { balanceOf } from "../api/ledger.js";
 
 interface VaultDetail {
   id: Principal;

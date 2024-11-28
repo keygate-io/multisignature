@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import AccountPageLayout from "../../../VaultPageLayout";
+import AccountPageLayout from "../../../VaultPageLayout.js";
 import {
   Box,
   Typography,
@@ -14,11 +14,11 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Buffer } from "buffer";
-import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
-import { getTokenSymbol, getTokenDecimals } from "../../../../api/icrc";
+import { useInternetIdentity } from "../../../../hooks/use-internet-identity/index.js";
+import { getTokenSymbol, getTokenDecimals } from "../../../../api/icrc.js";
 import { Principal } from "@dfinity/principal";
-import { extractTokenData } from "../../../../util/token";
-import { formatCommaSeparated, icpToE8s } from "../../../../util/units";
+import { extractTokenData } from "../../../../util/token.js";
+import { formatCommaSeparated, icpToE8s } from "../../../../util/units.js";
 import {
   CKETH_CANISTER_ID,
   CKBTC_CANISTER_ID,
@@ -26,16 +26,16 @@ import {
   ICP_DECIMALS,
   TOKEN_URN_TO_SYMBOL,
   MOCK_ICRC1_CANISTER,
-} from "../../../../util/constants";
-import { useVaultDetail } from "../../../../contexts/VaultDetailContext";
+} from "../../../../util/constants.js";
+import { useVaultDetail } from "../../../../contexts/VaultDetailContext.js";
 import { useNavigate } from "react-router-dom";
-import { TransactionRequest } from "../../../../../../declarations/account/account.did";
+import { TransactionRequest } from "../../../../../../declarations/account/account.did.js";
 import {
   executeTransaction,
   proposeTransaction,
   getThreshold,
-} from "../../../../api/account";
-import ConfirmationView from "./ConfirmationView";
+} from "../../../../api/account.js";
+import ConfirmationView from "./ConfirmationView.js";
 
 if (typeof window !== "undefined") {
   window.Buffer = Buffer;

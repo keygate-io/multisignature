@@ -1,14 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect } from "react";
 import { type ReactNode, useState } from "react";
-import type { InternetIdentityContextType } from "./context.type";
+import type { InternetIdentityContextType } from "./context.type.js";
 import {
   AuthClient,
   type AuthClientCreateOptions,
   type AuthClientLoginOptions,
 } from "@dfinity/auth-client";
-import type { State } from "./state.type";
-import type { LoginOptions } from "./login-options.type";
+import type { State } from "./state.type.js";
+import type { LoginOptions } from "./login-options.type.js";
 
 /**
  * React context for managing the login state and the Internet Identity.
@@ -200,5 +200,5 @@ export function InternetIdentityProvider({
   );
 }
 
-export * from "./context.type";
-export * from "./login-options.type";
+export * from "./context.type.js";
+export * from "./login-options.type.js";

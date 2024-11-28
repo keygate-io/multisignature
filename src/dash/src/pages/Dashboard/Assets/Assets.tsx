@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AccountPageLayout from "../../VaultPageLayout";
+import AccountPageLayout from "../../VaultPageLayout.js";
 import {
   Box,
   Typography,
@@ -17,24 +17,24 @@ import {
   Tooltip,
 } from "@mui/material";
 import { VisibilityOff, ContentCopy } from "@mui/icons-material";
-import { getBalance, getIcrcAccount, pubkeyBytesToAddress } from "../../../api/account";
-import { useInternetIdentity } from "../../../hooks/use-internet-identity";
+import { getBalance, getIcrcAccount, pubkeyBytesToAddress } from "../../../api/account.js";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity/index.js";
 import { Principal } from "@dfinity/principal";
 import {
   getTokenBalance,
   getTokenDecimals,
   getTokenSymbol,
-} from "../../../api/icrc";
-import { formatIcp, formatIcrc } from "../../../util/units";
+} from "../../../api/icrc.js";
+import { formatIcp, formatIcrc } from "../../../util/units.js";
 import {
   CKETH_CANISTER_ID,
   CKUSDC_CANISTER_ID,
   ICP_DECIMALS,
   CKBTC_CANISTER_ID,
   MOCK_ICRC1_CANISTER,
-} from "../../../util/constants";
-import { useVaultDetail } from "../../../contexts/VaultDetailContext";
-import { ICRC1_LEDGER_CANISTER_ID } from "../../../util/config";
+} from "../../../util/constants.js";
+import { useVaultDetail } from "../../../contexts/VaultDetailContext.js";
+import { ICRC1_LEDGER_CANISTER_ID } from "../../../util/config.js";
 
 interface Asset {
   name: string;

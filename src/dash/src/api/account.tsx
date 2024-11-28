@@ -1,15 +1,17 @@
 import { Principal } from "@dfinity/principal";
 import { Identity } from "@dfinity/agent";
-import { createActor as createCentralActor } from "../../../declarations/central";
-import { createActor as createAccountActor } from "../../../declarations/account";
+import { createActor as createCentralActor } from "../../../declarations/central/index.js";
+import { createActor as createAccountActor } from "../../../declarations/account/index.js";
 import {
   IntentStatus,
   ProposedTransaction,
   ProposeTransactionArgs,
   TransactionRequest,
-} from "../../../declarations/account/account.did";
-import { Vault } from "../../../declarations/central/central.did";
-import { Result } from "../../../declarations/account/account.did";
+} from "../../../declarations/account/account.did.js";
+import { Vault } from "../../../declarations/central/central.did.js";
+import { Result } from "../../../declarations/account/account.did.js";
+import { idlFactory as targetIdlFactory } from "../../../declarations/central/central.did.js"
+import { idlFactory as nonTargetIdlFactory } from "../../../declarations/account/account.did.js"
 
 // Create maps to cache the actors
 const centralActorMap = new Map<

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useInternetIdentity } from "../../../hooks/use-internet-identity";
-import { deployAccount } from "../../../api/account";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity/index.js";
+import { deployAccount } from "../../../api/account.js";
 import {
   Box,
   Button,
@@ -114,7 +114,7 @@ const CreateAccount: React.FC = () => {
 
       console.log(identity);
 
-      deployAccount(identity!, accountName).then(async (id) => {
+      deployAccount(identity!, accountName).then(async (id: any) => {
         setSnackbar({ open: false, message: "", severity: "info" });
         navigate("/vaults");
       });

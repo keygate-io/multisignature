@@ -1,4 +1,4 @@
-import { ICP_DECIMALS } from "./constants";
+import { ICP_DECIMALS } from "./constants.js";
 
 export const formatIcp = (value: bigint) => {
   return (value / BigInt(10 ** ICP_DECIMALS)).toLocaleString("en-US", {

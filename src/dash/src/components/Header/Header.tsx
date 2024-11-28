@@ -8,9 +8,9 @@ import {
   Chip,
   capitalize,
 } from "@mui/material";
-import LogoutIcon from "@mui/icons-material/Logout";
+import { Logout } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useInternetIdentity } from "../../hooks/use-internet-identity";
+import { useInternetIdentity } from "../../hooks/use-internet-identity/index.js";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ const Header: React.FC = () => {
               onClick={handleLogout}
               aria-label="logout"
             >
-              <LogoutIcon />
+              <Logout />
             </IconButton>
           )}
         </Box>

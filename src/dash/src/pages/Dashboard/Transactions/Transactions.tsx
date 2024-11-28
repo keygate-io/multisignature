@@ -21,22 +21,22 @@ import {
   CheckCircle as ApprovedIcon,
   Cancel as RejectedIcon,
 } from "@mui/icons-material";
-import AccountPageLayout from "../../VaultPageLayout";
+import AccountPageLayout from "../../VaultPageLayout.js";
 import {
   TransactionRequest,
   IntentStatus,
   Transaction,
   ProposedTransaction,
-} from "../../../../../declarations/account/account.did";
-import { useInternetIdentity } from "../../../hooks/use-internet-identity";
-import { useVaultDetail } from "../../../contexts/VaultDetailContext";
-import { TOKEN_URN_TO_SYMBOL } from "../../../util/constants";
+} from "../../../../../declarations/account/account.did.js";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity/index.js";
+import { useVaultDetail } from "../../../contexts/VaultDetailContext.js";
+import { TOKEN_URN_TO_SYMBOL } from "../../../util/constants.js";
 import {
   getTransactions,
   getProposedTransactions,
   getThreshold,
-} from "../../../api/account";
-import { E8sToIcp } from "../../../util/units";
+} from "../../../api/account.js";
+import { E8sToIcp } from "../../../util/units.js";
 import { Principal } from "@dfinity/principal";
 
 const Transactions: React.FC = () => {

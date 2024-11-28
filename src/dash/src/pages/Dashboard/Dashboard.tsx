@@ -8,11 +8,11 @@ import {
   Slider, createStyles
 } from "@mui/material";
 import { ContentCopy } from "@mui/icons-material";
-import AccountPageLayout from "../VaultPageLayout";
-import { useVaultDetail } from "../../contexts/VaultDetailContext";
-import { useInternetIdentity } from "../../hooks/use-internet-identity";
-import { formatIcp } from "../../util/units";
-import { getThreshold, getSigners } from "../../api/account";
+import AccountPageLayout from "../VaultPageLayout.js";
+import { useVaultDetail } from "../../contexts/VaultDetailContext.js";
+import { useInternetIdentity } from "../../hooks/use-internet-identity/index.js";
+import { formatIcp } from "../../util/units.js";
+import { getThreshold, getSigners } from "../../api/account.js";
 
 const Dashboard = () => {
   const { isLoading, error, nativeBalance, nativeAccountId, vaultCanisterId } = useVaultDetail();
@@ -36,11 +36,11 @@ const Dashboard = () => {
   useEffect(() => {
     setApprovalsLoading(true);
     if (!vaultCanisterId || !identity) { return; }
-    getThreshold(vaultCanisterId, identity!).then((threshold) => {
+    getThreshold(vaultCanisterId, identity!).then((threshold: any) => {
       setRequiredApprovals(Number(threshold));
       setCurrentApproval(Number(threshold));
     });
-    getSigners(vaultCanisterId, identity!).then((signers) => {
+    getSigners(vaultCanisterId, identity!).then((signers: any) => {
       setTotalApprovals(signers.length);
     })
     setApprovalsLoading(false);

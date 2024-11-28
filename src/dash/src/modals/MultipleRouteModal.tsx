@@ -100,7 +100,7 @@ const MultipleRouteModal: React.FC<MultipleRouteModalProps> = ({
           {modalOptions.map((option) => (
             <ListItem
               key={option.key}
-              button
+              component="button"
               onClick={() => onOptionSelect(option.key)}
               sx={{
                 borderRadius: 1,

@@ -15,7 +15,7 @@ import {
   getTokenTotalSupply,
   getTokenMetadata,
   getTokenFee,
-} from "../../../api/icrc";
+} from "../../../api/icrc.js";
 
 const style = {
   position: "absolute",

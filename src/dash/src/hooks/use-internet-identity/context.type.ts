@@ -1,5 +1,5 @@
 import type { Identity } from "@dfinity/agent";
-import type { LoginStatus } from "./state.type";
+import type { LoginStatus } from "./state.type.js";
 
 export type InternetIdentityContextType = {
   /** Is set to `true` on mount until a stored identity is loaded from local storage or

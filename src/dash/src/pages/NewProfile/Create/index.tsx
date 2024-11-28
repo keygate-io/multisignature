@@ -12,8 +12,8 @@ import {
   LinearProgress,
   Grid,
 } from "@mui/material";
-import { useInternetIdentity } from "../../../hooks/use-internet-identity";
-import { registerUser } from "../../../api/users";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity/index.js";
+import { registerUser } from "../../../api/users.js";
 
 const CreateProfile: React.FC = () => {
   const [firstName, setFirstName] = useState("");

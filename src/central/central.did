@@ -13,6 +13,15 @@ type VaultInitArgs = record {
     name: text;
 };
 
+type SupportedStandard = record {
+    url: text;
+    name: text;
+};
+
+type Icrc28TrustedOriginsResponse = record {
+    trusted_origins: vec text;
+};
+
 service : {
     deploy_account : (VaultInitArgs) -> (principal);
     get_user : (principal) -> (opt UserInfo) query;
@@ -23,4 +32,6 @@ service : {
     user_exists : (principal) -> (bool) query;
     upgrade_account : (principal) -> (variant { Ok : null; Err : text });
     load_wallet_wasm_blob : (blob) -> ();
+    icrc10_supported_standards : () -> (vec SupportedStandard) query;
+    icrc28_trusted_origins : () -> (Icrc28TrustedOriginsResponse);
 }

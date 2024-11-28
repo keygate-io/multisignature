@@ -21,8 +21,8 @@ import {
   SettingsOutlined,
 } from "@mui/icons-material";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import MultipleRouteModal from "../modals/MultipleRouteModal";
-import { useVaultDetail } from "../contexts/VaultDetailContext";
+import MultipleRouteModal from "../modals/MultipleRouteModal.js";
+import { useVaultDetail } from "../contexts/VaultDetailContext.js";
 
 interface MenuItemType {
   text: string;
@@ -82,8 +82,8 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
 
   const renderMenuItem = (item: MenuItemType) => (
     <ListItem
-      button
       key={item.text}
+      component='button'
       sx={{
         borderRadius: 1,
         backgroundColor:

@@ -2,8 +2,8 @@ import { Principal } from "@dfinity/principal";
 import {
   createActor,
   icrc1_ledger_canister,
-} from "../../../declarations/icrc1_ledger_canister";
-import { Subaccount } from "../../../declarations/icrc1_ledger_canister/icrc1_ledger_canister.did";
+} from "../../../declarations/icrc1_ledger_canister/index.js";
+import { Subaccount } from "../../../declarations/icrc1_ledger_canister/icrc1_ledger_canister.did.js";
 
 // create a map of the principal_id to the actor
 const actorMap = new Map<Principal, ReturnType<typeof createActor>>();

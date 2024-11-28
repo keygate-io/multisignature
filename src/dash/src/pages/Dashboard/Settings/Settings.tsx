@@ -24,12 +24,12 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
-import ThresholdModal from "./modal/ThresholdModal";
-import AccountPageLayout from "../../VaultPageLayout";
-import { useInternetIdentity } from "../../../hooks/use-internet-identity";
-import { useVaultDetail } from "../../../contexts/VaultDetailContext";
+import ThresholdModal from "./modal/ThresholdModal.js";
+import AccountPageLayout from "../../VaultPageLayout.js";
+import { useInternetIdentity } from "../../../hooks/use-internet-identity/index.js";
+import { useVaultDetail } from "../../../contexts/VaultDetailContext.js";
 import { Principal } from "@dfinity/principal";
-import { getThreshold, getSigners, setThreshold, addSigner } from "../../../api/account";
+import { getThreshold, getSigners, setThreshold, addSigner } from "../../../api/account.js";
 
 const Settings: React.FC = () => {
   const { vaultCanisterId } = useVaultDetail();

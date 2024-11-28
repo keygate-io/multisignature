@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useInternetIdentity } from "../../hooks/use-internet-identity";
+import { useInternetIdentity } from "../../hooks/use-internet-identity/index.js";
 import {
   Box,
   Typography,
@@ -12,9 +12,10 @@ import {
   createTheme,
   CssBaseline,
 } from "@mui/material";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import TelegramIcon from "@mui/icons-material/Telegram";
+import { InfoOutlined } from "@mui/icons-material";
+import TelegramIcon from "@mui/icons-material";
 import { DiscordOutlined } from "@ant-design/icons";
+import { ConnectWallet, ConnectWalletButtonProps } from "@nfid/identitykit/react";
 
 const theme = createTheme({
   palette: {
@@ -66,6 +67,31 @@ const Home = () => {
     },
   ];
 
+  function ConnectWalletButton({ onClick, ...props }: ConnectWalletButtonProps) {
+    return (
+      <Button
+        variant="contained"
+        onClick={onClick}
+        size="large"
+        color="primary"
+        sx={{
+          py: 1.5,
+          px: 4,
+          fontSize: "1.1rem",
+          fontWeight: "bold",
+          borderRadius: "8px",
+          textTransform: "none",
+          boxShadow: "0 4px 6px rgba(25, 118, 210, 0.25)",
+          "&:hover": {
+            boxShadow: "0 6px 8px rgba(25, 118, 210, 0.35)",
+          },
+        }}
+      >
+        Connect to Keygate
+      </Button>
+    )
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ mt: 2, mx: "auto", maxHeight: "100vh" }}>
@@ -96,7 +122,7 @@ const Home = () => {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <InfoOutlinedIcon sx={{ color: "#1976d2", fontSize: 20 }} />
+                  <InfoOutlined sx={{ color: "#1976d2", fontSize: 20 }} />
                   <Typography variant="body2" sx={{ color: "text.secondary" }}>
                     New to Keygate? Get some tokens (0.1 ICP) to try all
                     platform features!{" "}
@@ -185,7 +211,7 @@ const Home = () => {
                   gap: 2,
                 }}
               >
-                <Button
+                {/* <Button
                   variant="contained"
                   onClick={login}
                   size="large"
@@ -204,7 +230,8 @@ const Home = () => {
                   }}
                 >
                   Connect with Internet Identity
-                </Button>
+                </Button> */}
+                <ConnectWallet connectButtonComponent={ConnectWalletButton} />
               </Box>
             </Box>
           </Container>

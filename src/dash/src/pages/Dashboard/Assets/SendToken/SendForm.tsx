@@ -10,10 +10,10 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
-import { useInternetIdentity } from "../../../../hooks/use-internet-identity";
+import { useInternetIdentity } from "../../../../hooks/use-internet-identity/index.js";
 import { useParams } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
-import { TOKEN_URN_TO_SYMBOL } from "../../../../util/constants";
+import { TOKEN_URN_TO_SYMBOL } from "../../../../util/constants.js";
 
 interface SendFormProps {
   recipient: string;
