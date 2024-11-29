@@ -47,6 +47,7 @@ jobs:
        mkdir -p .dfx/local/canisters/landing && \
        curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
        curl -o .dfx/local/canisters/landing/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
+       curl -o .dfx/local/canisters/icrc1_ledger_canister/icrc1_ledger_canister.did https://raw.githubusercontent.com/dfinity/ic/d87954601e4b22972899e9957e800406a0a6b929/rs/rosetta-api/icrc1/ledger/ledger.did
    - name: Generate wasm artifacts
      run: |
        find . -name "ledger.did"
