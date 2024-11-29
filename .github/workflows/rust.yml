@@ -1,4 +1,4 @@
-iname: Rust testing using PocketIC
+name: Rust testing using PocketIC
 on:
   push:
     branches: [ "main" ]
