@@ -28,12 +28,17 @@ jobs:
     - name: Start DFX
       run: dfx start --background
 
-    - name: Setup DFX identity
+    # - name: Setup DFX identity
+    #   run: |
+    #     mkdir -p ~/.config/dfx/identity/default
+    #     # Generate Ed25519 private key
+    #     openssl genpkey -algorithm Ed25519 -out ~/.config/dfx/identity/default/identity.pem
+    #     chmod 600 ~/.config/dfx/identity/default/identity.pem
+
+    - name: Create deployer identity
       run: |
-        mkdir -p ~/.config/dfx/identity/default
-        # Generate Ed25519 private key
-        openssl genpkey -algorithm Ed25519 -out ~/.config/dfx/identity/default/identity.pem
-        chmod 600 ~/.config/dfx/identity/default/identity.pem
+        dfx identity new deployer
+        dfx identity use deployer
 
     - name: Create canisters
       run: dfx canister create --all
