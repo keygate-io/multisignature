@@ -25,7 +25,7 @@ jobs:
     - name: Install DFX
       uses: dfinity/setup-dfx@main
       with:
-        dfx-version: '0.20.1'
+        dfx-version: '0.24.0'
 
     - name: Start DFX
       run: dfx start --background
