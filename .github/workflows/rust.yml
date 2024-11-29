@@ -1,80 +1,64 @@
 name: Rust testing using PocketIC
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'src/account/**'
-      - 'src/central/**'
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'src/account/**'
-      - 'src/central/**'
-
+ push:
+   branches: [ "main" ]
+   paths:
+     - 'src/account/**'
+     - 'src/central/**'
+ pull_request:
+   branches: [ "main" ]
+   paths:
+     - 'src/account/**'
+     - 'src/central/**'
 env:
-  CARGO_TERM_COLOR: always
-
+ CARGO_TERM_COLOR: always
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Install DFX
-      uses: dfinity/setup-dfx@main
-      with:
-        dfx-version: '0.24.0'
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Install dependencies
-      run: |
-        npm install
-
-    - name: Start DFX
-      run: dfx start --background
-
-    # - name: Setup DFX identity
-    #   run: |
-    #     mkdir -p ~/.config/dfx/identity/default
-    #     # Generate Ed25519 private key
-    #     openssl genpkey -algorithm Ed25519 -out ~/.config/dfx/identity/default/identity.pem
-    #     chmod 600 ~/.config/dfx/identity/default/identity.pem
-
-    - name: Setup deployer identity and create canisters
-      run: |
-        mkdir -p ~/.config/dfx/identity/default
-        echo "${{ secrets.DFX_IDENTITY_DEPLOYER }}" > ~/.config/dfx/identity/default/identity.pem
-        chmod 600 ~/.config/dfx/identity/default/identity.pem
-        cat ~/.config/dfx/identity/default/identity.pem
-        dfx canister create --all -v
-
-    - name: Workaround - download assetstorage.did
-      run: |
-        mkdir -p .dfx/local/canisters/dash && \
-        curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
-
-    - name: Generate wasm artifacts
-      run: |
-        dfx build --check
-        find . -name "ledger.did"
-        dfx build internet_identity
-        dfx build ledger
-        dfx build landing
-        dfx build icrc1_ledger_canister
-        dfx build dash
-        dfx build account
-        dfx build central
-        dfx build evm_rpc
-
-    - name: Run tests
-      run: cargo test --verbose
-
-    - name: Stop DFX
-      if: always()
-      run: dfx stop
+ build:
+   runs-on: ubuntu-latest
+   steps:
+   - uses: actions/checkout@v4
+     with:
+       fetch-depth: 0
+   - name: Install DFX
+     uses: dfinity/setup-dfx@main
+     with:
+       dfx-version: '0.24.0'
+   - name: Install PocketIC server
+     uses: dfinity/pocketic@main
+   - name: Setup Node.js
+     uses: actions/setup-node@v4
+     with:
+       node-version: '20'
+   - name: Install dependencies
+     run: |
+       npm install
+   - name: Start DFX
+     run: dfx start --background
+   - name: Setup deployer identity and create canisters
+     run: |
+       mkdir -p ~/.config/dfx/identity/default
+       echo "${{ secrets.DFX_IDENTITY_DEPLOYER }}" > ~/.config/dfx/identity/default/identity.pem
+       chmod 600 ~/.config/dfx/identity/default/identity.pem
+       cat ~/.config/dfx/identity/default/identity.pem
+       dfx canister create --all -v
+   - name: Workaround - download assetstorage.did
+     run: |
+       mkdir -p .dfx/local/canisters/dash && \
+       curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
+   - name: Generate wasm artifacts
+     run: |
+       dfx build --check
+       find . -name "ledger.did"
+       dfx build internet_identity
+       dfx build ledger
+       dfx build landing
+       dfx build icrc1_ledger_canister
+       dfx build dash
+       dfx build account
+       dfx build central
+       dfx build evm_rpc
+   - name: Run tests
+     run: cargo test --verbose
+   - name: Stop DFX
+     if: always()
+     run: dfx stop
