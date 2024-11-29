@@ -35,14 +35,12 @@ jobs:
     #     openssl genpkey -algorithm Ed25519 -out ~/.config/dfx/identity/default/identity.pem
     #     chmod 600 ~/.config/dfx/identity/default/identity.pem
 
-    - name: Setup deployer identity
+    - name: Setup deployer identity and create canisters
       run: |
         mkdir -p ~/.config/dfx/identity/default
         echo "${{ secrets.DFX_IDENTITY_DEPLOYER }}" | base64 -d > ~/.config/dfx/identity/default/identity.pem
         chmod 600 ~/.config/dfx/identity/default/identity.pem
-
-    - name: Create canisters
-      run: dfx canister create --all
+        dfx canister create --all
 
     - name: Generate wasm artifacts
       run: dfx build
