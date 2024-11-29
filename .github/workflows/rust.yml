@@ -27,6 +27,16 @@ jobs:
       with:
         dfx-version: '0.24.0'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        npm install
+        npm i -D @types/node vite @types/vite
+
     - name: Start DFX
       run: dfx start --background
 
