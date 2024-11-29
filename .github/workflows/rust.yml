@@ -74,7 +74,7 @@ jobs:
        dfx build account
        dfx build central
        dfx build evm_rpc
-   - name: Run tests
+   - name: Run tests 
      run: cargo test --verbose
    - name: Stop DFX
      if: always()
