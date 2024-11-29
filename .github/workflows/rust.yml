@@ -45,6 +45,7 @@ jobs:
 
     - name: Generate wasm artifacts
       run: |
+        find . -name "ledger.did"
         dfx generate
         dfx build internet_identity
         dfx build ledger
