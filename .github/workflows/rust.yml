@@ -37,8 +37,8 @@ jobs:
 
     - name: Create deployer identity
       run: |
-        dfx identity new deployer
-        dfx identity use deployer
+        dfx identity new deployer --yes
+        dfx identity use deployer --yes
 
     - name: Create canisters
       run: dfx canister create --all
