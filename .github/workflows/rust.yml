@@ -19,6 +19,15 @@ jobs:
    - uses: actions/checkout@v4
      with:
        fetch-depth: 0
+
+   - name: Install PocketIC
+     run: |
+       curl -L https://github.com/dfinity/pocketic/releases/download/6.0.0/pocket-ic-x86_64-linux.gz -o pocket-ic.gz
+       gunzip pocket-ic.gz
+       chmod +x pocket-ic
+       cp pocket-ic src/account/
+       cp pocket-ic src/central/
+
    - name: Cache cargo and dfx
      uses: actions/cache@v3
      with:
@@ -27,25 +36,33 @@ jobs:
          ~/.cache/dfinity/versions
          ./.dfx
          ./target
+         ./src/account/pocket-ic
+         ./src/central/pocket-ic
        key: ${{ runner.os }}-cargo-dfx-${{ hashFiles('**/Cargo.lock') }}
+
    - name: Install DFX
      uses: dfinity/setup-dfx@main
      with:
        dfx-version: '0.24.0'
+
    - name: Setup Node.js
      uses: actions/setup-node@v4
      with:
        node-version: '20'
+
    - name: Cache node modules
      uses: actions/cache@v3
      with:
        path: ~/.npm
        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
    - name: Install dependencies
      run: |
        npm install
+
    - name: Start DFX
      run: dfx start --background
+
    - name: Setup deployer identity and create canisters
      run: |
        mkdir -p ~/.config/dfx/identity/default
@@ -53,6 +70,7 @@ jobs:
        chmod 600 ~/.config/dfx/identity/default/identity.pem
        cat ~/.config/dfx/identity/default/identity.pem  
        dfx canister create --all -v
+
    - name: Workaround - download assetstorage.did
      run: |
        mkdir -p .dfx/local/canisters/dash && \
@@ -63,6 +81,7 @@ jobs:
        curl -o .dfx/local/canisters/landing/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
        curl -o .dfx/local/canisters/icrc1_ledger_canister/icrc1_ledger_canister.did https://raw.githubusercontent.com/dfinity/ic/d87954601e4b22972899e9957e800406a0a6b929/rs/rosetta-api/icrc1/ledger/ledger.did
        curl -o .dfx/local/canisters/evm_rpc/evm_rpc.did https://github.com/internet-computer-protocol/evm-rpc-canister/releases/latest/download/evm_rpc.did
+
    - name: Generate wasm artifacts
      run: |
        find . -name "ledger.did"
@@ -74,8 +93,10 @@ jobs:
        dfx build account
        dfx build central
        dfx build evm_rpc
+
    - name: Run tests 
      run: cargo test --verbose
+
    - name: Stop DFX
      if: always()
      run: dfx stop
