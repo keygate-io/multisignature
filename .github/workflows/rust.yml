@@ -19,6 +19,13 @@ jobs:
    - uses: actions/checkout@v4
      with:
        fetch-depth: 0
+   - name: Cache cargo and dfx
+     uses: actions/cache@v3
+     with:
+       path: |
+         ~/.cargo
+         ~/.cache/dfinity/versions
+       key: ${{ runner.os }}-cargo-dfx-${{ hashFiles('**/Cargo.lock') }}
    - name: Install DFX
      uses: dfinity/setup-dfx@main
      with:
@@ -29,6 +36,11 @@ jobs:
      uses: actions/setup-node@v4
      with:
        node-version: '20'
+   - name: Cache node modules
+     uses: actions/cache@v3
+     with:
+       path: ~/.npm
+       key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
    - name: Install dependencies
      run: |
        npm install
@@ -39,12 +51,13 @@ jobs:
        mkdir -p ~/.config/dfx/identity/default
        echo "${{ secrets.DFX_IDENTITY_DEPLOYER }}" > ~/.config/dfx/identity/default/identity.pem
        chmod 600 ~/.config/dfx/identity/default/identity.pem
-       cat ~/.config/dfx/identity/default/identity.pem
+       cat ~/.config/dfx/identity/default/identity.pem  
        dfx canister create --all -v
    - name: Workaround - download assetstorage.did
      run: |
        mkdir -p .dfx/local/canisters/dash && \
        mkdir -p .dfx/local/canisters/landing && \
+       mkdir -p .dfx/local/canisters/icrc1_ledger_canister && \
        curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
        curl -o .dfx/local/canisters/landing/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
        curl -o .dfx/local/canisters/icrc1_ledger_canister/icrc1_ledger_canister.did https://raw.githubusercontent.com/dfinity/ic/d87954601e4b22972899e9957e800406a0a6b929/rs/rosetta-api/icrc1/ledger/ledger.did
@@ -53,7 +66,7 @@ jobs:
        find . -name "ledger.did"
        dfx build internet_identity
        dfx build ledger
-       dfx build landing
+       dfx build landing  
        dfx build icrc1_ledger_canister
        dfx build dash
        dfx build account
