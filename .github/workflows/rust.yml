@@ -45,6 +45,7 @@ jobs:
 
     - name: Generate wasm artifacts
       run: |
+        dfx generate
         dfx build internet_identity
         dfx build ledger
         dfx build landing
