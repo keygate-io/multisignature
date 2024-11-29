@@ -1,4 +1,4 @@
-name: Rust
+name: Rust testing using PocketIC
 on:
   push:
     branches: [ "main" ]
@@ -46,8 +46,8 @@ jobs:
     - name: Generate wasm artifacts
       run: |
         dfx build internet_identity
-        dfx build landing
         dfx build ledger
+        dfx build landing
         dfx build icrc1_ledger_canister
         dfx build dash
         dfx build account
