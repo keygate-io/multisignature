@@ -44,7 +44,15 @@ jobs:
         dfx canister create --all -v
 
     - name: Generate wasm artifacts
-      run: dfx build
+      run: |
+        dfx build internet_identity
+        dfx build landing
+        dfx build ledger
+        dfx build icrc1_ledger_canister
+        dfx build dash
+        dfx build account
+        dfx build central
+        dfx build evm_rpc
 
     - name: Run tests
       run: cargo test --verbose
