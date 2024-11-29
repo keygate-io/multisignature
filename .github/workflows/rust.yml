@@ -25,6 +25,8 @@ jobs:
        path: |
          ~/.cargo
          ~/.cache/dfinity/versions
+         ./.dfx
+         ./target
        key: ${{ runner.os }}-cargo-dfx-${{ hashFiles('**/Cargo.lock') }}
    - name: Install DFX
      uses: dfinity/setup-dfx@main
@@ -32,6 +34,8 @@ jobs:
        dfx-version: '0.24.0'
    - name: Install PocketIC server
      uses: dfinity/pocketic@main
+     with: 
+        pocket-ic-server-version: "7.0.0"
    - name: Setup Node.js
      uses: actions/setup-node@v4
      with:
