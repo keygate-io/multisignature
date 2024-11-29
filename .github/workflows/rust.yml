@@ -49,7 +49,6 @@ jobs:
        curl -o .dfx/local/canisters/landing/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
    - name: Generate wasm artifacts
      run: |
-       dfx build --check
        find . -name "ledger.did"
        dfx build internet_identity
        dfx build ledger
