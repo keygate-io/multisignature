@@ -45,6 +45,11 @@ jobs:
         cat ~/.config/dfx/identity/default/identity.pem
         dfx canister create --all -v
 
+    - name: Workaround - download assetstorage.did
+      run: |
+        mkdir -p .dfx/local/canisters/dash && \
+        curl -o .dfx/local/canisters/dash/assetstorage.did https://raw.githubusercontent.com/jamesbeadle/OpenFPL/4ae9346d84233654a6856b8d05defa4df8a66346/candid/assetstorage.did
+
     - name: Generate wasm artifacts
       run: |
         dfx build --check
