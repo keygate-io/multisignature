@@ -40,7 +40,7 @@ jobs:
         mkdir -p ~/.config/dfx/identity/default
         echo "${{ secrets.DFX_IDENTITY_DEPLOYER }}" | base64 -d > ~/.config/dfx/identity/default/identity.pem
         chmod 600 ~/.config/dfx/identity/default/identity.pem
-        dfx canister create --all
+        dfx canister create --all -v
 
     - name: Generate wasm artifacts
       run: dfx build
