@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::format, io::Write};
+use std::{error::Error, io::Write};
 
 use candid::{encode_one, Decode, Principal};
 use ed25519_dalek::SigningKey;
@@ -215,9 +215,9 @@ fn deploy_account_should_not_return_error_if_user_not_registered() {
         caller,
         "deploy_account",
         encode_one(
-            (VaultInitArgs {
+            VaultInitArgs {
                 name: "Funding".to_string(),
-            }),
+            },
         )
         .unwrap(),
     );
@@ -361,9 +361,9 @@ fn deploy_account_should_add_to_vaults() {
         caller,
         "deploy_account",
         encode_one(
-            (VaultInitArgs {
+            VaultInitArgs {
                 name: "Funding".to_string(),
-            }),
+            },
         )
         .unwrap(),
     );
@@ -412,9 +412,9 @@ fn deploy_account_should_save_vault_name() {
         caller,
         "deploy_account",
         encode_one(
-            (VaultInitArgs {
+            VaultInitArgs {
                 name: mock_name.clone(),
-            }),
+            },
         )
         .unwrap(),
     );
@@ -471,9 +471,9 @@ fn state_should_persist_as_stable_memory() {
         caller,
         "deploy_account",
         encode_one(
-            (VaultInitArgs {
+            VaultInitArgs {
                 name: "Funding".to_string(),
-            }),
+            },
         )
         .unwrap(),
     );
