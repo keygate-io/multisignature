@@ -1,5 +1,6 @@
 mod deployer;
 mod types;
+mod repository;
 
 #[cfg(test)]
 mod tests;

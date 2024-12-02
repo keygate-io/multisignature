@@ -1,10 +1,21 @@
+use std::cell::RefCell;
+
+use candid::Principal;
+use ic_stable_structures::{memory_manager::VirtualMemory, StableBTreeMap, DefaultMemoryImpl};
+
+use crate::{types::{UserInfo, Vault}, MEMORY_MANAGER, USERS_MEMORY, VAULTS_MEMORY};
+
 pub struct UserRepository;
 
 
 thread_local! {
     static USER_DB: RefCell<StableBTreeMap<Principal, UserInfo, VirtualMemory<DefaultMemoryImpl>>> = 
         RefCell::new(StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(USER_MEMORY_ID))
+            MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEMORY))
+        ));
+    static VAULT_DB: RefCell<StableBTreeMap<Principal, Principal, VirtualMemory<DefaultMemoryImpl>>> = 
+        RefCell::new(StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
         ));
 }
 
@@ -58,7 +69,7 @@ impl UserRepository {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod user_tests {
     use super::*;
     use candid::Principal;
 
