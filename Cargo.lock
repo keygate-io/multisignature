@@ -1965,6 +1965,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "integration"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "crc32fast",
+ "ed25519-dalek",
+ "ic-cdk 0.15.1",
+ "ic-cdk-macros 0.15.0",
+ "ic-ledger-types",
+ "ic-stable-structures",
+ "icrc-ledger-types",
+ "libflate",
+ "pocket-ic",
+ "rand",
+ "serde",
+ "serde_bytes",
+ "sha2",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

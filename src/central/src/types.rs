@@ -6,12 +6,12 @@ use ic_stable_structures::{
 };
 use serde::Serialize;
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct UserInfo {
     pub vaults: Vec<Vault>,
 }
 
-#[derive(Clone, CandidType, Deserialize, Serialize, Debug)]
+#[derive(Clone, CandidType, Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct Vault {
     pub name: String,
     pub id: Principal,
