@@ -16,3 +16,14 @@ pub fn minter_test_id() -> Principal {
     bytes.push(0x01); // marker for opaque ids
     Principal::from_slice(&bytes)
 }
+
+
+pub fn generate_principal() -> Principal {
+    use ed25519_dalek::SigningKey;
+    use rand::rngs::OsRng;
+
+    let mut csprng = OsRng;
+    let signing_key = SigningKey::generate(&mut csprng);
+    let verifying_key = signing_key.verifying_key();
+    Principal::self_authenticating(&verifying_key.as_bytes())
+}

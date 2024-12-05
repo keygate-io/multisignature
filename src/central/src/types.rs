@@ -8,7 +8,7 @@ use serde::Serialize;
 
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct UserInfo {
-    pub vaults: Vec<Vault>,
+    pub name: String,  // Added for completeness
 }
 
 #[derive(Clone, CandidType, Deserialize, Serialize, Debug, PartialEq, Eq)]

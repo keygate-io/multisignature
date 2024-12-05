@@ -1,5 +1,5 @@
 mod deployer;
-mod types;
+pub mod types;
 mod repository;
 
 #[cfg(test)]
@@ -12,10 +12,12 @@ use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl, StableBTreeMap,
 };
+use repository::UserRepository;
 use types::{Memory, UserInfo, Vault, VaultInitArgs};
 
 const USERS_MEMORY: MemoryId = MemoryId::new(0);
 const VAULTS_MEMORY: MemoryId = MemoryId::new(1);
+const VAULT_NAMES_MEMORY: MemoryId = MemoryId::new(2);
 
 thread_local! {
     static WALLET_WASM: RefCell<Option<Vec<u8>>> = RefCell::default();
@@ -26,13 +28,6 @@ thread_local! {
     pub static STABLE_USERS: RefCell<StableBTreeMap<Principal, UserInfo, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEMORY))
-        )
-    );
-
-    // Map from vault canister id to owner principal.
-    pub static STABLE_VAULTS: RefCell<StableBTreeMap<Principal, Principal, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
         )
     );
 }
@@ -56,7 +51,7 @@ fn register_user() {
         if users.contains_key(&principal) {
             ic_cdk::trap(&format!("User with principal {} already exists", principal));
         }
-        users.insert(principal, UserInfo { vaults: vec![] });
+        users.insert(principal, UserInfo { name: "".to_string() });
     });
 }
 
@@ -70,12 +65,15 @@ fn get_vault_by_id(vault_id: Principal) -> Option<Vault> {
 
     let user_info = STABLE_USERS.with(|users| users.borrow().get(&owner.unwrap()));
 
+    let repository = UserRepository::default();
+
+    let vault = repository.get_vault_by_id(&owner.unwrap()).unwrap();
+
     match user_info {
-        Some(user) => user
-            .vaults
-            .iter()
-            .find(|vault| vault.id == vault_id)
-            .cloned(),
+        Some(user) => Some(Vault {
+            id: vault_id,
+            name: vault.name,
+        }),
         None => None,
     }
 }
@@ -109,9 +107,6 @@ fn user_exists(principal: Principal) -> bool {
     STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
 }
 
-/**
- * TODO: Add vault name to init args of the vault canister.
- */
 #[ic_cdk::update]
 async fn deploy_account(args: VaultInitArgs) -> Principal {
     let owner_principal = ic_cdk::caller();
@@ -127,30 +122,8 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
 
     match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
-            STABLE_VAULTS.with(|vaults| {
-                let mut vaults = vaults.borrow_mut();
-                vaults.insert(canister_id, owner_principal);
-            });
-
-            STABLE_USERS.with(|users| {
-                let mut users = users.borrow_mut();
-                let user = users.get(&owner_principal);
-
-                match user {
-                    Some(user) => {
-                        let mut user = user.clone();
-                        user.vaults.push(Vault {
-                            id: canister_id,
-                            name: args.name,
-                        });
-                        users.insert(owner_principal, user);
-                    }
-                    None => ic_cdk::trap(&format!(
-                        "User with principal {} not found",
-                        owner_principal
-                    )),
-                }
-            });
+            let repository = UserRepository::default();
+            repository.create_vault(canister_id, args.name, owner_principal);
 
             canister_id
         }
@@ -188,24 +161,15 @@ fn get_user() -> Option<UserInfo> {
 }
 
 #[ic_cdk::query]
-fn get_user_vaults() -> Vec<Vault> {
+async fn get_user_vaults() -> Vec<Vault> {
     let owner_principal = ic_cdk::caller();
 
     if !user_exists(owner_principal) {
         return vec![];
     }
 
-    let mut user_vaults = vec![];
-
-    STABLE_USERS.with(|users| {
-        let users = users.borrow();
-        let user = users.get(&owner_principal);
-
-        match user {
-            Some(user) => user_vaults = user.vaults.clone(),
-            None => user_vaults = vec![],
-        }
-    });
+    let repository = UserRepository::default();
+    let user_vaults = repository.get_vaults_by_owner(&owner_principal);
 
     user_vaults
 }
