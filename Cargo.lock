@@ -1969,6 +1969,7 @@ name = "integration"
 version = "0.1.0"
 dependencies = [
  "candid",
+ "central",
  "crc32fast",
  "ed25519-dalek",
  "ic-cdk 0.15.1",

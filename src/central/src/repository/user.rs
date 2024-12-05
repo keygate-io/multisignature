@@ -1,21 +1,25 @@
 use std::cell::RefCell;
-
 use candid::Principal;
 use ic_stable_structures::{memory_manager::VirtualMemory, StableBTreeMap, DefaultMemoryImpl};
-
-use crate::{types::{UserInfo, Vault}, MEMORY_MANAGER, USERS_MEMORY, VAULTS_MEMORY};
+use crate::types::{UserInfo, Vault};
+use crate::{MEMORY_MANAGER, USERS_MEMORY, VAULTS_MEMORY, VAULT_NAMES_MEMORY};
 
 pub struct UserRepository;
-
 
 thread_local! {
     static USER_DB: RefCell<StableBTreeMap<Principal, UserInfo, VirtualMemory<DefaultMemoryImpl>>> = 
         RefCell::new(StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEMORY))
         ));
-    static VAULT_DB: RefCell<StableBTreeMap<Principal, Principal, VirtualMemory<DefaultMemoryImpl>>> = 
+    
+    static VAULT_OWNERS_DB: RefCell<StableBTreeMap<Principal, Principal, VirtualMemory<DefaultMemoryImpl>>> = 
         RefCell::new(StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(VAULTS_MEMORY))
+        ));
+
+    static VAULT_NAMES_DB: RefCell<StableBTreeMap<Principal, String, VirtualMemory<DefaultMemoryImpl>>> = 
+        RefCell::new(StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(VAULT_NAMES_MEMORY))
         ));
 }
 
@@ -26,6 +30,7 @@ impl Default for UserRepository {
 }
 
 impl UserRepository {
+
     pub fn insert_user(&self, principal: Principal, user_info: UserInfo) -> Option<UserInfo> {
         USER_DB.with(|users| users.borrow_mut().insert(principal, user_info))
     }
@@ -38,57 +43,67 @@ impl UserRepository {
         USER_DB.with(|users| users.borrow().contains_key(principal))
     }
 
-    pub fn insert_vault(&self, vault_id: Principal, owner: Principal) {
-        VAULT_DB.with(|vaults| vaults.borrow_mut().insert(vault_id, owner));
+    pub fn create_vault(&self, vault_id: Principal, name: String, owner: Principal) -> Result<(), String> {
+        if !self.user_exists(&owner) {
+            return Err("Owner does not exist".to_string());
+        }
+
+        VAULT_OWNERS_DB.with(|vaults| {
+            if vaults.borrow().contains_key(&vault_id) {
+                return Err("Vault already exists".to_string());
+            }
+            vaults.borrow_mut().insert(vault_id, owner);
+            Ok(())
+        })?;
+
+        VAULT_NAMES_DB.with(|names| {
+            names.borrow_mut().insert(vault_id, name);
+            Ok(())
+        })
     }
 
     pub fn get_vault_owner(&self, vault_id: &Principal) -> Option<Principal> {
-        VAULT_DB.with(|vaults| vaults.borrow().get(vault_id))
+        VAULT_OWNERS_DB.with(|vaults| vaults.borrow().get(vault_id))
     }
 
-    pub fn get_vault_by_id(&self, vault_id: Principal) -> Option<Vault> {
-        let owner = self.get_vault_owner(&vault_id)?;
-        let user_info = self.get_user(&owner)?;
+    pub fn get_vault_by_id(&self, vault_id: &Principal) -> Option<Vault> {
+        let name = VAULT_NAMES_DB.with(|names| names.borrow().get(&vault_id))?;
         
-        user_info.vaults.iter()
-            .find(|vault| vault.id == vault_id)
-            .cloned()
+        Some(Vault {
+            name,
+            id: vault_id.clone(),
+        })
     }
 
-    pub fn add_vault_to_user(&self, owner: Principal, vault: Vault) -> Result<(), String> {
-        USER_DB.with(|users| {
-            let mut users = users.borrow_mut();
-            let mut user_info = users.get(&owner)
-                .ok_or_else(|| format!("User with principal {} not found", owner))?;
-            
-            user_info.vaults.push(vault);
-            users.insert(owner, user_info);
-            Ok(())
-        })
+    pub fn get_user_vaults(&self, owner: &Principal) -> Vec<Vault> {
+        // This would be replaced with actual get_signers() implementation
+        let all_vaults = VAULT_OWNERS_DB.with(|vaults| {
+            let vaults = vaults.borrow();
+            vaults.iter()
+                .filter(|(_, vault_owner)| vault_owner == owner)
+                .map(|(vault_id, _)| vault_id)
+                .collect::<Vec<_>>()
+        });
+
+        all_vaults.into_iter()
+            .filter_map(|vault_id| self.get_vault_by_id(&vault_id))
+            .collect()
     }
 }
 
 #[cfg(test)]
 pub mod user_tests {
     use super::*;
-    use candid::Principal;
 
     fn create_test_principal(id: u8) -> Principal {
         Principal::from_slice(&[id; 29])
     }
 
-    fn create_test_vault(name: &str, id: u8) -> Vault {
-        Vault {
-            name: name.to_string(),
-            id: create_test_principal(id),
-        }
-    }
-
     #[test]
-    fn test_user_insert_and_get() {
+    fn test_user_operations() {
         let repo = UserRepository::default();
         let principal = create_test_principal(1);
-        let user_info = UserInfo { vaults: vec![] };
+        let user_info = UserInfo { name: "Test User".to_string() };
 
         assert!(!repo.user_exists(&principal));
         repo.insert_user(principal, user_info.clone());
@@ -98,79 +113,74 @@ pub mod user_tests {
     }
 
     #[test]
-    fn test_vault_operations() {
+    fn test_vault_creation() {
         let repo = UserRepository::default();
         let owner = create_test_principal(1);
         let vault_id = create_test_principal(2);
         
-        repo.insert_vault(vault_id, owner);
-        assert_eq!(repo.get_vault_owner(&vault_id), Some(owner));
-    }
+        // Create user first
+        repo.insert_user(owner, UserInfo { name: "Test User".to_string() });
 
-    #[test]
-    fn test_add_vault_to_user() {
-        let repo = UserRepository::default();
-        let owner = create_test_principal(1);
-        let user_info = UserInfo { vaults: vec![] };
-        repo.insert_user(owner, user_info);
-
-        let vault = create_test_vault("Test Vault", 2);
-        let result = repo.add_vault_to_user(owner, vault.clone());
+        // Create vault
+        let result = repo.create_vault(vault_id, "Test Vault".to_string(), owner);
         assert!(result.is_ok());
 
-        let updated_user = repo.get_user(&owner).unwrap();
-        assert_eq!(updated_user.vaults.len(), 1);
-        assert_eq!(updated_user.vaults[0], vault);
+        // Verify vault information
+        assert_eq!(repo.get_vault_owner(&vault_id), Some(owner));
+        let vault = repo.get_vault_by_id(&vault_id).unwrap();
+        assert_eq!(vault.name, "Test Vault");
+        assert_eq!(vault.id, vault_id);
     }
 
     #[test]
-    fn test_add_vault_to_nonexistent_user() {
+    fn test_create_vault_for_nonexistent_user() {
         let repo = UserRepository::default();
         let owner = create_test_principal(1);
-        let vault = create_test_vault("Test Vault", 2);
+        let vault_id = create_test_principal(2);
 
-        let result = repo.add_vault_to_user(owner, vault);
+        let result = repo.create_vault(vault_id, "Test Vault".to_string(), owner);
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_get_vault_by_id() {
+    fn test_get_user_vaults() {
         let repo = UserRepository::default();
         let owner = create_test_principal(1);
-        let vault = create_test_vault("Test Vault", 2);
-        
-        repo.insert_user(owner, UserInfo { vaults: vec![] });
-        repo.insert_vault(vault.id, owner);
-        repo.add_vault_to_user(owner, vault.clone()).unwrap();
+        repo.insert_user(owner, UserInfo { name: "Test User".to_string() });
 
-        assert_eq!(repo.get_vault_by_id(vault.id), Some(vault));
+        let vault1_id = create_test_principal(2);
+        let vault2_id = create_test_principal(3);
+
+        repo.create_vault(vault1_id, "Vault 1".to_string(), owner).unwrap();
+        repo.create_vault(vault2_id, "Vault 2".to_string(), owner).unwrap();
+
+        let user_vaults = repo.get_user_vaults(&owner);
+        assert_eq!(user_vaults.len(), 2);
+        assert!(user_vaults.iter().any(|v| v.id == vault1_id && v.name == "Vault 1"));
+        assert!(user_vaults.iter().any(|v| v.id == vault2_id && v.name == "Vault 2"));
     }
 
     #[test]
-    fn test_get_nonexistent_vault() {
+    fn test_multiple_users_with_vaults() {
         let repo = UserRepository::default();
-        let vault_id = create_test_principal(1);
+        let owner1 = create_test_principal(1);
+        let owner2 = create_test_principal(2);
 
-        assert_eq!(repo.get_vault_by_id(vault_id), None);
-    }
+        repo.insert_user(owner1, UserInfo { name: "User 1".to_string() });
+        repo.insert_user(owner2, UserInfo { name: "User 2".to_string() });
 
-    #[test]
-    fn test_multiple_vaults_per_user() {
-        let repo = UserRepository::default();
-        let owner = create_test_principal(1);
-        repo.insert_user(owner, UserInfo { vaults: vec![] });
+        let vault1_id = create_test_principal(3);
+        let vault2_id = create_test_principal(4);
 
-        let vault1 = create_test_vault("Vault 1", 2);
-        let vault2 = create_test_vault("Vault 2", 3);
+        repo.create_vault(vault1_id, "Vault 1".to_string(), owner1).unwrap();
+        repo.create_vault(vault2_id, "Vault 2".to_string(), owner2).unwrap();
 
-        repo.insert_vault(vault1.id, owner);
-        repo.insert_vault(vault2.id, owner);
-        repo.add_vault_to_user(owner, vault1.clone()).unwrap();
-        repo.add_vault_to_user(owner, vault2.clone()).unwrap();
+        let user1_vaults = repo.get_user_vaults(&owner1);
+        let user2_vaults = repo.get_user_vaults(&owner2);
 
-        let user = repo.get_user(&owner).unwrap();
-        assert_eq!(user.vaults.len(), 2);
-        assert!(user.vaults.contains(&vault1));
-        assert!(user.vaults.contains(&vault2));
+        assert_eq!(user1_vaults.len(), 1);
+        assert_eq!(user2_vaults.len(), 1);
+        assert_eq!(user1_vaults[0].id, vault1_id);
+        assert_eq!(user2_vaults[0].id, vault2_id);
     }
 }

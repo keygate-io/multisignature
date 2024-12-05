@@ -3,7 +3,7 @@ use std::{env, path::Path, time::{Duration, SystemTime}};
 use candid::Principal;
 use pocket_ic::{PocketIc, PocketIcBuilder};
 
-use crate::{utils::{controller_test_id, minter_test_id, NNS_ROOT_CANISTER_ID}, TestEnv};
+use crate::{utils::{controller_test_id, minter_test_id, NNS_ROOT_CANISTER_ID}, CanisterIds, TestEnv};
 
 
 #[derive(Clone)]
@@ -20,6 +20,23 @@ impl Default for SetupConfig {
             fallback_controller: Some(NNS_ROOT_CANISTER_ID),
             start_cycles: None,
         }
+    }
+}
+
+pub fn install_canisters(pic: &PocketIc) -> CanisterIds {
+    let central_id = pic.create_canister();
+    pic.add_cycles(central_id, 2_000_000_000_000);
+    let wasm_module = include_bytes!("../../../target/wasm32-unknown-unknown/release/central.wasm").to_vec();
+    pic.install_canister(central_id, wasm_module, Vec::new(), None);
+    
+    let account_id = pic.create_canister();
+    pic.add_cycles(account_id, 2_000_000_000_000);
+    let account_wasm = include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    pic.install_canister(account_id, account_wasm, Vec::new(), None);
+
+    CanisterIds {
+        central: central_id,
+        account: account_id,
     }
 }
 
@@ -42,28 +59,19 @@ pub fn setup_new_env_with_config(config: SetupConfig) -> TestEnv {
         ", &path);
     }
 
+    println!("Building PocketIC environment");
     let mut env = PocketIcBuilder::new()
-        .with_nns_subnet()
         .with_ii_subnet()
-        .with_fiduciary_subnet()
+        .with_nns_subnet()
         .with_application_subnet()
         .build();
 
-    // If we set the time to SystemTime::now, and then progress pocketIC a couple ticks
-    // and then enter live mode, we would crash the deterministic state machine, as the
-    // live mode would set the time back to the current time.
-    // Therefore, if we want to use live mode, we need to start the tests with the time
-    // set to the past.
-    env.set_time(SystemTime::now() - Duration::from_secs(24 * 60 * 60));
-    let controller = controller_test_id();
-    let minter = minter_test_id();
-    let canister_ids = install_canisters(&mut env, config, controller, minter);
+    println!("Installing canisters");
+    let canister_ids = install_canisters(&mut env);
 
     TestEnv {
         env,
         canister_ids,
-        controller,
-        minter,
     }
 }
 
