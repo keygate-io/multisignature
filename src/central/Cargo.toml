@@ -18,6 +18,7 @@ icrc-ledger-types = "0.1.5"
 ic-ledger-types = "0.10.0"
 crc32fast = "1.4.0"
 sha2 = "0.10.8"
+tokio = "1.42.0"
 
 [dev-dependencies]
 ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }

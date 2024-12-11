@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use candid::Principal;
+use ic_cdk::api::call::CallResult;
 use ic_stable_structures::{memory_manager::VirtualMemory, StableBTreeMap, DefaultMemoryImpl};
 use crate::types::{UserInfo, Vault};
 use crate::{MEMORY_MANAGER, USERS_MEMORY, VAULTS_MEMORY, VAULT_NAMES_MEMORY};
@@ -75,19 +76,30 @@ impl UserRepository {
         })
     }
 
-    pub fn get_user_vaults(&self, owner: &Principal) -> Vec<Vault> {
-        // This would be replaced with actual get_signers() implementation
-        let all_vaults = VAULT_OWNERS_DB.with(|vaults| {
-            let vaults = vaults.borrow();
-            vaults.iter()
-                .filter(|(_, vault_owner)| vault_owner == owner)
-                .map(|(vault_id, _)| vault_id)
-                .collect::<Vec<_>>()
-        });
+    /// Get all vaults for a user
+    /// Note: This function only works when called from within a canister, as it uses ic_cdk::call 
+    /// which is not available outside the Internet Computer runtime environment
+    pub async fn get_user_vaults(&self, owner: &Principal) -> Vec<Vault> {
+        let all_vaults: Vec<Principal> = VAULT_OWNERS_DB.with(|vaults| vaults.borrow().iter().map(|(k, _)| k).collect());
 
-        all_vaults.into_iter()
-            .filter_map(|vault_id| self.get_vault_by_id(&vault_id))
-            .collect()
+        let mut user_vaults = Vec::new();
+        for vault_id in all_vaults {
+            let signers: CallResult<(Vec<Principal>,)> =
+                ic_cdk::call(vault_id, "get_signers", ()).await;
+
+            match signers {
+                Ok(signers) => {
+                    if signers.0.contains(&owner) {
+                        user_vaults.push(self.get_vault_by_id(&vault_id).unwrap());
+                    }
+                }
+                Err(e) => {
+                    ic_cdk::trap(&e.1);
+                }
+            }
+        }
+
+        user_vaults
     }
 }
 
@@ -140,47 +152,5 @@ pub mod user_tests {
 
         let result = repo.create_vault(vault_id, "Test Vault".to_string(), owner);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_get_user_vaults() {
-        let repo = UserRepository::default();
-        let owner = create_test_principal(1);
-        repo.insert_user(owner, UserInfo { name: "Test User".to_string() });
-
-        let vault1_id = create_test_principal(2);
-        let vault2_id = create_test_principal(3);
-
-        repo.create_vault(vault1_id, "Vault 1".to_string(), owner).unwrap();
-        repo.create_vault(vault2_id, "Vault 2".to_string(), owner).unwrap();
-
-        let user_vaults = repo.get_user_vaults(&owner);
-        assert_eq!(user_vaults.len(), 2);
-        assert!(user_vaults.iter().any(|v| v.id == vault1_id && v.name == "Vault 1"));
-        assert!(user_vaults.iter().any(|v| v.id == vault2_id && v.name == "Vault 2"));
-    }
-
-    #[test]
-    fn test_multiple_users_with_vaults() {
-        let repo = UserRepository::default();
-        let owner1 = create_test_principal(1);
-        let owner2 = create_test_principal(2);
-
-        repo.insert_user(owner1, UserInfo { name: "User 1".to_string() });
-        repo.insert_user(owner2, UserInfo { name: "User 2".to_string() });
-
-        let vault1_id = create_test_principal(3);
-        let vault2_id = create_test_principal(4);
-
-        repo.create_vault(vault1_id, "Vault 1".to_string(), owner1).unwrap();
-        repo.create_vault(vault2_id, "Vault 2".to_string(), owner2).unwrap();
-
-        let user1_vaults = repo.get_user_vaults(&owner1);
-        let user2_vaults = repo.get_user_vaults(&owner2);
-
-        assert_eq!(user1_vaults.len(), 1);
-        assert_eq!(user2_vaults.len(), 1);
-        assert_eq!(user1_vaults[0].id, vault1_id);
-        assert_eq!(user2_vaults[0].id, vault2_id);
     }
 }
