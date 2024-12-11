@@ -24,12 +24,6 @@ thread_local! {
 
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-
-    pub static STABLE_USERS: RefCell<StableBTreeMap<Principal, UserInfo, Memory>> = RefCell::new(
-        StableBTreeMap::init(
-            MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEMORY))
-        )
-    );
 }
 
 #[ic_cdk::query]
@@ -46,45 +40,40 @@ fn init() {
 fn register_user() {
     let principal = ic_cdk::caller();
 
-    STABLE_USERS.with(|users| {
-        let mut users = users.borrow_mut();
-        if users.contains_key(&principal) {
-            ic_cdk::trap(&format!("User with principal {} already exists", principal));
-        }
-        users.insert(principal, UserInfo { name: "".to_string() });
-    });
+    let repository = UserRepository::default();
+    if repository.user_exists(&principal) {
+        return;
+    }
+
+    repository.insert_user(principal, UserInfo { name: "N/A".to_string() });
 }
 
 #[ic_cdk::query]
 fn get_vault_by_id(vault_id: Principal) -> Option<Vault> {
-    let owner = STABLE_VAULTS.with(|vaults| vaults.borrow().get(&vault_id));
+    let repository = UserRepository::default();
+    let vault = repository.get_vault_by_id(&vault_id);
 
-    if owner.is_none() {
+    if vault.is_none() {
         return None;
     }
 
-    let user_info = STABLE_USERS.with(|users| users.borrow().get(&owner.unwrap()));
-
-    let repository = UserRepository::default();
-
-    let vault = repository.get_vault_by_id(&owner.unwrap()).unwrap();
-
-    match user_info {
-        Some(user) => Some(Vault {
-            id: vault_id,
-            name: vault.name,
-        }),
-        None => None,
-    }
+    Some(vault.unwrap())
 }
 
 #[ic_cdk::update]
 async fn upgrade_account(canister_id: Principal) -> Result<(), String> {
     let owner_principal = ic_cdk::caller();
 
-    let canister_owner = STABLE_VAULTS.with(|vaults| vaults.borrow().get(&canister_id));
+    let repository = UserRepository::default();
+    let vault = repository.get_vault_by_id(&canister_id);
 
-    if canister_owner != Some(owner_principal) {
+    if vault.is_none() {
+        return Err(format!("Vault with id {} not found", canister_id));
+    }
+
+    let owner = repository.get_vault_owner(&canister_id);
+
+    if owner.is_none() || owner.unwrap() != owner_principal {
         return Err(format!(
             "Only the owner of the vault canister can upgrade it"
         ));
@@ -103,14 +92,11 @@ async fn upgrade_account(canister_id: Principal) -> Result<(), String> {
     }
 }
 
-fn user_exists(principal: Principal) -> bool {
-    STABLE_USERS.with(|users| users.borrow().contains_key(&principal))
-}
-
 #[ic_cdk::update]
 async fn deploy_account(args: VaultInitArgs) -> Principal {
     let owner_principal = ic_cdk::caller();
-    if !user_exists(owner_principal) {
+    let repository = UserRepository::default();
+    if !repository.user_exists(&owner_principal) {
         register_user();
     }
 
@@ -122,10 +108,12 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
 
     match deployer::deploy(wallet_wasm).await {
         Ok(canister_id) => {
-            let repository = UserRepository::default();
-            repository.create_vault(canister_id, args.name, owner_principal);
+            let result = repository.create_vault(canister_id, args.name, owner_principal);
 
-            canister_id
+            match result {
+                Ok(_) => canister_id,
+                Err(e) => ic_cdk::trap(&e),
+            }
         }
         Err(err) => ic_cdk::trap(&format!("Failed to deploy account: {}", err)),
     }
@@ -152,24 +140,25 @@ fn load_wallet_wasm_blob(wasm_blob: Vec<u8>) {
 #[ic_cdk::query]
 fn get_user() -> Option<UserInfo> {
     let principal = ic_cdk::caller();
+    let repository = UserRepository::default();
 
-    if !user_exists(principal) {
+    if !repository.user_exists(&principal) {
         ic_cdk::trap(&format!("User with principal {} not found", principal));
     }
 
-    STABLE_USERS.with(|users| users.borrow().get(&principal))
+    repository.get_user(&principal)
 }
 
 #[ic_cdk::query]
 async fn get_user_vaults() -> Vec<Vault> {
     let owner_principal = ic_cdk::caller();
+    let repository = UserRepository::default();
 
-    if !user_exists(owner_principal) {
+    if !repository.user_exists(&owner_principal) {
         return vec![];
     }
 
-    let repository = UserRepository::default();
-    let user_vaults = repository.get_vaults_by_owner(&owner_principal);
+    let user_vaults = repository.get_user_vaults(&owner_principal).await;
 
     user_vaults
 }

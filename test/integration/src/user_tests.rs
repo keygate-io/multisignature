@@ -1,5 +1,5 @@
 use candid::{encode_one, Principal};
-use central::types::VaultInitArgs;
+use central::types::{Vault, VaultInitArgs};
 use pocket_ic::{query_candid_as, update_candid_as, PocketIc};
 use crate::{setup::setup_new_env, utils::generate_principal, TestEnv};
 
@@ -33,6 +33,7 @@ fn test_user_linked_vaults() {
            name: "Funding".to_string(),
        },),
    ).unwrap();
+
    println!("Vault deployed with ID: {}", vault_id);
    
    assert!(true);
@@ -46,22 +47,27 @@ fn test_user_linked_vaults() {
        (bob,),
    ).unwrap();
 
-   // Check that Bob can see the vault in his list of linked vaults
-   let bob_vaults: Vec<Principal> = query_candid_as(
+   // Check that Alice can see the vault in her list of linked vaults 
+   let alice_vaults: (Vec<Vault>, ) = query_candid_as(
        &env,
        canister_ids.central,
-       bob,
-       "get_linked_vaults",
+       alice,
+       "get_user_vaults",
        (),
    ).unwrap();
 
-   // Check that Alice can see the vault in her list of linked vaults 
-   let alice_vaults: Vec<Principal> = query_candid_as(
+   assert!(alice_vaults.0.iter().any(|vault| vault.id == vault_id));
+
+   // Check that Bob can see the vault in his list of linked vaults
+   let bob_vaults: (Vec<Vault>, ) = query_candid_as(
        &env,
-       alice,
-       "get_linked_vaults",
+       canister_ids.central,
+       bob,
+       "get_user_vaults",
        (),
    ).unwrap();
+
+   assert!(bob_vaults.0.iter().any(|vault| vault.id == vault_id));
 
    println!("Test completed successfully");
 }
