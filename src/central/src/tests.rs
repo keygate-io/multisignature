@@ -319,7 +319,7 @@ fn user_vaults_should_be_empty_on_registration() {
         wasm_result.unwrap_err()
     );
 
-    let query_result = pic.query_call(
+    let query_result = pic.update_call(
         central_id,
         caller,
         "get_user_vaults",
@@ -368,7 +368,7 @@ fn deploy_account_should_add_to_vaults() {
         .unwrap(),
     );
 
-    let query_result = pic.query_call(
+    let query_result = pic.update_call(
         central_id,
         caller,
         "get_user_vaults",
@@ -429,7 +429,7 @@ fn deploy_account_should_save_vault_name() {
         }
     };
 
-    let query_result = pic.query_call(
+    let query_result = pic.update_call(
         central_id,
         caller,
         "get_user_vaults",
@@ -485,7 +485,7 @@ fn state_should_persist_as_stable_memory() {
 
     match upgrade_result {
         Ok(()) => {
-            let query_result = pic.query_call(
+            let query_result = pic.update_call(
                 central_id,
                 caller,
                 "get_user_vaults",

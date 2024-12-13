@@ -2,6 +2,11 @@ use b3_utils::{ledger::ICRCAccount, Subaccount};
 use candid::{encode_one, CandidType, Decode, Principal};
 use ic_ledger_types::{AccountIdentifier, Tokens};
 use icrc_ledger_types::icrc1::account::Account;
+use integration::setup::setup_new_env_with_config;
+use integration::setup::SetupConfig;
+use integration::types::NnsLedgerCanisterInitPayload;
+use integration::types::NnsLedgerCanisterUpgradePayload;
+use integration::TestEnv;
 #[cfg(test)]
 use pocket_ic::PocketIc;
 #[cfg(test)]
@@ -20,32 +25,6 @@ use crate::{
     IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork,
     TransactionRequest, TransactionType,
 };
-
-#[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
-pub struct NnsLedgerCanisterInitPayload {
-    pub minting_account: String,
-    pub icrc1_minting_account: Option<Account>,
-    pub initial_values: Vec<(String, Tokens)>,
-    pub max_message_size_bytes: Option<usize>,
-    pub transaction_window: Option<Duration>,
-    pub archive_options: Option<ArchiveOptions>,
-    pub send_whitelist: HashSet<Principal>,
-    pub transfer_fee: Option<Tokens>,
-    pub token_symbol: Option<String>,
-    pub token_name: Option<String>,
-    pub feature_flags: Option<FeatureFlags>,
-    pub maximum_number_of_accounts: Option<usize>,
-    pub accounts_overflow_trim_quantity: Option<usize>,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
-pub struct NnsLedgerCanisterUpgradePayload {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub icrc1_minting_account: Option<Account>,
-
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub feature_flags: Option<FeatureFlags>,
-}
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
@@ -94,72 +73,65 @@ fn gzip(blob: Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
 
 #[test]
 fn should_initialize_with_default_values() {
-    let pic = PocketIc::new();
+    println!("Starting initialization test");
+    
     let caller = generate_principal();
 
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
+    println!("Generated caller principal: {}", caller);
 
-    pic.add_cycles(account_id, 2_000_000_000_000);
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.query_call(account_id, caller, "get_signers", encode_one(()).unwrap());
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Query call failed: {}", reject_message);
-        }
-        pocket_ic::WasmResult::Reply(reply) => {
-            let signers = Decode!(&reply, Vec<Principal>);
-
-            // caller should be included in signers vector
-            match signers {
-                Ok(signers) => assert_eq!(signers, vec![caller]),
-                Err(e) => panic!("Error decoding signers: {}", e),
-            }
-        }
-    }
-
-    // check if supported blockchain adapters have icp:native:transfer
-    let wasm_result = pic.query_call(
-        account_id,
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    println!("Testing get_signers endpoint");
+    let wasm_result: (Vec<Principal>,) = query_candid_as(
+        &env,
+        canister_ids.account,
+        caller,
+        "get_signers",
+        (),
+    ).unwrap();
+    
+    // Verify caller is included in signers vector
+    assert_eq!(wasm_result.0, vec![caller]);
+    
+    println!("Testing get_supported_blockchain_adapters endpoint");
+    let wasm_result: (Vec<String>,) = query_candid_as(
+        &env,
+        canister_ids.account,
         caller,
         "get_supported_blockchain_adapters",
-        encode_one(()).unwrap(),
-    );
-
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Query call failed: {}", reject_message);
-        }
-        pocket_ic::WasmResult::Reply(reply) => {
-            let adapters = Decode!(&reply, Vec<String>);
-
-            match adapters {
-                Ok(adapters) => assert!(adapters.contains(&"icp:native:transfer".to_string())),
-                Err(e) => panic!("Error decoding adapters: {}", e),
-            }
-        }
-    }
+        (),
+    ).unwrap();
+    
+    // Verify icp:native:transfer is supported
+    assert!(wasm_result.0.contains(&"icp:native:transfer".to_string()));
+    
+    println!("Test completed successfully");
 }
+
 
 #[test]
 fn should_add_signer() {
-    let pic = PocketIc::new();
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
 
     let signer = generate_principal();
 
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.update_call(
+    let wasm_result = env.update_call(
         account_id,
         caller,
         "add_signer",
@@ -172,7 +144,7 @@ fn should_add_signer() {
         }
         pocket_ic::WasmResult::Reply(_) => {
             let wasm_result =
-                pic.query_call(account_id, caller, "get_signers", encode_one(()).unwrap());
+                env.query_call(account_id, caller, "get_signers", encode_one(()).unwrap());
             match wasm_result.unwrap() {
                 pocket_ic::WasmResult::Reject(reject_message) => {
                     panic!("Query call failed: {}", reject_message);
@@ -234,20 +206,26 @@ fn should_propose_transaction() {
 
 #[test]
 fn should_get_proposed_transaction() {
-    let pic = PocketIc::new();
+    println!("Starting should_get_proposed_transaction test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
-        &pic,
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Proposing new transaction");
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
         account_id,
         caller,
         "propose_transaction",
@@ -258,40 +236,48 @@ fn should_get_proposed_transaction() {
             amount: 100_000_000.0,
             transaction_type: TransactionType::Transfer,
         },),
-    )
-    .unwrap();
+    ).unwrap();
 
-    let proposed_transaction_2: (Option<ProposedTransaction>,) = query_candid_as(
-        &pic,
+    println!("Querying proposed transaction");
+    let (retrieved_transaction,): (Option<ProposedTransaction>,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_proposed_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    match proposed_transaction_2.0 {
-        Some(proposed_transaction_2) => assert_eq!(proposed_transaction.0, proposed_transaction_2),
+    println!("Verifying retrieved transaction matches proposed");
+    match retrieved_transaction {
+        Some(tx) => assert_eq!(proposed_transaction, tx),
         None => panic!("Proposed transaction not found"),
     }
+    
+    println!("Test completed successfully");
 }
 
 #[test]
 fn should_get_proposed_transactions() {
-    let pic = PocketIc::new();
+    println!("Starting should_get_proposed_transactions test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
-        &pic,
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Proposing new transaction");
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
         account_id,
         caller,
         "propose_transaction",
@@ -302,32 +288,46 @@ fn should_get_proposed_transactions() {
             amount: 100_000_000.0,
             transaction_type: TransactionType::Transfer,
         },),
-    )
-    .unwrap();
+    ).unwrap();
 
-    let proposed_transactions: (Vec<ProposedTransaction>,) =
-        query_candid_as(&pic, account_id, caller, "get_proposed_transactions", ()).unwrap();
+    println!("Querying all proposed transactions");
+    let (proposed_transactions,): (Vec<ProposedTransaction>,) = query_candid_as(
+        &env,
+        account_id,
+        caller,
+        "get_proposed_transactions",
+        (),
+    ).unwrap();
 
-    assert_eq!(proposed_transactions.0.len(), 1);
-    assert_eq!(proposed_transactions.0[0], proposed_transaction.0);
+    println!("Verifying transaction list");
+    assert_eq!(proposed_transactions.len(), 1, "Expected exactly one transaction");
+    assert_eq!(proposed_transactions[0], proposed_transaction, "Retrieved transaction should match proposed transaction");
+    
+    println!("Test completed successfully");
 }
 
 #[test]
 fn should_approve_transaction() {
-    let pic = PocketIc::new();
+    println!("Starting should_approve_transaction test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
-        &pic,
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Proposing new transaction");
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
         account_id,
         caller,
         "propose_transaction",
@@ -338,85 +338,87 @@ fn should_approve_transaction() {
             amount: 100_000_000.0,
             transaction_type: TransactionType::Transfer,
         },),
-    )
-    .unwrap();
+    ).unwrap();
 
+    println!("Generating additional signers");
     let signer_2 = generate_principal();
-
     let signer_3 = generate_principal();
 
-    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2,)).unwrap();
+    println!("Adding signers to account");
+    let _: () = update_candid_as(&env, account_id, caller, "add_signer", (signer_2,)).unwrap();
+    let _: () = update_candid_as(&env, account_id, caller, "add_signer", (signer_3,)).unwrap();
 
-    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3,)).unwrap();
-
-    let approve_result: () = update_candid_as(
-        &pic,
+    println!("First signer approving transaction");
+    let _: () = update_candid_as(
+        &env,
         account_id,
         signer_2,
         "approve_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    let proposed_transaction_2: (Option<ProposedTransaction>,) = query_candid_as(
-        &pic,
+    println!("Verifying first approval");
+    let (proposed_transaction_2,): (Option<ProposedTransaction>,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_proposed_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    match proposed_transaction_2.0 {
-        Some(proposed_transaction_2) => {
-            assert_eq!(proposed_transaction_2.signers, vec![caller, signer_2])
-        }
-        None => panic!("Proposed transaction not found"),
+    match proposed_transaction_2 {
+        Some(tx) => assert_eq!(tx.signers, vec![caller, signer_2], "Incorrect signers after first approval"),
+        None => panic!("Proposed transaction not found after first approval"),
     }
 
-    let approve_result_2: () = update_candid_as(
-        &pic,
+    println!("Second signer approving transaction");
+    let _: () = update_candid_as(
+        &env,
         account_id,
         signer_3,
         "approve_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    let proposed_transaction_3: (Option<ProposedTransaction>,) = query_candid_as(
-        &pic,
+    println!("Verifying second approval");
+    let (proposed_transaction_3,): (Option<ProposedTransaction>,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_proposed_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    match proposed_transaction_3.0 {
-        Some(proposed_transaction_3) => assert_eq!(
-            proposed_transaction_3.signers,
-            vec![caller, signer_2, signer_3]
-        ),
-        None => panic!("Proposed transaction not found"),
+    match proposed_transaction_3 {
+        Some(tx) => assert_eq!(tx.signers, vec![caller, signer_2, signer_3], "Incorrect signers after second approval"),
+        None => panic!("Proposed transaction not found after second approval"),
     }
+
+    println!("Test completed successfully");
 }
 
 #[test]
 fn should_reject_transaction() {
-    let pic = PocketIc::new();
+    println!("Starting should_reject_transaction test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
-        &pic,
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Proposing new transaction");
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
         account_id,
         caller,
         "propose_transaction",
@@ -427,131 +429,147 @@ fn should_reject_transaction() {
             amount: 100_000_000.0,
             transaction_type: TransactionType::Transfer,
         },),
-    )
-    .unwrap();
+    ).unwrap();
 
+    println!("Generating additional signers");
     let signer_2 = generate_principal();
     let signer_3 = generate_principal();
 
-    let r1: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2,)).unwrap();
-    let r2: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3,)).unwrap();
+    println!("Adding signers to account");
+    let _: () = update_candid_as(&env, account_id, caller, "add_signer", (signer_2,)).unwrap();
+    let _: () = update_candid_as(&env, account_id, caller, "add_signer", (signer_3,)).unwrap();
 
-    let reject_result: () = update_candid_as(
-        &pic,
+    println!("First signer rejecting transaction");
+    let _: () = update_candid_as(
+        &env,
         account_id,
         signer_2,
         "reject_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    let proposed_transaction_2: (Option<ProposedTransaction>,) = query_candid_as(
-        &pic,
+    println!("Verifying first rejection");
+    let (proposed_transaction_2,): (Option<ProposedTransaction>,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_proposed_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    match proposed_transaction_2.0 {
-        Some(proposed_transaction_2) => {
-            assert_eq!(proposed_transaction_2.rejections, vec![signer_2])
-        }
-        None => panic!("Proposed transaction not found"),
+    match proposed_transaction_2 {
+        Some(tx) => assert_eq!(tx.rejections, vec![signer_2], "Incorrect rejections after first rejection"),
+        None => panic!("Proposed transaction not found after first rejection"),
     }
 
-    let reject_result_2: () = update_candid_as(
-        &pic,
+    println!("Second signer rejecting transaction");
+    let _: () = update_candid_as(
+        &env,
         account_id,
         signer_3,
         "reject_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    let proposed_transaction_3: (Option<ProposedTransaction>,) = query_candid_as(
-        &pic,
+    println!("Verifying second rejection");
+    let (proposed_transaction_3,): (Option<ProposedTransaction>,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_proposed_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
+        (proposed_transaction.id,),
+    ).unwrap();
 
-    match proposed_transaction_3.0 {
-        Some(proposed_transaction_3) => {
-            assert_eq!(proposed_transaction_3.rejections, vec![signer_2, signer_3])
-        }
-        None => panic!("Proposed transaction not found"),
+    match proposed_transaction_3 {
+        Some(tx) => assert_eq!(tx.rejections, vec![signer_2, signer_3], "Incorrect rejections after second rejection"),
+        None => panic!("Proposed transaction not found after second rejection"),
     }
+
+    println!("Test completed successfully");
 }
 
 #[test]
 fn should_set_threshold() {
-    let pic = PocketIc::new();
+    println!("Starting should_set_threshold test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let result: () = update_candid_as(
-        &pic,
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Setting threshold value");
+    let _: () = update_candid_as(
+        &env,
         account_id,
         caller,
         "set_threshold",
-        (100_000_000 as u64,),
-    )
-    .unwrap();
+        (100_000_000_u64,),
+    ).unwrap();
 
-    let threshold: (u64,) = query_candid_as(&pic, account_id, caller, "get_threshold", ()).unwrap();
+    println!("Querying threshold value");
+    let (threshold,): (u64,) = query_candid_as(
+        &env,
+        account_id,
+        caller,
+        "get_threshold",
+        (),
+    ).unwrap();
 
-    assert_eq!(threshold.0, 100_000_000);
+    println!("Verifying threshold value");
+    assert_eq!(threshold, 100_000_000, "Threshold value does not match expected value");
+    
+    println!("Test completed successfully");
 }
 
 #[test]
 fn should_not_allow_tx_if_threshold_not_met() {
-    let pic = PocketIc::new();
+    println!("Starting should_not_allow_tx_if_threshold_not_met test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    // Create and set up the account canister
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    // Create and set up the ICRC ledger canister
-    let icrc_ledger = pic.create_canister_with_settings(Some(caller), None);
-    pic.add_cycles(icrc_ledger, 2_000_000_000_000);
-
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    println!("Creating and setting up ICRC ledger");
+    let icrc_ledger = env.create_canister_with_settings(Some(caller), None);
+    env.add_cycles(icrc_ledger, 2_000_000_000_000);
+    
     let icrc_wasm_module = include_bytes!("../../../mock_icrc1_wasm_build.gz").to_vec();
-
-    // Initialize ICRC ledger with tokens for the account canister
+    
+    println!("Initializing ICRC ledger with tokens");
     let mint_amount_u64: u128 = 1000_000_000_000;
     let icrc1_deploy_args = ICRC1Args::Init(ICRC1InitArgs {
         token_symbol: "MCK".to_string(),
         token_name: "Mock Token".to_string(),
-        minting_account: Account {
-            owner: caller,
-            subaccount: None,
-        },
+        minting_account: Account { owner: caller, subaccount: None },
         transfer_fee: 1_000_000,
         metadata: vec![],
         initial_balances: vec![(
-            Account {
-                owner: account_id,
-                subaccount: None,
-            },
+            Account { owner: canister_ids.account, subaccount: None },
             mint_amount_u64,
         )],
         archive_options: ArchiveOptions {
             num_blocks_to_archive: 10,
             trigger_threshold: 5,
-            controller_id: account_id,
+            controller_id: canister_ids.account,
             max_transactions_per_response: None,
             max_message_size_bytes: None,
             cycles_for_archive_creation: None,
@@ -564,36 +582,31 @@ fn should_not_allow_tx_if_threshold_not_met() {
         fee_collector_account: None,
         max_memo_length: None,
     });
-
-    // Install ICRC ledger
-    pic.install_canister(
+    
+    println!("Installing ICRC ledger");
+    env.install_canister(
         icrc_ledger,
         icrc_wasm_module,
         encode_one(icrc1_deploy_args).unwrap(),
         Some(caller),
     );
-
-    // Install account canister
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    // Add additional signers
+    
+    println!("Adding additional signers");
     let signer_2 = generate_principal();
     let signer_3 = generate_principal();
-    let _: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_2,)).unwrap();
-    let _: () = update_candid_as(&pic, account_id, caller, "add_signer", (signer_3,)).unwrap();
-
-    // Set threshold to require at least 2 signers
-    let _: () = update_candid_as(&pic, account_id, caller, "set_threshold", (2u64,)).unwrap();
-
-    // Generate a receiver for the transfer attempt
+    let _: () = update_candid_as(&env, canister_ids.account, caller, "add_signer", (signer_2,)).unwrap();
+    let _: () = update_candid_as(&env, canister_ids.account, caller, "add_signer", (signer_3,)).unwrap();
+    
+    println!("Setting threshold to require 2 signers");
+    let _: () = update_candid_as(&env, canister_ids.account, caller, "set_threshold", (2u64,)).unwrap();
+    
+    println!("Generating receiver principal");
     let receiver = generate_principal();
-
-    // Propose a transaction
-    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
-        &pic,
-        account_id,
+    
+    println!("Proposing transaction");
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
+        canister_ids.account,
         caller,
         "propose_transaction",
         (ProposeTransactionArgs {
@@ -603,89 +616,68 @@ fn should_not_allow_tx_if_threshold_not_met() {
             amount: 100_000_000_000.0,
             transaction_type: TransactionType::Transfer,
         },),
-    )
-    .unwrap();
-
-    // Try to execute with only one signer (should fail)
-    let execute_result = pic.update_call(
-        account_id,
+    ).unwrap();
+    
+    println!("Attempting execution with insufficient signers");
+    let execute_result: (Result<IntentStatus, String>,) = update_candid_as(
+        &env,
+        canister_ids.account,
         caller,
         "execute_transaction",
-        encode_one(proposed_transaction.0.id).unwrap(),
+        (proposed_transaction.id,),
+    ).unwrap();
+    
+    assert!(
+        matches!(execute_result.0, Ok(IntentStatus::Failed(msg)) if msg.contains("Threshold not met")),
+        "Expected failure due to threshold not met"
     );
-
-    // Verify that the execution was rejected due to threshold not being met
-    match execute_result.unwrap() {
-        WasmResult::Reply(reply) => {
-            let status = Decode!(&reply, IntentStatus).unwrap();
-            assert!(
-                matches!(status.clone(), IntentStatus::Failed(msg) if msg.contains("Threshold not met")),
-                "Expected failure due to threshold not met, found: {:?}",
-                status.clone()
-            );
-        }
-        WasmResult::Reject(msg) => panic!("Unexpected rejection: {}", msg),
-    }
-
-    // Verify receiver balance is still 0
-    let balance: (u128,) = query_candid_as(
-        &pic,
+    
+    println!("Verifying receiver balance is still 0");
+    let (balance,): (u128,) = query_candid_as(
+        &env,
         icrc_ledger,
         caller,
         "icrc1_balance_of",
         (ICRCAccount::new(receiver, None),),
-    )
-    .unwrap();
-
-    assert_eq!(
-        balance.0, 0,
-        "Receiver balance should be 0 as transfer should have failed"
-    );
-
-    // Have second signer approve the transaction
+    ).unwrap();
+    
+    assert_eq!(balance, 0, "Receiver balance should be 0 as transfer should have failed");
+    
+    println!("Having second signer approve transaction");
     let _: () = update_candid_as(
-        &pic,
-        account_id,
+        &env,
+        canister_ids.account,
         signer_2,
         "approve_transaction",
-        (proposed_transaction.0.id,),
-    )
-    .unwrap();
-
-    // Now try executing the transaction again with two signers (should succeed)
-    let execute_result = pic.update_call(
-        account_id,
+        (proposed_transaction.id,),
+    ).unwrap();
+    
+    println!("Executing transaction with sufficient signers");
+    let execute_result: (Result<IntentStatus, String>,) = update_candid_as(
+        &env,
+        canister_ids.account,
         caller,
         "execute_transaction",
-        encode_one(proposed_transaction.0.id).unwrap(),
+        (proposed_transaction.id,),
+    ).unwrap();
+    
+    assert!(
+        matches!(execute_result.0, Ok(IntentStatus::Completed(_))),
+        "Expected successful completion after meeting threshold"
     );
-
-    // Verify successful execution
-    match execute_result.unwrap() {
-        WasmResult::Reply(reply) => {
-            let status = Decode!(&reply, IntentStatus).unwrap();
-            assert!(
-                matches!(status, IntentStatus::Completed(_)),
-                "Expected successful completion after meeting threshold"
-            );
-        }
-        WasmResult::Reject(msg) => panic!("Unexpected rejection after meeting threshold: {}", msg),
-    }
-
-    // Verify the transfer actually occurred
-    let balance: (u128,) = query_candid_as(
-        &pic,
+    
+    println!("Verifying final receiver balance");
+    let (balance,): (u128,) = query_candid_as(
+        &env,
         icrc_ledger,
         caller,
         "icrc1_balance_of",
         (ICRCAccount::new(receiver, None),),
-    )
-    .unwrap();
-
-    assert_eq!(
-        balance.0, 100_000_000_000,
-        "Receiver should have received the transfer amount"
-    );
+    ).unwrap();
+    
+    assert_eq!(balance, 100_000_000_000, "Receiver should have received the transfer amount");
+    
+    println!("Test completed successfully");
 }
 
 #[test]
@@ -739,81 +731,76 @@ fn should_not_add_signer_if_exists() {
 
 #[test]
 fn should_get_default_account_for_icp() {
-    let pic = PocketIc::new();
+    println!("Starting should_get_default_account_for_icp test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    let subaccountid = AccountIdentifier::new(&account_id, &to_subaccount(0)).to_hex();
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.query_call(
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Calculating expected subaccount ID");
+    let expected_account_id = AccountIdentifier::new(&account_id, &to_subaccount(0)).to_hex();
+    
+    println!("Querying ICP account");
+    let (actual_account,): (String,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_icp_account",
-        encode_one(()).unwrap(),
-    );
+        (),
+    ).unwrap();
 
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Query call failed: {}", reject_message);
-        }
-        pocket_ic::WasmResult::Reply(reply) => {
-            println!("{:?}", reply);
-
-            let account = Decode!(&reply, String);
-
-            match account {
-                Ok(y_account) => assert_eq!(y_account, subaccountid),
-                Err(e) => panic!("Error decoding account: {}", e),
-            }
-        }
-    }
+    println!("Verifying account ID matches");
+    assert_eq!(actual_account, expected_account_id);
+    
+    println!("Test completed successfully");
 }
 
 #[test]
 fn should_get_default_account_for_icrc() {
-    let pic = PocketIc::new();
+    println!("Starting should_get_default_account_for_icrc test");
+    
+    println!("Generating caller principal");
     let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    let subaccount = to_subaccount(0);
-
-    let subaccountid = ICRCAccount::new(account_id, None).to_text();
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.query_call(
+    println!("Generated caller principal: {}", caller);
+    
+    println!("Setting up test environment");
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
+    
+    println!("Calculating expected ICRC account ID");
+    let expected_account_id = ICRCAccount::new(account_id, None).to_text();
+    
+    println!("Querying ICRC account");
+    let (actual_account,): (String,) = query_candid_as(
+        &env,
         account_id,
         caller,
         "get_icrc_account",
-        encode_one(()).unwrap(),
-    );
+        (),
+    ).unwrap();
 
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Query call failed: {}", reject_message);
-        }
-        pocket_ic::WasmResult::Reply(reply) => {
-            let account = Decode!(&reply, String);
-
-            match account {
-                Ok(y_account) => assert_eq!(y_account, subaccountid),
-                Err(e) => panic!("Error decoding account: {}", e),
-            }
-        }
-    }
+    println!("Verifying account ID matches");
+    assert_eq!(actual_account, expected_account_id);
+    
+    println!("Test completed successfully");
 }
 
 #[cfg(test)]
@@ -836,90 +823,36 @@ mod intent_tests {
 
     #[test]
     fn should_transfer_icrc1() {
-        let pic = PocketIcBuilder::new().with_application_subnet().build();
-        let caller = generate_principal();
-
-        // Create and set up the account canister
-        let account_id = pic.create_canister_with_settings(Some(caller), None);
-        pic.add_cycles(account_id, 2_000_000_000_000);
-        let wasm_module =
-            include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-        // Create a receiver principal
-        let receiver = generate_principal();
-
-        // Set up the ICRC1 token canister
-        let icrc_ledger = pic.create_canister_with_settings(Some(caller), None);
-        pic.add_cycles(icrc_ledger, 2_000_000_000_000);
-        let icrc_wasm_module = include_bytes!("../../../mock_icrc1_wasm_build.gz").to_vec();
-
-        // Initialize ICRC1 ledger with initial balances and settings
-        let mint_amount_u64: u128 = 1000_000_000_000;
-        let icrc1_deploy_args = ICRC1Args::Init(ICRC1InitArgs {
-            token_symbol: "MCK".to_string(),
-            token_name: "Mock Token".to_string(),
-            minting_account: Account {
-                owner: caller,
-                subaccount: None,
-            },
-            transfer_fee: 1_000_000,
-            metadata: vec![],
-            initial_balances: vec![(
-                Account {
-                    owner: account_id,
-                    subaccount: None,
-                },
-                mint_amount_u64,
-            )],
-            archive_options: ArchiveOptions {
-                num_blocks_to_archive: 10,
-                trigger_threshold: 5,
-                controller_id: account_id,
-                max_transactions_per_response: None,
-                max_message_size_bytes: None,
-                cycles_for_archive_creation: None,
-                node_max_memory_size_bytes: None,
-            },
-            feature_flags: Some(FeatureFlags { icrc2: false }),
-            decimals: Some(3),
-            maximum_number_of_accounts: None,
-            accounts_overflow_trim_quantity: None,
-            fee_collector_account: None,
-            max_memo_length: None,
+        let mut test_env = setup_new_env_with_config(SetupConfig {
+            default_account_owner: Some(generate_principal()),
+            initial_mock_icrc1_balance: Some(1000_000_000_000),
+            ..Default::default()
         });
-
-        pic.install_canister(
-            icrc_ledger,
-            icrc_wasm_module,
-            encode_one(icrc1_deploy_args).unwrap(),
-            Some(caller),
-        );
-
-        // Create an intent to transfer ICRC1 tokens
+        
+        let caller = test_env.canister_ids.account;
+        let receiver = generate_principal();
+        
         let transfer_amount = 100_000_000_000.0;
         let proposed_tx = ProposeTransactionArgs {
             transaction_type: TransactionType::Transfer,
             amount: transfer_amount,
             network: SupportedNetwork::ICP,
             to: receiver.to_text(),
-            token: format!("icp:icrc1:{}", icrc_ledger.to_text()),
+            token: format!("icp:icrc1:{}", test_env.canister_ids.icrc1_ledger.to_text()),
         };
 
-        // Add the intent
         let add_intent_result: (ProposedTransaction,) = update_candid_as(
-            &pic,
-            account_id,
+            &test_env.env,
+            test_env.canister_ids.account,
             caller,
             "propose_transaction",
             (proposed_tx,),
         )
         .unwrap();
 
-        // Execute the intent
         let status: (IntentStatus,) = update_candid_as(
-            &pic,
-            account_id,
+            &test_env.env,
+            test_env.canister_ids.account,
             caller,
             "execute_transaction",
             (add_intent_result.0.id,),
@@ -931,10 +864,9 @@ mod intent_tests {
             IntentStatus::Completed("Successfully transferred an ICRC-1 token.".to_string())
         );
 
-        // Check the receiver's balance
         let receiver_balance: (u128,) = query_candid_as(
-            &pic,
-            icrc_ledger,
+            &test_env.env,
+            test_env.canister_ids.icrc1_ledger,
             caller,
             "icrc1_balance_of",
             (ICRCAccount::new(receiver, None),),
@@ -943,92 +875,36 @@ mod intent_tests {
 
         assert_eq!(receiver_balance.0, transfer_amount as u128);
 
-        // Check the account canister's balance
         let account_balance: (u128,) = query_candid_as(
-            &pic,
-            icrc_ledger,
+            &test_env.env,
+            test_env.canister_ids.icrc1_ledger,
             caller,
             "icrc1_balance_of",
-            (ICRCAccount::new(account_id, None),),
+            (ICRCAccount::new(test_env.canister_ids.account, None),),
         )
         .unwrap();
 
         assert_eq!(
             account_balance.0,
-            mint_amount_u64 as u128 - transfer_amount as u128 - 1_000_000 as u128 // Subtract transfer amount and fee
+            1000_000_000_000 - transfer_amount as u128 - 1_000_000
         );
     }
 
     #[test]
     fn should_transfer_icp() {
-        let pic = PocketIcBuilder::new()
-            .with_application_subnet()
-            .with_nns_subnet()
-            .with_ii_subnet()
-            .build();
-        let caller = generate_principal();
-
-        // Create and set up the account canister
-        let account_id = pic.create_canister_with_settings(Some(caller), None);
-        pic.add_cycles(account_id, 2_000_000_000_000);
-        let wasm_module =
-            include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-        pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-        // Create a receiver principal
-        let receiver = generate_principal();
-
-        // Set up the ICP ledger canister
-        let specified_nns_ledger_canister_id =
-            Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
-        let nns_ledger_canister_id = pic
-            .create_canister_with_id(Some(caller), None, specified_nns_ledger_canister_id)
-            .unwrap();
-        assert_eq!(nns_ledger_canister_id, specified_nns_ledger_canister_id);
-
-        let icp_ledger_canister_wasm: Vec<u8> = include_bytes!("icp-ledger.wasm.gz").to_vec(); // get the ICP ledger wasm
-        let minter = generate_principal(); // some principal not used anywhere else
-        let minting_account = AccountIdentifier::new(&minter, &DEFAULT_SUBACCOUNT);
-        let icp_ledger_init_args = LedgerCanisterPayload::Init(NnsLedgerCanisterInitPayload {
-            minting_account: minting_account.to_string(),
-            icrc1_minting_account: None,
-            initial_values: vec![
-                (
-                    minting_account.to_string(),
-                    Tokens::from_e8s(100_000_000_000_000),
-                ),
-                (
-                    AccountIdentifier::new(&caller, &DEFAULT_SUBACCOUNT).to_string(),
-                    Tokens::from_e8s(100_000_000_000_000),
-                ),
-                (
-                    AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT).to_string(),
-                    Tokens::from_e8s(100_000_000_000_000),
-                ),
-            ], // fill in some initial account balances
-            max_message_size_bytes: None,
-            transaction_window: None,
-            archive_options: None,
-            send_whitelist: HashSet::new(),
-            transfer_fee: Some(Tokens::from_e8s(10_000)),
-            token_symbol: Some("ICP".to_string()),
-            token_name: Some("Internet Computer".to_string()),
-            feature_flags: None,
-            maximum_number_of_accounts: None,
-            accounts_overflow_trim_quantity: None,
+        let mut test_env = setup_new_env_with_config(SetupConfig {
+            default_account_owner: Some(generate_principal()),
+            initial_icp_balance: Some(100_000_000_000_000),
+            ..Default::default()
         });
-
-        pic.install_canister(
-            nns_ledger_canister_id,
-            icp_ledger_canister_wasm,
-            encode_one(icp_ledger_init_args).unwrap(),
-            Some(caller),
-        );
-
+        
+        let caller = test_env.canister_ids.account;
+        let receiver = generate_principal();
+        
         // Create an intent to transfer ICP
         let transfer_amount = 100_000_000.0; // 1 ICP
         let receiver_account = AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT);
-        let proposed_tx: ProposeTransactionArgs = ProposeTransactionArgs {
+        let proposed_tx = ProposeTransactionArgs {
             transaction_type: TransactionType::Transfer,
             amount: transfer_amount,
             network: SupportedNetwork::ICP,
@@ -1038,8 +914,8 @@ mod intent_tests {
 
         // Add the intent
         let add_intent_result: (ProposedTransaction,) = update_candid_as(
-            &pic,
-            account_id,
+            &test_env.env,
+            test_env.canister_ids.account,
             caller,
             "propose_transaction",
             (proposed_tx,),
@@ -1047,8 +923,8 @@ mod intent_tests {
         .unwrap();
 
         // Execute the intent
-        let execute_result = pic.update_call(
-            account_id,
+        let execute_result = test_env.env.update_call(
+            test_env.canister_ids.account,
             caller,
             "execute_transaction",
             encode_one(add_intent_result.0.id).unwrap(),
@@ -1071,8 +947,8 @@ mod intent_tests {
             account: AccountIdentifier::new(&receiver, &DEFAULT_SUBACCOUNT),
         };
         let receiver_balance_result: (Tokens,) = query_candid_as(
-            &pic,
-            specified_nns_ledger_canister_id,
+            &test_env.env,
+            test_env.canister_ids.icp_ledger,
             caller,
             "account_balance",
             (receiver_balance_args,),
@@ -1084,11 +960,11 @@ mod intent_tests {
 
         // Check the account canister's balance
         let account_balance_args = AccountBalanceArgs {
-            account: AccountIdentifier::new(&account_id, &DEFAULT_SUBACCOUNT),
+            account: AccountIdentifier::new(&test_env.canister_ids.account, &DEFAULT_SUBACCOUNT),
         };
         let account_balance_result: (Tokens,) = query_candid_as(
-            &pic,
-            specified_nns_ledger_canister_id,
+            &test_env.env,
+            test_env.canister_ids.icp_ledger,
             caller,
             "account_balance",
             (account_balance_args,),

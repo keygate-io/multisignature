@@ -21,6 +21,8 @@ dependencies = [
  "ic-ledger-types",
  "ic-stable-structures",
  "icrc-ledger-types",
+ "integration",
+ "keygate_core",
  "lazy_static",
  "libflate",
  "num-bigint",
@@ -31,6 +33,7 @@ dependencies = [
  "serde_bytes",
  "serde_cbor",
  "sha2",
+ "strum 0.25.0",
  "strum_macros",
  "tokio",
 ]
@@ -110,7 +113,7 @@ checksum = "d4932d790c723181807738cf1ac68198ab581cd699545b155601332541ee47bd"
 dependencies = [
  "alloy-primitives",
  "num_enum",
- "strum",
+ "strum 0.26.3",
 ]
 
 [[package]]
@@ -923,6 +926,7 @@ dependencies = [
  "ic-ledger-types",
  "ic-stable-structures",
  "icrc-ledger-types",
+ "keygate_core",
  "libflate",
  "pocket-ic",
  "rand",
@@ -1920,7 +1924,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "sha2",
- "strum",
+ "strum 0.26.3",
  "time",
 ]
 
@@ -1971,6 +1975,7 @@ version = "0.1.0"
 dependencies = [
  "candid",
  "central",
+ "ciborium",
  "crc32fast",
  "ed25519-dalek",
  "ic-cdk 0.15.1",
@@ -1978,6 +1983,7 @@ dependencies = [
  "ic-ledger-types",
  "ic-stable-structures",
  "icrc-ledger-types",
+ "keygate_core",
  "libflate",
  "pocket-ic",
  "rand",
@@ -2064,6 +2070,18 @@ checksum = "505d1856a39b200489082f90d897c3f07c455563880bc5952e38eabf731c83b6"
 dependencies = [
  "digest 0.10.7",
  "sha3-asm",
+]
+
+[[package]]
+name = "keygate_core"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "ic-cdk 0.15.1",
+ "ic-ledger-types",
+ "ic-stable-structures",
+ "icrc-ledger-types",
+ "serde",
 ]
 
 [[package]]
@@ -3299,6 +3317,12 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "strum"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
 
 [[package]]
 name = "strum"

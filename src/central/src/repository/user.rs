@@ -82,6 +82,9 @@ impl UserRepository {
     pub async fn get_user_vaults(&self, owner: &Principal) -> Vec<Vault> {
         let all_vaults: Vec<Principal> = VAULT_OWNERS_DB.with(|vaults| vaults.borrow().iter().map(|(k, _)| k).collect());
 
+        // print length of all_vaults
+        ic_cdk::println!("Number of vaults: {}", all_vaults.len());
+
         let mut user_vaults = Vec::new();
         for vault_id in all_vaults {
             let signers: CallResult<(Vec<Principal>,)> =
@@ -89,6 +92,9 @@ impl UserRepository {
 
             match signers {
                 Ok(signers) => {
+                    // print signers (but convert to text)
+                    ic_cdk::println!("Signers: {:?}", signers.0.iter().map(|s| s.to_text()).collect::<Vec<String>>());
+
                     if signers.0.contains(&owner) {
                         user_vaults.push(self.get_vault_by_id(&vault_id).unwrap());
                     }

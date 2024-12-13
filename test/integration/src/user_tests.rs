@@ -1,7 +1,7 @@
 use candid::{encode_one, Principal};
 use central::types::{Vault, VaultInitArgs};
 use pocket_ic::{query_candid_as, update_candid_as, PocketIc};
-use crate::{setup::setup_new_env, utils::generate_principal, TestEnv};
+use crate::{setup::{setup_new_env, setup_new_env_with_config, SetupConfig}, utils::generate_principal, TestEnv};
 
 #[test]
 fn test_user_linked_vaults() {
@@ -48,7 +48,7 @@ fn test_user_linked_vaults() {
    ).unwrap();
 
    // Check that Alice can see the vault in her list of linked vaults 
-   let alice_vaults: (Vec<Vault>, ) = query_candid_as(
+   let alice_vaults: (Vec<Vault>, ) = update_candid_as(
        &env,
        canister_ids.central,
        alice,
@@ -59,7 +59,7 @@ fn test_user_linked_vaults() {
    assert!(alice_vaults.0.iter().any(|vault| vault.id == vault_id));
 
    // Check that Bob can see the vault in his list of linked vaults
-   let bob_vaults: (Vec<Vault>, ) = query_candid_as(
+   let bob_vaults: (Vec<Vault>, ) = update_candid_as(
        &env,
        canister_ids.central,
        bob,
@@ -71,3 +71,4 @@ fn test_user_linked_vaults() {
 
    println!("Test completed successfully");
 }
+

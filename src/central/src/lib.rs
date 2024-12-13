@@ -149,14 +149,12 @@ fn get_user() -> Option<UserInfo> {
     repository.get_user(&principal)
 }
 
-#[ic_cdk::query]
+#[ic_cdk::update]
 async fn get_user_vaults() -> Vec<Vault> {
     let owner_principal = ic_cdk::caller();
     let repository = UserRepository::default();
-
-    if !repository.user_exists(&owner_principal) {
-        return vec![];
-    }
+    
+    ic_cdk::println!("Getting user vaults for principal {}", owner_principal.to_text());
 
     let user_vaults = repository.get_user_vaults(&owner_principal).await;
 
