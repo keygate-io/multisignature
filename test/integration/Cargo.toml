@@ -19,6 +19,8 @@ pocket-ic = "5.0.0"
 ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
 rand = "0.8.5"
 central = { path = "../../src/central" }
+ciborium = "0.2.2"
+keygate_core = { path = "../../src/core" }
 
 [dev-dependencies]
 libflate = "2.1.0"

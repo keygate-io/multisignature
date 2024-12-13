@@ -51,12 +51,19 @@ pub async fn deploy(bytecode: Vec<u8>) -> Result<Principal, String> {
         }
     };
 
+    let caller = ic_cdk::caller();
     let install_config = CanisterInstall {
         mode: InstallMode::Install,
         canister_id: create_result.canister_id,
         wasm_module: bytecode.clone(),
-        arg: b" ".to_vec(),
+        arg: candid::encode_one(keygate_core::types::canister_init::VaultInitArgs {
+            name: "".to_string(),
+            signers: vec![caller],
+        })
+        .unwrap()
     };
+
+    ic_cdk::println!("Attempting to install vault");
 
     match api::call::call(
         Principal::management_canister(),

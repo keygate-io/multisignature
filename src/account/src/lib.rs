@@ -4,7 +4,7 @@ mod evm_types;
 mod intent;
 mod ledger;
 mod tests;
-mod types;
+pub mod types;
 
 use b3_utils::{
     ledger::ICRCAccount,
@@ -33,6 +33,7 @@ const SIGNERS_MEMORY: MemoryId = MemoryId::new(4);
 const PROPOSED_TRANSACTIONS_MEMORY: MemoryId = MemoryId::new(5);
 const PROPOSED_TRANSACTIONS_LAST_ID_MEMORY: MemoryId = MemoryId::new(6);
 const THRESHOLD_MEMORY: MemoryId = MemoryId::new(7);
+const NAME_MEMORY: MemoryId = MemoryId::new(8);
 pub type VM = VirtualMemory<DefaultMemoryImpl>;
 
 // Thread-local storage
@@ -55,6 +56,7 @@ thread_local! {
 
     pub static ADAPTERS: RefCell<HashMap<String, Box<dyn BlockchainAdapter>>> = RefCell::default();
     pub static THRESHOLD: RefCell<StableCell<u64, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(THRESHOLD_MEMORY)), 1).expect("Failed to initialize THRESHOLD StableCell"));
+    pub static NAME: RefCell<StableCell<String, VM>> = RefCell::new(DefaultStableCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(NAME_MEMORY)), "".to_string()).expect("Failed to initialize NAME StableCell"));
 }
 
 // Structs and Traits
@@ -280,9 +282,7 @@ fn post_upgrade() {
 }
 
 #[ic_cdk::init]
-async fn init() {
-    let caller = ic_cdk::caller();
-
+async fn init(keygate_core::types::canister_init::VaultInitArgs { name, signers }: keygate_core::types::canister_init::VaultInitArgs) {
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert(
             "icp:native:transfer".to_string(),
@@ -298,8 +298,10 @@ async fn init() {
         );
     });
 
-    SIGNERS.with(|signers| {
-        signers.borrow_mut().push(&caller);
+    SIGNERS.with(|s| {
+        for signer in signers {
+            s.borrow_mut().push(&signer).expect("Failed to add signer");
+        }
     });
 }
 
