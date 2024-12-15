@@ -61,7 +61,7 @@ thread_local! {
 
 // Structs and Traits
 #[derive(Debug, CandidType, Deserialize, Serialize)]
-struct Error {
+pub struct Error {
     message: String,
 }
 
@@ -78,6 +78,8 @@ fn add_signer(signer: Principal) -> Result<(), Error> {
             message: "Signer already exists".to_string(),
         });
     }
+
+    ic_cdk::println!("Adding signer: {}", signer);
 
     SIGNERS.with(|signers: &RefCell<StableVec<Principal, VM>>| {
         signers.borrow_mut().push(&signer);
