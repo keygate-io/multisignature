@@ -165,20 +165,19 @@ fn should_add_signer() {
 
 #[test]
 fn should_propose_transaction() {
-    let pic = PocketIc::new();
     let caller = generate_principal();
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        ..Default::default()
+    });
+    
+    let account_id = canister_ids.account;
 
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let proposed_transaction: (ProposedTransaction,) = update_candid_as(
-        &pic,
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
         account_id,
         caller,
         "propose_transaction",
@@ -192,18 +191,14 @@ fn should_propose_transaction() {
     )
     .unwrap();
 
-    assert_eq!(proposed_transaction.0.id, 0);
-    assert_eq!(proposed_transaction.0.to, "test");
-    assert_eq!(proposed_transaction.0.token, "test");
-    assert_eq!(proposed_transaction.0.network, SupportedNetwork::ICP);
-    assert_eq!(proposed_transaction.0.amount, 100_000_000.0);
-    assert_eq!(
-        proposed_transaction.0.transaction_type,
-        TransactionType::Transfer
-    );
-    assert_eq!(proposed_transaction.0.signers, vec![caller]);
+    assert_eq!(proposed_transaction.id, 0);
+    assert_eq!(proposed_transaction.to, "test");
+    assert_eq!(proposed_transaction.token, "test");
+    assert_eq!(proposed_transaction.network, SupportedNetwork::ICP);
+    assert_eq!(proposed_transaction.amount, 100_000_000.0);
+    assert_eq!(proposed_transaction.transaction_type, TransactionType::Transfer);
+    assert_eq!(proposed_transaction.signers, vec![caller]);
 }
-
 #[test]
 fn should_get_proposed_transaction() {
     println!("Starting should_get_proposed_transaction test");
@@ -533,7 +528,96 @@ fn should_set_threshold() {
 
 #[test]
 fn should_not_allow_tx_if_threshold_not_met() {
-    println!("Starting should_not_allow_tx_if_threshold_not_met test");
+    let caller = generate_principal();
+    let TestEnv {
+        env,
+        canister_ids,
+    } = setup_new_env_with_config(SetupConfig {
+        default_account_owner: Some(caller),
+        initial_mock_icrc1_balance: None,
+        ..Default::default()
+    });
+
+    let signer_2 = generate_principal();
+    let signer_3 = generate_principal();
+    let _: () = update_candid_as(&env, canister_ids.account, caller, "add_signer", (signer_2,)).unwrap();
+    let _: () = update_candid_as(&env, canister_ids.account, caller, "add_signer", (signer_3,)).unwrap();
+    
+    let _: () = update_candid_as(&env, canister_ids.account, caller, "set_threshold", (2u64,)).unwrap();
+    
+    let receiver = generate_principal();
+    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
+        &env,
+        canister_ids.account,
+        caller,
+        "propose_transaction",
+        (ProposeTransactionArgs {
+            to: receiver.to_text(),
+            token: format!("icp:icrc1:{}", canister_ids.icrc1_ledger.to_text()),
+            network: SupportedNetwork::ICP,
+            amount: 100_000_000_000.0,
+            transaction_type: TransactionType::Transfer,
+        },),
+    ).unwrap();
+    
+    let execute_result: (IntentStatus, ) = update_candid_as(
+        &env,
+        canister_ids.account,
+        caller,
+        "execute_transaction",
+        (proposed_transaction.id,),
+    ).unwrap();
+    
+    assert!(
+        matches!(execute_result.0, IntentStatus::Failed(msg) if msg.contains("Threshold not met")),
+        "Expected failure due to threshold not met"
+    );
+    
+    let (balance,): (u128,) = query_candid_as(
+        &env,
+        canister_ids.icrc1_ledger,
+        caller,
+        "icrc1_balance_of",
+        (ICRCAccount::new(receiver, None),),
+    ).unwrap();
+    
+    assert_eq!(balance, 0, "Receiver balance should be 0 as transfer should have failed");
+    
+    let _: () = update_candid_as(
+        &env,
+        canister_ids.account,
+        signer_2,
+        "approve_transaction",
+        (proposed_transaction.id,),
+    ).unwrap();
+    
+    let execute_result: (IntentStatus, ) = update_candid_as(
+        &env,
+        canister_ids.account,
+        caller,
+        "execute_transaction",
+        (proposed_transaction.id,),
+    ).unwrap();
+    
+    assert!(
+        matches!(execute_result.0, IntentStatus::Completed(_)),
+        "Expected successful completion after meeting threshold"
+    );
+    
+    let (balance,): (u128,) = query_candid_as(
+        &env,
+        canister_ids.icrc1_ledger,
+        caller,
+        "icrc1_balance_of",
+        (ICRCAccount::new(receiver, None),),
+    ).unwrap();
+    
+    assert_eq!(balance, 100_000_000_000, "Receiver should have received the transfer amount");
+}
+
+#[test]
+fn should_not_add_signer_if_exists() {
+    println!("Starting should_not_add_signer_if_exists test");
     
     println!("Generating caller principal");
     let caller = generate_principal();
@@ -548,185 +632,55 @@ fn should_not_allow_tx_if_threshold_not_met() {
         ..Default::default()
     });
     
-    println!("Creating and setting up ICRC ledger");
-    let icrc_ledger = env.create_canister_with_settings(Some(caller), None);
-    env.add_cycles(icrc_ledger, 2_000_000_000_000);
+    let account_id = canister_ids.account;
     
-    let icrc_wasm_module = include_bytes!("../../../mock_icrc1_wasm_build.gz").to_vec();
+    println!("Generating signer principal");
+    let signer = generate_principal();
     
-    println!("Initializing ICRC ledger with tokens");
-    let mint_amount_u64: u128 = 1000_000_000_000;
-    let icrc1_deploy_args = ICRC1Args::Init(ICRC1InitArgs {
-        token_symbol: "MCK".to_string(),
-        token_name: "Mock Token".to_string(),
-        minting_account: Account { owner: caller, subaccount: None },
-        transfer_fee: 1_000_000,
-        metadata: vec![],
-        initial_balances: vec![(
-            Account { owner: canister_ids.account, subaccount: None },
-            mint_amount_u64,
-        )],
-        archive_options: ArchiveOptions {
-            num_blocks_to_archive: 10,
-            trigger_threshold: 5,
-            controller_id: canister_ids.account,
-            max_transactions_per_response: None,
-            max_message_size_bytes: None,
-            cycles_for_archive_creation: None,
-            node_max_memory_size_bytes: None,
-        },
-        feature_flags: Some(FeatureFlags { icrc2: false }),
-        decimals: Some(3),
-        maximum_number_of_accounts: None,
-        accounts_overflow_trim_quantity: None,
-        fee_collector_account: None,
-        max_memo_length: None,
-    });
-    
-    println!("Installing ICRC ledger");
-    env.install_canister(
-        icrc_ledger,
-        icrc_wasm_module,
-        encode_one(icrc1_deploy_args).unwrap(),
-        Some(caller),
-    );
-    
-    println!("Adding additional signers");
-    let signer_2 = generate_principal();
-    let signer_3 = generate_principal();
-    let _: () = update_candid_as(&env, canister_ids.account, caller, "add_signer", (signer_2,)).unwrap();
-    let _: () = update_candid_as(&env, canister_ids.account, caller, "add_signer", (signer_3,)).unwrap();
-    
-    println!("Setting threshold to require 2 signers");
-    let _: () = update_candid_as(&env, canister_ids.account, caller, "set_threshold", (2u64,)).unwrap();
-    
-    println!("Generating receiver principal");
-    let receiver = generate_principal();
-    
-    println!("Proposing transaction");
-    let (proposed_transaction,): (ProposedTransaction,) = update_candid_as(
-        &env,
-        canister_ids.account,
-        caller,
-        "propose_transaction",
-        (ProposeTransactionArgs {
-            to: receiver.to_text(),
-            token: format!("icp:icrc1:{}", icrc_ledger.to_text()),
-            network: SupportedNetwork::ICP,
-            amount: 100_000_000_000.0,
-            transaction_type: TransactionType::Transfer,
-        },),
-    ).unwrap();
-    
-    println!("Attempting execution with insufficient signers");
-    let execute_result: (Result<IntentStatus, String>,) = update_candid_as(
-        &env,
-        canister_ids.account,
-        caller,
-        "execute_transaction",
-        (proposed_transaction.id,),
-    ).unwrap();
-    
-    assert!(
-        matches!(execute_result.0, Ok(IntentStatus::Failed(msg)) if msg.contains("Threshold not met")),
-        "Expected failure due to threshold not met"
-    );
-    
-    println!("Verifying receiver balance is still 0");
-    let (balance,): (u128,) = query_candid_as(
-        &env,
-        icrc_ledger,
-        caller,
-        "icrc1_balance_of",
-        (ICRCAccount::new(receiver, None),),
-    ).unwrap();
-    
-    assert_eq!(balance, 0, "Receiver balance should be 0 as transfer should have failed");
-    
-    println!("Having second signer approve transaction");
+    println!("Adding signer for the first time");
     let _: () = update_candid_as(
         &env,
-        canister_ids.account,
-        signer_2,
-        "approve_transaction",
-        (proposed_transaction.id,),
-    ).unwrap();
-    
-    println!("Executing transaction with sufficient signers");
-    let execute_result: (Result<IntentStatus, String>,) = update_candid_as(
-        &env,
-        canister_ids.account,
-        caller,
-        "execute_transaction",
-        (proposed_transaction.id,),
-    ).unwrap();
-    
-    assert!(
-        matches!(execute_result.0, Ok(IntentStatus::Completed(_))),
-        "Expected successful completion after meeting threshold"
-    );
-    
-    println!("Verifying final receiver balance");
-    let (balance,): (u128,) = query_candid_as(
-        &env,
-        icrc_ledger,
-        caller,
-        "icrc1_balance_of",
-        (ICRCAccount::new(receiver, None),),
-    ).unwrap();
-    
-    assert_eq!(balance, 100_000_000_000, "Receiver should have received the transfer amount");
-    
-    println!("Test completed successfully");
-}
-
-#[test]
-fn should_not_add_signer_if_exists() {
-    let pic = PocketIc::new();
-    let caller = generate_principal();
-
-    let account_id = pic.create_canister_with_settings(Some(caller), None);
-
-    pic.add_cycles(account_id, 2_000_000_000_000);
-
-    let wasm_module =
-        include_bytes!("../../../target/wasm32-unknown-unknown/release/account.wasm").to_vec();
-
-    let signer = generate_principal();
-
-    pic.install_canister(account_id, wasm_module, Vec::new(), Some(caller));
-
-    let wasm_result = pic.update_call(
         account_id,
         caller,
         "add_signer",
-        encode_one(signer).unwrap(),
+        (signer,),
+    ).unwrap();
+    
+    println!("Attempting to add same signer again");
+    let (result,): (Result<(), crate::Error>,) = update_candid_as(
+        &env,
+        account_id,
+        caller,
+        "add_signer",
+        (signer,),
+    ).unwrap();
+    
+    assert!(
+        result.is_err(),
+        "Expected error when adding duplicate signer"
     );
-
-    match wasm_result.unwrap() {
-        pocket_ic::WasmResult::Reject(reject_message) => {
-            panic!("Update call failed: {}", reject_message);
-        }
-        pocket_ic::WasmResult::Reply(_) => {
-            let wasm_result = pic.update_call(
-                account_id,
-                caller,
-                "add_signer",
-                encode_one(signer).unwrap(),
-            );
-
-            match wasm_result.unwrap() {
-                pocket_ic::WasmResult::Reject(reject_message) => {
-                    assert_eq!(reject_message, "signer already exists");
-                }
-                pocket_ic::WasmResult::Reply(bytes) => {
-                    let reply = Decode!(&bytes, String);
-
-                    assert!(reply.is_err())
-                }
-            }
-        }
-    }
+    assert_eq!(
+        result.unwrap_err().message,
+        "Signer already exists",
+        "Expected rejection message 'Signer already exists'"
+    );
+    
+    println!("Verifying final signers list");
+    let (signers,): (Vec<Principal>,) = query_candid_as(
+        &env,
+        account_id,
+        caller,
+        "get_signers",
+        (),
+    ).unwrap();
+    
+    assert_eq!(
+        signers,
+        vec![caller, signer],
+        "Signers list should contain exactly caller and signer"
+    );
+    
+    println!("Test completed successfully");
 }
 
 #[test]
