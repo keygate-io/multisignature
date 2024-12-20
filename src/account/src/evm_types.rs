@@ -20,7 +20,7 @@ pub struct EcdsaKeyId {
     pub name: String,
 }
 
-#[derive(CandidType, Serialize, Debug, Clone)]
+#[derive(CandidType, Serialize, Deserialize, Debug, Clone)]
 pub enum EcdsaCurve {
     #[serde(rename = "secp256k1")]
     Secp256k1,

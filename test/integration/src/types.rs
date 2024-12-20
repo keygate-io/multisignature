@@ -1,5 +1,5 @@
 use candid::{CandidType, Nat, Principal};
-use ic_ledger_types::{Subaccount, Tokens, DEFAULT_SUBACCOUNT};
+use ic_ledger_types::{Subaccount, Tokens};
 use ic_stable_structures::storable::{Bound, Storable};
 use icrc_ledger_types::icrc1::account::Account;
 use serde::{Deserialize, Serialize};

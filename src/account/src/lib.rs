@@ -7,7 +7,7 @@ pub mod types;
 
 use b3_utils::{
     ledger::ICRCAccount,
-    memory::types::{DefaultStableBTreeMap, DefaultStableCell, DefaultStableVec},
+    memory::types::{DefaultStableCell, DefaultStableVec},
     Subaccount,
 };
 use candid::{CandidType, Principal};
@@ -21,9 +21,8 @@ use intent::*;
 use ledger::*;
 use serde::{Deserialize, Serialize};
 use std::{
-    borrow::BorrowMut,
     cell::RefCell,
-    collections::{HashMap, LinkedList},
+    collections::HashMap,
 };
 
 const INTENT_LOG_INDEX_MEMORY: MemoryId = MemoryId::new(2);
@@ -81,8 +80,11 @@ fn add_signer(signer: Principal) -> Result<(), Error> {
     ic_cdk::println!("Adding signer: {}", signer);
 
     SIGNERS.with(|signers: &RefCell<StableVec<Principal, VM>>| {
-        signers.borrow_mut().push(&signer);
-    });
+        signers.borrow_mut().push(&signer)
+            .map_err(|e| Error {
+                message: format!("Failed to add signer: {:?}", e)
+            })
+    })?;
 
     Ok(())
 }
@@ -115,12 +117,6 @@ fn get_icrc_account() -> String {
     let account = ICRCAccount::new(owner, Some(subaccount));
 
     account.to_text()
-}
-
-#[cfg(test)]
-fn get_icp_account_id() -> AccountIdentifier {
-    let subaccount = to_subaccount(0);
-    to_subaccount_id(subaccount)
 }
 
 #[ic_cdk::query]
@@ -203,10 +199,14 @@ fn get_proposed_transactions() -> Vec<ProposedTransaction> {
 }
 
 #[update]
-fn set_threshold(threshold: u64) {
+fn set_threshold(threshold: u64) -> Result<(), Error> {
     THRESHOLD.with(|current_threshold| {
-        current_threshold.borrow_mut().set(threshold);
-    });
+        current_threshold.borrow_mut().set(threshold)
+            .map_err(|e| Error {
+                message: format!("Failed to set threshold: {:?}", e)
+            })
+    })?;
+    Ok(())
 }
 
 #[query]
@@ -284,6 +284,12 @@ fn post_upgrade() {
 
 #[ic_cdk::init]
 async fn init(keygate_core::types::canister_init::VaultInitArgs { name, signers }: keygate_core::types::canister_init::VaultInitArgs) {
+    NAME.with(|n| {
+        n.borrow_mut().set(name)
+            .map_err(|e| ic_cdk::trap(&format!("Failed to set name: {:?}", e)))
+            .unwrap();
+    });
+
     ADAPTERS.with(|adapters| {
         adapters.borrow_mut().insert(
             "icp:native:transfer".to_string(),

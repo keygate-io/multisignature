@@ -262,7 +262,7 @@ fn load_wallet_wasm_blob_ok() {
     let gzipped_blob = gzip_result.unwrap();
     let gzipped_blob_copy = gzipped_blob.clone();
 
-    let wasm_result = pic.update_call(
+    let _ = pic.update_call(
         central_id,
         Principal::anonymous(),
         "load_wallet_wasm_blob",

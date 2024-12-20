@@ -23,16 +23,13 @@ use std::{
     fmt::{self, Display},
 };
 
-use ic_cdk::{query, update};
+use ic_cdk::update;
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::{Deserialize, Serialize};
 
 use crate::TRANSACTIONS;
 
 pub(crate) trait BlockchainAdapter: DynClone {
-    fn network(&self) -> SupportedNetwork;
-    fn token(&self) -> String;
-    fn intent_type(&self) -> TransactionType;
     fn execute<'a>(
         &'a self,
         transaction: &'a TransactionRequest,
@@ -86,9 +83,6 @@ pub async fn execute(transaction: &TransactionRequest) -> IntentStatus {
 
 #[derive(Clone)]
 pub struct ICPNativeTransferAdapter {
-    pub(crate) network: SupportedNetwork,
-    pub(crate) token: TokenPath,
-    pub(crate) intent_type: TransactionType,
 }
 
 type ICPNativeTransferArgs = TransferArgs;
@@ -100,18 +94,6 @@ pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000;
 pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
 
 impl BlockchainAdapter for ICPNativeTransferAdapter {
-    fn network(&self) -> SupportedNetwork {
-        self.network.clone()
-    }
-
-    fn token(&self) -> TokenPath {
-        self.token.clone()
-    }
-
-    fn intent_type(&self) -> TransactionType {
-        self.intent_type.clone()
-    }
-
     fn execute<'a>(
         &'a self,
         transaction: &'a TransactionRequest,
@@ -144,11 +126,7 @@ impl BlockchainAdapter for ICPNativeTransferAdapter {
 
 impl ICPNativeTransferAdapter {
     pub fn new() -> ICPNativeTransferAdapter {
-        ICPNativeTransferAdapter {
-            network: SupportedNetwork::ICP,
-            token: "icp:native".to_string(),
-            intent_type: TransactionType::Transfer,
-        }
+        ICPNativeTransferAdapter { }
     }
 
     async fn transfer(args: ICPNativeTransferArgs) -> Result<BlockIndex, String> {
@@ -167,19 +145,11 @@ impl ICPNativeTransferAdapter {
 }
 
 #[derive(Clone)]
-pub struct ETHNativeTransferAdapter {
-    pub(crate) network: SupportedNetwork,
-    pub(crate) token: TokenPath,
-    pub(crate) intent_type: TransactionType,
-}
+pub struct ETHNativeTransferAdapter { }
 
 impl ETHNativeTransferAdapter {
     pub fn new() -> ETHNativeTransferAdapter {
-        ETHNativeTransferAdapter {
-            network: SupportedNetwork::ETH,
-            token: "eth:native".to_string(),
-            intent_type: TransactionType::Transfer,
-        }
+        ETHNativeTransferAdapter { }
     }
 
     async fn transfer(&self, transaction: &TransactionRequest) -> Result<String, String> {
@@ -198,18 +168,6 @@ impl ETHNativeTransferAdapter {
 }
 
 impl BlockchainAdapter for ETHNativeTransferAdapter {
-    fn network(&self) -> SupportedNetwork {
-        self.network.clone()
-    }
-
-    fn token(&self) -> String {
-        self.token.clone()
-    }
-
-    fn intent_type(&self) -> TransactionType {
-        self.intent_type.clone()
-    }
-
     fn execute<'a>(
         &'a self,
         transaction: &'a TransactionRequest,
@@ -227,25 +185,9 @@ impl BlockchainAdapter for ETHNativeTransferAdapter {
 }
 
 #[derive(Clone)]
-pub struct ICRC1TransferAdapter {
-    pub(crate) network: SupportedNetwork,
-    pub(crate) token: TokenPath,
-    pub(crate) intent_type: TransactionType,
-}
+pub struct ICRC1TransferAdapter { }
 
 impl BlockchainAdapter for ICRC1TransferAdapter {
-    fn network(&self) -> SupportedNetwork {
-        self.network.clone()
-    }
-
-    fn token(&self) -> String {
-        self.token.clone()
-    }
-
-    fn intent_type(&self) -> TransactionType {
-        self.intent_type.clone()
-    }
-
     fn execute<'a>(
         &'a self,
         transaction: &'a TransactionRequest,
@@ -265,11 +207,7 @@ impl BlockchainAdapter for ICRC1TransferAdapter {
 
 impl ICRC1TransferAdapter {
     pub fn new() -> ICRC1TransferAdapter {
-        ICRC1TransferAdapter {
-            network: SupportedNetwork::ICP,
-            token: "icp:icrc1".to_string(),
-            intent_type: TransactionType::Transfer,
-        }
+        ICRC1TransferAdapter { }
     }
 
     pub fn extract_token_identifier(token: TokenPath) -> Result<String, String> {
@@ -439,25 +377,6 @@ pub struct Decision {
     intent_id: u64,
     signee: Principal,
     approved: bool,
-}
-
-impl Decision {
-    pub fn new(id: u64, intent_id: u64, signee: Principal, approved: bool) -> Decision {
-        Decision {
-            id,
-            intent_id,
-            signee,
-            approved,
-        }
-    }
-
-    pub fn id(&self) -> u64 {
-        self.id
-    }
-
-    pub fn approved(&self) -> bool {
-        self.approved
-    }
 }
 
 #[ic_cdk::query]

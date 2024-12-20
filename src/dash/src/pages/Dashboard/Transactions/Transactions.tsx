@@ -11,7 +11,6 @@ import {
   Divider,
   Chip,
   Paper,
-  Badge,
 } from "@mui/material";
 import {
   Send as SendIcon,
@@ -23,7 +22,6 @@ import {
 } from "@mui/icons-material";
 import AccountPageLayout from "../../VaultPageLayout";
 import {
-  TransactionRequest,
   IntentStatus,
   Transaction,
   ProposedTransaction,

@@ -6,10 +6,8 @@ import {
   IntentStatus,
   ProposedTransaction,
   ProposeTransactionArgs,
-  TransactionRequest,
 } from "../../../declarations/account/account.did";
 import { Vault } from "../../../declarations/central/central.did";
-import { Result } from "../../../declarations/account/account.did";
 
 // Create maps to cache the actors
 const centralActorMap = new Map<

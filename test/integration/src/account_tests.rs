@@ -1,23 +1,18 @@
-use b3_utils::{ledger::ICRCAccount, Subaccount};
+use b3_utils::ledger::ICRCAccount;
 use candid::{encode_one, CandidType, Decode, Principal};
-use ic_ledger_types::{AccountIdentifier, Tokens};
+use ic_ledger_types::AccountIdentifier;
 use crate::setup::setup_new_env_with_config;
 use crate::setup::SetupConfig;
 use crate::types::NnsLedgerCanisterInitPayload;
 use crate::types::NnsLedgerCanisterUpgradePayload;
 use crate::TestEnv;
-use pocket_ic::PocketIc;
-use pocket_ic::WasmResult;
-use pocket_ic::{query_candid_as, update_candid, update_candid_as};
+use pocket_ic::{query_candid_as, update_candid_as};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
-use std::time::Duration;
-use std::{error::Error, fmt::format, io::Write};
 
 // use core
 use keygate_core::utils::to_subaccount;
 // use core
-use keygate_core::types::vault::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs, IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork, TransactionRequest, TransactionType};
+use keygate_core::types::vault::{IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork, TransactionType};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
@@ -26,25 +21,6 @@ pub enum LedgerCanisterPayload {
     Upgrade(Option<NnsLedgerCanisterUpgradePayload>),
 }
 
-pub fn get_icp_balance(env: &PocketIc, user_id: Principal) -> u64 {
-    use ic_ledger_types::{AccountBalanceArgs, Tokens, DEFAULT_SUBACCOUNT};
-    use pocket_ic::update_candid_as;
-
-    let ledger_canister_id = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
-    let account = AccountIdentifier::new(&user_id, &DEFAULT_SUBACCOUNT);
-    let account_balance_args = AccountBalanceArgs { account };
-    let res: (Tokens,) = update_candid_as(
-        env,
-        ledger_canister_id,
-        user_id,
-        "account_balance",
-        (account_balance_args,),
-    )
-    .unwrap();
-    res.0.e8s()
-}
-
-#[cfg(test)]
 fn generate_principal() -> Principal {
     use ed25519_dalek::SigningKey;
     use rand::rngs::OsRng;
@@ -53,14 +29,6 @@ fn generate_principal() -> Principal {
     let signing_key = SigningKey::generate(&mut csprng);
     let verifying_key = signing_key.verifying_key();
     Principal::self_authenticating(&verifying_key.as_bytes())
-}
-
-#[cfg(test)]
-fn gzip(blob: Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
-    use libflate::gzip::Encoder;
-    let mut encoder = Encoder::new(Vec::with_capacity(blob.len())).unwrap();
-    encoder.write_all(&blob)?;
-    Ok(encoder.finish().into_result().unwrap())
 }
 
 #[test]
@@ -749,28 +717,25 @@ fn should_get_default_account_for_icrc() {
     println!("Test completed successfully");
 }
 
-#[cfg(test)]
 mod intent_tests {
-    use std::collections::{HashMap, HashSet};
+    
 
     use ic_ledger_types::{AccountBalanceArgs, Tokens, DEFAULT_SUBACCOUNT};
-    use icrc_ledger_types::icrc1::account::Account;
-    use num_bigint::ToBigUint;
-    use pocket_ic::{common::rest::base64, query_candid, PocketIcBuilder, WasmResult};
+    
+    
+    use pocket_ic::WasmResult;
 
 
     // use/move to core
     use keygate_core::types::vault::{
-        ledger::RECOMMENDED_ICP_TRANSACTION_FEE,
-        ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs,
-        Intent, IntentStatus, SupportedNetwork, TransactionRequest, TransactionType,
+        ledger::RECOMMENDED_ICP_TRANSACTION_FEE, IntentStatus, SupportedNetwork, TransactionType,
     };
 
     use super::*;
 
     #[test]
     fn should_transfer_icrc1() {
-        let mut test_env = setup_new_env_with_config(SetupConfig {
+        let test_env = setup_new_env_with_config(SetupConfig {
             default_account_owner: Some(generate_principal()),
             initial_mock_icrc1_balance: Some(1000_000_000_000),
             ..Default::default()
@@ -839,7 +804,7 @@ mod intent_tests {
 
     #[test]
     fn should_transfer_icp() {
-        let mut test_env = setup_new_env_with_config(SetupConfig {
+        let test_env = setup_new_env_with_config(SetupConfig {
             default_account_owner: Some(generate_principal()),
             initial_icp_balance: Some(100_000_000_000_000),
             ..Default::default()

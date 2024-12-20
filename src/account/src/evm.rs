@@ -8,10 +8,7 @@ use alloy::{
     signers::Signer,
     transports::icp::IcpConfig,
 };
-use candid::{CandidType, Principal};
-use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::str;
 use std::str::FromStr;
 
 thread_local! {
