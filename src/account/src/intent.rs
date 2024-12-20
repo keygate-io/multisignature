@@ -359,19 +359,6 @@ impl Display for Token {
 }
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
-#[doc = r#"Represents an intent for a blockchain transaction.
-
-An `Intent` encapsulates all the necessary information for executing
-a transaction on a supported blockchain network.
-
-# Fields
-
-* `intent_type` - The type of the intent (e.g., transfer, swap).
-* `amount` - The amount of tokens involved in the transaction.
-* `token` - The token identifier for the transaction. For native ICP, it's "ICP:native". For ICRC-1 tokens, it's "ICP:<icrc_standard>:<principal_id>". For ETH, it's "eth:<token_standard>:<token_address>".
-* `to` - The recipient's address or identifier. For ICP and ICRC-1 tokens, it's a Principal ID. For ETH, it's the address of the recipient.
-* `network` - The blockchain network on which the transaction should occur.
-* `status` - The current status of the intent."#]
 pub struct Intent {
     pub transaction_type: TransactionType,
     pub amount: f64,
@@ -380,7 +367,6 @@ pub struct Intent {
     pub network: SupportedNetwork,
     pub status: IntentStatus,
 }
-
 
 #[derive(CandidType, Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct TransactionRequest {
@@ -443,49 +429,6 @@ impl Storable for ProposedTransaction {
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         let deserialized: ProposedTransaction = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
-        deserialized
-    }
-}
-
-impl Intent {
-    pub fn network(&self) -> SupportedNetwork {
-        self.network.clone()
-    }
-
-    pub fn token(&self) -> TokenPath {
-        self.token.clone()
-    }
-
-    pub fn intent_type(&self) -> TransactionType {
-        self.transaction_type.clone()
-    }
-
-    pub fn status(&self) -> IntentStatus {
-        self.status.clone()
-    }
-
-    pub fn to(&self) -> String {
-        self.to.clone()
-    }
-
-    pub fn amount(&self) -> f64 {
-        self.amount
-    }
-}
-
-impl Storable for Intent {
-    const BOUND: Bound = Bound::Bounded {
-        max_size: 1024,
-        is_fixed_size: false,
-    };
-
-    fn to_bytes(&self) -> Cow<[u8]> {
-        let serialized = serde_cbor::to_vec(self).expect("Serialization failed");
-        Cow::Owned(serialized)
-    }
-
-    fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        let deserialized: Intent = serde_cbor::from_slice(&bytes.to_vec()).unwrap();
         deserialized
     }
 }

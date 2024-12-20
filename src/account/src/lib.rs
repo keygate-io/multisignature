@@ -3,7 +3,6 @@ mod evm;
 mod evm_types;
 mod intent;
 mod ledger;
-mod tests;
 pub mod types;
 
 use b3_utils::{

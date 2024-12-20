@@ -1,5 +1,5 @@
 use candid::{encode_one, Principal};
-use central::types::{Vault, VaultInitArgs};
+use keygate_core::types::{canister_init::VaultInitArgs, vault::Vault};
 use pocket_ic::{query_candid_as, update_candid_as, PocketIc};
 use crate::{setup::{setup_new_env, setup_new_env_with_config, SetupConfig}, utils::generate_principal, TestEnv};
 
@@ -31,6 +31,7 @@ fn test_user_linked_vaults() {
        "deploy_account",
        (VaultInitArgs {
            name: "Funding".to_string(),
+           signers: vec![alice],
        },),
    ).unwrap();
 

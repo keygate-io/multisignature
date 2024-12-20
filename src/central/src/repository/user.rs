@@ -2,13 +2,13 @@ use std::cell::RefCell;
 use candid::Principal;
 use ic_cdk::api::call::CallResult;
 use ic_stable_structures::{memory_manager::VirtualMemory, StableBTreeMap, DefaultMemoryImpl};
-use crate::types::{UserInfo, Vault};
+use keygate_core::types::central::{UserData, Vault};
 use crate::{MEMORY_MANAGER, USERS_MEMORY, VAULTS_MEMORY, VAULT_NAMES_MEMORY};
 
 pub struct UserRepository;
 
 thread_local! {
-    static USER_DB: RefCell<StableBTreeMap<Principal, UserInfo, VirtualMemory<DefaultMemoryImpl>>> = 
+    static USER_DB: RefCell<StableBTreeMap<Principal, UserData, VirtualMemory<DefaultMemoryImpl>>> = 
         RefCell::new(StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(USERS_MEMORY))
         ));
@@ -32,11 +32,11 @@ impl Default for UserRepository {
 
 impl UserRepository {
 
-    pub fn insert_user(&self, principal: Principal, user_info: UserInfo) -> Option<UserInfo> {
+    pub fn insert_user(&self, principal: Principal, user_info: UserData) -> Option<UserData> {
         USER_DB.with(|users| users.borrow_mut().insert(principal, user_info))
     }
 
-    pub fn get_user(&self, principal: &Principal) -> Option<UserInfo> {
+    pub fn get_user(&self, principal: &Principal) -> Option<UserData> {
         USER_DB.with(|users| users.borrow().get(principal))
     }
 
@@ -121,7 +121,7 @@ pub mod user_tests {
     fn test_user_operations() {
         let repo = UserRepository::default();
         let principal = create_test_principal(1);
-        let user_info = UserInfo { name: "Test User".to_string() };
+        let user_info = UserData { name: "Test User".to_string() };
 
         assert!(!repo.user_exists(&principal));
         repo.insert_user(principal, user_info.clone());
@@ -137,7 +137,7 @@ pub mod user_tests {
         let vault_id = create_test_principal(2);
         
         // Create user first
-        repo.insert_user(owner, UserInfo { name: "Test User".to_string() });
+        repo.insert_user(owner, UserData { name: "Test User".to_string() });
 
         // Create vault
         let result = repo.create_vault(vault_id, "Test Vault".to_string(), owner);

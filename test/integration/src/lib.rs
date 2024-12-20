@@ -1,9 +1,12 @@
 use candid::Principal;
+
 use pocket_ic::PocketIc;
 
-
-
 mod user_tests;
+
+mod central_tests;
+
+mod account_tests;
 
 pub mod setup;
 

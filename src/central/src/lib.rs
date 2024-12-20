@@ -10,10 +10,10 @@ use std::cell::RefCell;
 use candid::Principal;
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
-    DefaultMemoryImpl, StableBTreeMap,
+    DefaultMemoryImpl,
 };
 use repository::UserRepository;
-use types::{Memory, UserInfo, Vault, VaultInitArgs};
+use keygate_core::types::central::{UserData, Vault, VaultInitArgs};
 
 const USERS_MEMORY: MemoryId = MemoryId::new(0);
 const VAULTS_MEMORY: MemoryId = MemoryId::new(1);
@@ -45,7 +45,7 @@ fn register_user() {
         return;
     }
 
-    repository.insert_user(principal, UserInfo { name: "N/A".to_string() });
+    repository.insert_user(principal, UserData { name: "N/A".to_string() });
 }
 
 #[ic_cdk::query]
@@ -138,7 +138,7 @@ fn load_wallet_wasm_blob(wasm_blob: Vec<u8>) {
 }
 
 #[ic_cdk::query]
-fn get_user() -> Option<UserInfo> {
+fn get_user() -> Option<UserData> {
     let principal = ic_cdk::caller();
     let repository = UserRepository::default();
 

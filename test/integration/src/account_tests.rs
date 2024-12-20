@@ -1,30 +1,23 @@
 use b3_utils::{ledger::ICRCAccount, Subaccount};
 use candid::{encode_one, CandidType, Decode, Principal};
 use ic_ledger_types::{AccountIdentifier, Tokens};
-use icrc_ledger_types::icrc1::account::Account;
-use integration::setup::setup_new_env_with_config;
-use integration::setup::SetupConfig;
-use integration::types::NnsLedgerCanisterInitPayload;
-use integration::types::NnsLedgerCanisterUpgradePayload;
-use integration::TestEnv;
-#[cfg(test)]
+use crate::setup::setup_new_env_with_config;
+use crate::setup::SetupConfig;
+use crate::types::NnsLedgerCanisterInitPayload;
+use crate::types::NnsLedgerCanisterUpgradePayload;
+use crate::TestEnv;
 use pocket_ic::PocketIc;
-#[cfg(test)]
 use pocket_ic::WasmResult;
-#[cfg(test)]
 use pocket_ic::{query_candid_as, update_candid, update_candid_as};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use std::{error::Error, fmt::format, io::Write};
 
-#[cfg(test)]
-use crate::to_subaccount;
-use crate::types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs};
-use crate::{
-    IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork,
-    TransactionRequest, TransactionType,
-};
+// use core
+use keygate_core::utils::to_subaccount;
+// use core
+use keygate_core::types::vault::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs, IntentStatus, ProposeTransactionArgs, ProposedTransaction, SupportedNetwork, TransactionRequest, TransactionType};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
@@ -33,7 +26,6 @@ pub enum LedgerCanisterPayload {
     Upgrade(Option<NnsLedgerCanisterUpgradePayload>),
 }
 
-#[cfg(test)]
 pub fn get_icp_balance(env: &PocketIc, user_id: Principal) -> u64 {
     use ic_ledger_types::{AccountBalanceArgs, Tokens, DEFAULT_SUBACCOUNT};
     use pocket_ic::update_candid_as;
@@ -647,7 +639,7 @@ fn should_not_add_signer_if_exists() {
     ).unwrap();
     
     println!("Attempting to add same signer again");
-    let (result,): (Result<(), crate::Error>,) = update_candid_as(
+    let (result,): (Result<(), keygate_core::error::Error>,) = update_candid_as(
         &env,
         account_id,
         caller,
@@ -766,11 +758,12 @@ mod intent_tests {
     use num_bigint::ToBigUint;
     use pocket_ic::{common::rest::base64, query_candid, PocketIcBuilder, WasmResult};
 
-    use crate::{
-        ledger,
-        types::{ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs},
+
+    // use/move to core
+    use keygate_core::types::vault::{
+        ledger::RECOMMENDED_ICP_TRANSACTION_FEE,
+        ArchiveOptions, FeatureFlags, ICRC1Args, ICRC1InitArgs,
         Intent, IntentStatus, SupportedNetwork, TransactionRequest, TransactionType,
-        RECOMMENDED_ICP_TRANSACTION_FEE,
     };
 
     use super::*;
