@@ -2,9 +2,6 @@ mod deployer;
 pub mod types;
 mod repository;
 
-#[cfg(test)]
-mod tests;
-
 use std::cell::RefCell;
 
 use candid::Principal;

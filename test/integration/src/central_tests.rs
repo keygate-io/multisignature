@@ -4,6 +4,7 @@ use candid::{encode_one, Decode, Principal};
 use ed25519_dalek::SigningKey;
 use pocket_ic::{PocketIc, WasmResult};
 use rand::rngs::OsRng;
+use libflate::gzip::Encoder;
 
 use keygate_core::types::central::{UserData, Vault, VaultInitArgs};
 
@@ -15,7 +16,6 @@ fn generate_principal() -> Principal {
 }
 
 fn gzip(blob: Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
-    use libflate::gzip::Encoder;
     let mut encoder = Encoder::new(Vec::with_capacity(blob.len())).unwrap();
     encoder.write_all(&blob)?;
     Ok(encoder.finish().into_result().unwrap())
