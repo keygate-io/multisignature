@@ -44,6 +44,7 @@ jobs:
        chmod +x pocket-ic
        cp pocket-ic src/account/
        cp pocket-ic src/central/
+       cp pocket-ic test/integration/
 
    - name: Cache cargo and dfx
      uses: actions/cache@v3
