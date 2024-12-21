@@ -1,6 +1,22 @@
 # yamllint disable rule:line-length
 name: E2E canister validation using PocketIC
 on:
+ workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      run_integration:
+        description: 'Run integration tests'
+        required: true
+        default: true
+        type: boolean
  push:
    branches: [ "main" ]
    paths:
