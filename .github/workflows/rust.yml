@@ -114,6 +114,9 @@ jobs:
    - name: Run integration tests
      run: |
        pwd
+       ls -l
+       ls -l test
+       ls -l test/integration
        ls -l test/integration/pocket-ic
        file test/integration/pocket-ic
        ldd test/integration/pocket-ic
