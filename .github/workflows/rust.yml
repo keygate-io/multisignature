@@ -1,5 +1,5 @@
 # yamllint disable rule:line-length
-name: Rust testing using PocketIC
+name: E2E canister validation using PocketIC
 on:
  push:
    branches: [ "main" ]
@@ -95,8 +95,8 @@ jobs:
        dfx build central
        dfx build evm_rpc
 
-   - name: Run tests 
-     run: cargo test --verbose
+   - name: Run integration tests
+     run: ./scripts/run-integration-tests.sh
 
    - name: Stop DFX
      if: always()
