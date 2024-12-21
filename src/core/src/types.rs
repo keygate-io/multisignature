@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 pub mod canister_init {
     use candid::{CandidType, Principal};
     use serde::{Deserialize, Serialize};
@@ -11,7 +7,6 @@ pub mod canister_init {
         pub name: String,
         pub signers: Vec<Principal>,
     }
-<<<<<<< HEAD
 }
 
 pub mod vault {
@@ -302,7 +297,4 @@ pub mod central {
             is_fixed_size: false,
         };
     }
-=======
-
->>>>>>> main
 }

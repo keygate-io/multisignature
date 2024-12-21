@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 use candid::Principal;
 use keygate_core::types::{canister_init::VaultInitArgs, vault::Vault};
 use pocket_ic::update_candid_as;
 use crate::{setup::setup_new_env, utils::generate_principal, TestEnv};
-=======
-use candid::{encode_one, Principal};
-use central::types::{Vault, VaultInitArgs};
-use pocket_ic::{query_candid_as, update_candid_as, PocketIc};
-use crate::{setup::{setup_new_env, setup_new_env_with_config, SetupConfig}, utils::generate_principal, TestEnv};
->>>>>>> main
 
 #[test]
 fn test_user_linked_vaults() {
@@ -38,10 +31,7 @@ fn test_user_linked_vaults() {
        "deploy_account",
        (VaultInitArgs {
            name: "Funding".to_string(),
-<<<<<<< HEAD
            signers: vec![alice],
-=======
->>>>>>> main
        },),
    ).unwrap();
 
@@ -50,11 +40,7 @@ fn test_user_linked_vaults() {
    assert!(true);
 
    // Add Bob as a signer to the vault created by Alice
-<<<<<<< HEAD
    let _: () = update_candid_as(
-=======
-   let wasm_result: () = update_candid_as(
->>>>>>> main
        &env,
        vault_id,
        alice,

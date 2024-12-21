@@ -1,25 +1,10 @@
 use candid::{CandidType, Nat, Principal};
-<<<<<<< HEAD
 use ic_ledger_types::{Subaccount, Tokens};
 use ic_stable_structures::storable::{Bound, Storable};
 use icrc_ledger_types::icrc1::account::Account;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::collections::{HashSet};
-=======
-use ic_cdk::api::call::CallResult;
-use ic_ledger_types::{Subaccount, AccountBalanceArgs, AccountIdentifier, Tokens, DEFAULT_SUBACCOUNT};
-use ic_stable_structures::storable::{Bound, Storable};
-use icrc_ledger_types::icrc1::account::Account;
-use icrc_ledger_types::icrc1::transfer::{TransferArg, TransferError};
-use pocket_ic::{query_candid_as, update_candid_as, PocketIc, WasmResult};
-use serde::{Deserialize, Serialize};
-use serde_bytes::ByteBuf;
-use std::any::Any;
-use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
-use std::str::FromStr;
->>>>>>> main
 use std::time::Duration;
 
 #[derive(Clone, Eq, PartialEq, Debug, CandidType, Deserialize, Serialize)]
@@ -175,10 +160,6 @@ impl PartialEq for FeatureFlags {
     fn eq(&self, other: &Self) -> bool {
         self.icrc2 == other.icrc2
     }
-<<<<<<< HEAD
 }
 
 
-=======
-}
->>>>>>> main
