@@ -8,13 +8,20 @@ TESTNAME=${1:-}
 TEST_THREADS="${TEST_THREADS:-2}"
 
 cd test/integration
-rm -f pocket-ic.gz pocket-ic
-echo "PocketIC download starting"
-curl -L https://github.com/dfinity/pocketic/releases/download/6.0.0/pocket-ic-x86_64-darwin.gz -o pocket-ic.gz
-gunzip pocket-ic.gz
-chmod +x pocket-ic
+
+# Check if pocket-ic exists and is executable
+if [[ ! -x "pocket-ic" ]]; then
+    echo "PocketIC not found or not executable, downloading..."
+    rm -f pocket-ic.gz pocket-ic
+    curl -L https://github.com/dfinity/pocketic/releases/download/6.0.0/pocket-ic-x86_64-linux.gz -o pocket-ic.gz
+    gunzip pocket-ic.gz
+    chmod +x pocket-ic
+    echo "PocketIC download completed"
+else
+    echo "PocketIC already exists, skipping download"
+fi
+
 export POCKET_IC_BIN="$(pwd)/pocket-ic"
-echo "PocketIC download completed"
 cd ../..
 
 cargo test --package integration $TESTNAME -- --test-threads $TEST_THREADS --nocapture
