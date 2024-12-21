@@ -112,7 +112,13 @@ jobs:
        dfx build evm_rpc
 
    - name: Run integration tests
-     run: ./scripts/run-integration-tests.sh
+     run: |
+       pwd
+       ls -l test/integration/pocket-ic
+       file test/integration/pocket-ic
+       ldd test/integration/pocket-ic
+       chmod +x test/integration/pocket-ic
+       ./scripts/run-integration-tests.sh
 
    - name: Stop DFX
      if: always()
