@@ -11,6 +11,7 @@ ic-cdk-macros = { workspace = true }
 serde = { workspace = true }
 serde_bytes = "0.11.15"
 ic-stable-structures = "0.6.3"
+<<<<<<< HEAD
 ic-ledger-types = "0.10.0"
 icrc-ledger-types = "0.1.5"
 keygate_core = { path = "../../src/core" }
@@ -23,3 +24,18 @@ rand = "0.8.5"
 libflate = "2.1.0"
 b3_utils = { version = "0.13.1", features = ["ledger"] }
 num-bigint = "0.4.6"
+=======
+icrc-ledger-types = "0.1.5"
+ic-ledger-types = "0.10.0"
+crc32fast = "1.4.0"
+sha2 = "0.10.8"
+pocket-ic = "5.0.0"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+rand = "0.8.5"
+central = { path = "../../src/central" }
+ciborium = "0.2.2"
+keygate_core = { path = "../../src/core" }
+
+[dev-dependencies]
+libflate = "2.1.0"
+>>>>>>> main

@@ -1,4 +1,5 @@
 use candid::Principal;
+<<<<<<< HEAD
 
 use pocket_ic::PocketIc;
 
@@ -11,6 +12,14 @@ mod central_tests;
 #[cfg(test)]
 mod account_tests;
 
+=======
+use pocket_ic::PocketIc;
+
+
+
+mod user_tests;
+
+>>>>>>> main
 pub mod setup;
 
 pub mod utils;
