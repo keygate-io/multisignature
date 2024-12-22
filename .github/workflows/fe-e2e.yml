@@ -1,4 +1,4 @@
-name: E2E validation using Playwright 
+name: E2E frontend validation using Playwright 
 on:
   workflow_dispatch:
     inputs:
