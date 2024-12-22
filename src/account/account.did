@@ -51,7 +51,13 @@ type IntentStatus = variant {
 type TransactionType = variant { Swap; Transfer };
 type Result = variant { Ok : text; Err : Error };
 type SupportedNetwork = variant { ETH; ICP };
-service : () -> {
+
+type AccountInitializationArgs = record {
+  name : text;
+  signers : vec principal;
+};
+
+service : (AccountInitializationArgs) -> {
   add_subaccount : (text) -> (Result);
   add_icrc_account : (text) -> (Result);
   execute_transaction : (nat64) -> (IntentStatus);

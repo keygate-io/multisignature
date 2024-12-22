@@ -289,14 +289,24 @@ deploy_ledger_canisters() {
 deploy_core_canisters() {
     print_status "Deploying core canisters..."
     
-    local canisters=("internet_identity" "account" "central")
-    for canister in "${canisters[@]}"; do
-        print_status "Deploying $canister..."
-        dfx deploy "$canister" || print_error "Failed to deploy $canister"
-        print_success "$canister deployed successfully"
-    done
+    # First install internet_identity since it doesn't need special init args
+    print_status "Deploying internet_identity..."
+    dfx deploy "internet_identity" || print_error "Failed to deploy internet_identity"
+    print_success "internet_identity deployed successfully"
+    
+    # Install account with the new initialization arguments
+    print_status "Installing account canister..."
+    dfx canister install account --argument "(record { 
+        name = \"Primary Vault\";
+        signers = vec { principal \"$DEFAULT_PRINCIPAL\" };
+    })" || print_error "Failed to install account canister"
+    print_success "account canister installed successfully"
+    
+    # Finally deploy central
+    print_status "Deploying central..."
+    dfx deploy "central" || print_error "Failed to deploy central"
+    print_success "central deployed successfully"
 }
-
 deploy_frontend_canisters() {
     print_status "Deploying frontend canisters..."
     
