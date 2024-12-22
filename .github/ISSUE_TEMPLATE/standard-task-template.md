@@ -1,16 +1,16 @@
 ---
-name: Standard task template
-about: Feature or task that needs to be completed.
-title: "[TASK]"
-labels: enhancement
+name: Bug template
+about: Bug that has been observed.
+title: "[BUG]"
+labels: bug
 assignees: ''
 
 ---
 
 ## Goal
-[1-2 sentences describing what needs to be accomplished]
+[1-2 sentences describing what needs to be fixed]
 
-## Acceptance Criteria
+## Steps to Reproduce
 - [ ] Key requirement 1
 - [ ] Key requirement 2
 - [ ] Key requirement 3
