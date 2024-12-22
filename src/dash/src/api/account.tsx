@@ -139,10 +139,6 @@ export function addSigner(account_canister_id: Principal, identity: Identity, si
   return getAccountActor(account_canister_id, identity).add_signer(signer);
 }
 
-// export function getTokens(account_canister_id: Principal, identity: Identity) {
-//   return getAccountActor(account_canister_id, identity).get_tokens();
-// }
-
 export async function createIcrcAccount(
   principal_id: Principal,
   token_principal_id: Principal,
