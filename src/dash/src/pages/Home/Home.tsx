@@ -13,7 +13,6 @@ import {
   CssBaseline,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import TelegramIcon from "@mui/icons-material/Telegram";
 import { DiscordOutlined } from "@ant-design/icons";
 
 const theme = createTheme({
@@ -190,6 +189,7 @@ const Home = () => {
                   onClick={login}
                   size="large"
                   color="primary"
+                  data-tid="login-button"
                   sx={{
                     py: 1.5,
                     px: 4,
