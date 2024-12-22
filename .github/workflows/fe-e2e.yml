@@ -81,6 +81,10 @@ jobs:
           echo "Waiting for deployment... ($elapsed seconds)"
         done
 
+    - name: Start frontend server
+      run: |
+        npm run start
+
     - name: Run Playwright tests
       run: npx playwright test
 
