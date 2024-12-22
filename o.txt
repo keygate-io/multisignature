@@ -1,0 +1,854 @@
+diff --git a/.gitignore b/.gitignore
+index 8ba10093..5e6108c0 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -32,4 +32,8 @@ load_account_wasm.log
+ 
+ .history
+ 
+-pocket-ic
+\ No newline at end of file
++pocket-ic
++/test-results/
++/playwright-report/
++/blob-report/
++/playwright/.cache/
+diff --git a/e2e/pages/home.page.ts b/e2e/pages/home.page.ts
+new file mode 100644
+index 00000000..75eef75a
+--- /dev/null
++++ b/e2e/pages/home.page.ts
+@@ -0,0 +1,45 @@
++import { expect, Page } from "@playwright/test";
++
++export interface HomePageParams {
++  page: Page; // Playwright page
++  iiPage: any; // Type should match your iiPage implementation
++}
++
++export class HomePage {
++  protected page: Page;
++  protected iiPage: any;
++  private readonly baseUrl = "http://localhost:3000/";
++
++  constructor({ page, iiPage }: HomePageParams) {
++    this.page = page;
++    this.iiPage = iiPage;
++  }
++
++  async goto(): Promise<void> {
++    await this.page.goto(this.baseUrl);
++  }
++
++  async waitForReady(): Promise<void> {
++    await this.page.waitForSelector("[data-tid=login-button]", {
++      state: "attached",
++    });
++  }
++
++  async expectTitle(): Promise<void> {
++    await expect(this.page).toHaveTitle(/Keygate/);
++  }
++
++  async expectLoginButton(): Promise<void> {
++    const connectButton = this.page.getByRole("button", {
++      name: "Connect with Internet Identity",
++    });
++    await expect(connectButton).toBeVisible();
++    await expect(connectButton).toHaveText("Connect with Internet Identity");
++  }
++
++  async login(): Promise<void> {
++    await this.iiPage.signInWithNewIdentity({
++      captcha: true,
++    });
++  }
++}
+diff --git a/e2e/welcome.spec.ts b/e2e/welcome.spec.ts
+new file mode 100644
+index 00000000..b478f067
+--- /dev/null
++++ b/e2e/welcome.spec.ts
+@@ -0,0 +1,72 @@
++import { test } from "@playwright/test";
++import { testWithII } from "@dfinity/internet-identity-playwright";
++import { HomePage } from "./pages/home.page";
++
++// test("has Keygate in title", async ({ page }) => {
++//   const homePage = new HomePage({ page, iiPage: null });
++//   await homePage.goto();
++//   await homePage.expectTitle();
++// });
++
++// test("has Connect with Internet Identity button", async ({ page }) => {
++//   const homePage = new HomePage({ page, iiPage: null });
++//   await homePage.goto();
++//   await homePage.expectLoginButton();
++// });
++
++// testWithII("user can login", async ({ page, iiPage }) => {
++//   // 0) Wait for II to be ready
++//   await iiPage.waitReady({
++//     url: "http://localhost:4943/",
++//     timeout: 10000,
++//     canisterId: "bd3sg-teaaa-aaaaa-qaaba-cai",
++//   });
++
++//   const homePage = new HomePage({ page, iiPage });
++//   // 1) Attempt to navigate to the home page
++//   await homePage.goto();
++//   // 1) Attempt to click on the login button
++//   // 2) Complete the II flow
++//   await homePage.login();
++// });
++
++testWithII("user can login", async ({ page, iiPage }) => {
++  // 1. Network logging
++  page.on("console", (msg) => console.log(`Page log: ${msg.text()}`));
++  page.on("request", (req) => console.log(`Request: ${req.url()}`));
++  page.on("response", (res) =>
++    console.log(`Response: ${res.url()} - ${res.status()}`)
++  );
++
++  // 2. Add page error capture
++  page.on("pageerror", (err) => console.error(`Page error: ${err}`));
++  page.on("requestfailed", (req) =>
++    console.error(`Failed request: ${req.url()}`)
++  );
++
++  // Gen 0 screenshot
++  await page.screenshot({ path: "debug0.png" });
++
++  // Gen 1 - Ensuring II Page is ready and fully loaded
++  await iiPage.waitReady({
++    url: "http://localhost:4943",
++    canisterId: "bd3sg-teaaa-aaaaa-qaaba-cai",
++  });
++
++  // Gen 1 screenshot
++  await page.screenshot({ path: "debug1.png" });
++
++  await page.goto("http://localhost:3000/");
++
++  // Gen 2 - Navigating to the home page
++  await page.screenshot({ path: "debug2.png" });
++
++  // Gen 3 - Clicking the login button
++  await iiPage.signInWithNewIdentity({
++    selector: "[data-tid=login-button]",
++    captcha: true,
++  });
++
++  // Gen 4 - Screenshot after login
++  await page.screenshot({ path: "debug3.png" });
++});
+diff --git a/package.json b/package.json
+index 4915349c..d52ea73b 100644
+--- a/package.json
++++ b/package.json
+@@ -1,40 +1,42 @@
+ {
+-    "engines": {
+-        "node": ">=16.0.0",
+-        "npm": ">=7.0.0"
+-    },
+-    "name": "multisignature",
+-    "scripts": {
+-        "build": "npm run build --workspaces --if-present",
+-        "prebuild": "npm run prebuild --workspaces --if-present",
+-        "pretest": "npm run prebuild --workspaces --if-present",
+-        "start": "npm start --workspaces --if-present",
+-        "test": "npm test --workspaces --if-present"
+-    },
+-    "type": "module",
+-    "workspaces": [
+-        "src/dash",
+-        "src/landing"
+-    ],
+-    "dependencies": {
+-        "@ant-design/icons": "^5.3.5",
+-        "@dfinity/nns": "^7.0.1",
+-        "bech32": "^2.0.0",
+-        "buffer": "^6.0.3",
+-        "clsx": "^2.1.0",
+-        "crypto-js": "^4.2.0",
+-        "js-sha3": "^0.9.3",
+-        "react-router-dom": "^6.22.3",
+-        "readable-stream": "^4.5.2",
+-        "util-deprecate": "^1.0.2",
+-        "web3": "^4.7.0"
+-    },
+-    "devDependencies": {
+-        "@mui/icons-material": "^5.16.7",
+-        "@mui/types": "^7.2.15",
+-        "@types/bech32": "^1.1.4",
+-        "@types/crypto-js": "^4.2.2",
+-        "@types/node": "^20.11.30",
+-        "@types/ripemd160": "^2.0.3"
+-    }
++  "engines": {
++    "node": ">=16.0.0",
++    "npm": ">=7.0.0"
++  },
++  "name": "multisignature",
++  "scripts": {
++    "build": "npm run build --workspaces --if-present",
++    "prebuild": "npm run prebuild --workspaces --if-present",
++    "pretest": "npm run prebuild --workspaces --if-present",
++    "start": "npm start --workspaces --if-present",
++    "test": "npm test --workspaces --if-present"
++  },
++  "type": "module",
++  "workspaces": [
++    "src/dash",
++    "src/landing"
++  ],
++  "dependencies": {
++    "@ant-design/icons": "^5.3.5",
++    "@dfinity/nns": "^7.0.1",
++    "bech32": "^2.0.0",
++    "buffer": "^6.0.3",
++    "clsx": "^2.1.0",
++    "crypto-js": "^4.2.0",
++    "js-sha3": "^0.9.3",
++    "react-router-dom": "^6.22.3",
++    "readable-stream": "^4.5.2",
++    "util-deprecate": "^1.0.2",
++    "web3": "^4.7.0"
++  },
++  "devDependencies": {
++    "@dfinity/internet-identity-playwright": "^0.0.4",
++    "@mui/icons-material": "^5.16.7",
++    "@mui/types": "^7.2.15",
++    "@playwright/test": "^1.49.1",
++    "@types/bech32": "^1.1.4",
++    "@types/crypto-js": "^4.2.2",
++    "@types/node": "^20.11.30",
++    "@types/ripemd160": "^2.0.3"
++  }
+ }
+diff --git a/playwright.config.ts b/playwright.config.ts
+new file mode 100644
+index 00000000..efd9b88b
+--- /dev/null
++++ b/playwright.config.ts
+@@ -0,0 +1,79 @@
++import { defineConfig, devices } from '@playwright/test';
++
++/**
++ * Read environment variables from file.
++ * https://github.com/motdotla/dotenv
++ */
++// import dotenv from 'dotenv';
++// import path from 'path';
++// dotenv.config({ path: path.resolve(__dirname, '.env') });
++
++/**
++ * See https://playwright.dev/docs/test-configuration.
++ */
++export default defineConfig({
++  testDir: './e2e',
++  /* Run tests in files in parallel */
++  fullyParallel: true,
++  /* Fail the build on CI if you accidentally left test.only in the source code. */
++  forbidOnly: !!process.env.CI,
++  /* Retry on CI only */
++  retries: process.env.CI ? 2 : 0,
++  /* Opt out of parallel tests on CI. */
++  workers: process.env.CI ? 1 : undefined,
++  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
++  reporter: 'html',
++  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
++  use: {
++    /* Base URL to use in actions like `await page.goto('/')`. */
++    // baseURL: 'http://127.0.0.1:3000',
++
++    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
++    trace: 'on-first-retry',
++  },
++
++  /* Configure projects for major browsers */
++  projects: [
++    {
++      name: 'chromium',
++      use: { ...devices['Desktop Chrome'] },
++    },
++
++    {
++      name: 'firefox',
++      use: { ...devices['Desktop Firefox'] },
++    },
++
++    {
++      name: 'webkit',
++      use: { ...devices['Desktop Safari'] },
++    },
++
++    /* Test against mobile viewports. */
++    // {
++    //   name: 'Mobile Chrome',
++    //   use: { ...devices['Pixel 5'] },
++    // },
++    // {
++    //   name: 'Mobile Safari',
++    //   use: { ...devices['iPhone 12'] },
++    // },
++
++    /* Test against branded browsers. */
++    // {
++    //   name: 'Microsoft Edge',
++    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
++    // },
++    // {
++    //   name: 'Google Chrome',
++    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
++    // },
++  ],
++
++  /* Run your local dev server before starting the tests */
++  // webServer: {
++  //   command: 'npm run start',
++  //   url: 'http://127.0.0.1:3000',
++  //   reuseExistingServer: !process.env.CI,
++  // },
++});
+diff --git a/src/dash/src/pages/Dashboard/Dashboard.tsx b/src/dash/src/pages/Dashboard/Dashboard.tsx
+index efb02fca..70feeb87 100644
+--- a/src/dash/src/pages/Dashboard/Dashboard.tsx
++++ b/src/dash/src/pages/Dashboard/Dashboard.tsx
+@@ -35,14 +35,18 @@ const Dashboard = () => {
+ 
+   useEffect(() => {
+     setApprovalsLoading(true);
+-    if (!vaultCanisterId || !identity) { return; }
++    if (!vaultCanisterId || !identity) {
++      return;
++    }
+     getThreshold(vaultCanisterId, identity!).then((threshold) => {
+       setRequiredApprovals(Number(threshold));
+       setCurrentApproval(Number(threshold));
+     });
++
+     getSigners(vaultCanisterId, identity!).then((signers) => {
+       setTotalApprovals(signers.length);
+-    })
++    });
++
+     setApprovalsLoading(false);
+   }, [vaultCanisterId]);
+ 
+diff --git a/src/dash/src/pages/Home/Home.tsx b/src/dash/src/pages/Home/Home.tsx
+index f3abb311..7de49f60 100644
+--- a/src/dash/src/pages/Home/Home.tsx
++++ b/src/dash/src/pages/Home/Home.tsx
+@@ -13,7 +13,6 @@ import {
+   CssBaseline,
+ } from "@mui/material";
+ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+-import TelegramIcon from "@mui/icons-material/Telegram";
+ import { DiscordOutlined } from "@ant-design/icons";
+ 
+ const theme = createTheme({
+@@ -190,6 +189,7 @@ const Home = () => {
+                   onClick={login}
+                   size="large"
+                   color="primary"
++                  data-tid="login-button"
+                   sx={{
+                     py: 1.5,
+                     px: 4,
+diff --git a/tests-examples/demo-todo-app.spec.ts b/tests-examples/demo-todo-app.spec.ts
+new file mode 100644
+index 00000000..3fee5908
+--- /dev/null
++++ b/tests-examples/demo-todo-app.spec.ts
+@@ -0,0 +1,489 @@
++import { test, expect, type Page } from "@playwright/test";
++
++test.beforeEach(async ({ page }) => {
++  await page.goto("https://demo.playwright.dev/todomvc");
++});
++
++const TODO_ITEMS = [
++  "buy some cheese",
++  "feed the cat",
++  "book a doctors appointment",
++] as const;
++
++test.describe("New Todo", () => {
++  test("should allow me to add todo items", async ({ page }) => {
++    // create a new todo locator
++    const newTodo = page.getByPlaceholder("What needs to be done?");
++
++    // Create 1st todo.
++    await newTodo.fill(TODO_ITEMS[0]);
++    await newTodo.press("Enter");
++
++    // Make sure the list only has one todo item.
++    await expect(page.getByTestId("todo-title")).toHaveText([TODO_ITEMS[0]]);
++
++    // Create 2nd todo.
++    await newTodo.fill(TODO_ITEMS[1]);
++    await newTodo.press("Enter");
++
++    // Make sure the list now has two todo items.
++    await expect(page.getByTestId("todo-title")).toHaveText([
++      TODO_ITEMS[0],
++      TODO_ITEMS[1],
++    ]);
++
++    await checkNumberOfTodosInLocalStorage(page, 2);
++  });
++
++  test("should clear text input field when an item is added", async ({
++    page,
++  }) => {
++    // create a new todo locator
++    const newTodo = page.getByPlaceholder("What needs to be done?");
++
++    // Create one todo item.
++    await newTodo.fill(TODO_ITEMS[0]);
++    await newTodo.press("Enter");
++
++    // Check that input is empty.
++    await expect(newTodo).toBeEmpty();
++    await checkNumberOfTodosInLocalStorage(page, 1);
++  });
++
++  test("should append new items to the bottom of the list", async ({
++    page,
++  }) => {
++    // Create 3 items.
++    await createDefaultTodos(page);
++
++    // create a todo count locator
++    const todoCount = page.getByTestId("todo-count");
++
++    // Check test using different methods.
++    await expect(page.getByText("3 items left")).toBeVisible();
++    await expect(todoCount).toHaveText("3 items left");
++    await expect(todoCount).toContainText("3");
++    await expect(todoCount).toHaveText(/3/);
++
++    // Check all items in one call.
++    await expect(page.getByTestId("todo-title")).toHaveText(TODO_ITEMS);
++    await checkNumberOfTodosInLocalStorage(page, 3);
++  });
++});
++
++test.describe("Mark all as completed", () => {
++  test.beforeEach(async ({ page }) => {
++    await createDefaultTodos(page);
++    await checkNumberOfTodosInLocalStorage(page, 3);
++  });
++
++  test.afterEach(async ({ page }) => {
++    await checkNumberOfTodosInLocalStorage(page, 3);
++  });
++
++  test("should allow me to mark all items as completed", async ({ page }) => {
++    // Complete all todos.
++    await page.getByLabel("Mark all as complete").check();
++
++    // Ensure all todos have 'completed' class.
++    await expect(page.getByTestId("todo-item")).toHaveClass([
++      "completed",
++      "completed",
++      "completed",
++    ]);
++    await checkNumberOfCompletedTodosInLocalStorage(page, 3);
++  });
++
++  test("should allow me to clear the complete state of all items", async ({
++    page,
++  }) => {
++    const toggleAll = page.getByLabel("Mark all as complete");
++    // Check and then immediately uncheck.
++    await toggleAll.check();
++    await toggleAll.uncheck();
++
++    // Should be no completed classes.
++    await expect(page.getByTestId("todo-item")).toHaveClass(["", "", ""]);
++  });
++
++  test("complete all checkbox should update state when items are completed / cleared", async ({
++    page,
++  }) => {
++    const toggleAll = page.getByLabel("Mark all as complete");
++    await toggleAll.check();
++    await expect(toggleAll).toBeChecked();
++    await checkNumberOfCompletedTodosInLocalStorage(page, 3);
++
++    // Uncheck first todo.
++    const firstTodo = page.getByTestId("todo-item").nth(0);
++    await firstTodo.getByRole("checkbox").uncheck();
++
++    // Reuse toggleAll locator and make sure its not checked.
++    await expect(toggleAll).not.toBeChecked();
++
++    await firstTodo.getByRole("checkbox").check();
++    await checkNumberOfCompletedTodosInLocalStorage(page, 3);
++
++    // Assert the toggle all is checked again.
++    await expect(toggleAll).toBeChecked();
++  });
++});
++
++test.describe("Item", () => {
++  test("should allow me to mark items as complete", async ({ page }) => {
++    // create a new todo locator
++    const newTodo = page.getByPlaceholder("What needs to be done?");
++
++    // Create two items.
++    for (const item of TODO_ITEMS.slice(0, 2)) {
++      await newTodo.fill(item);
++      await newTodo.press("Enter");
++    }
++
++    // Check first item.
++    const firstTodo = page.getByTestId("todo-item").nth(0);
++    await firstTodo.getByRole("checkbox").check();
++    await expect(firstTodo).toHaveClass("completed");
++
++    // Check second item.
++    const secondTodo = page.getByTestId("todo-item").nth(1);
++    await expect(secondTodo).not.toHaveClass("completed");
++    await secondTodo.getByRole("checkbox").check();
++
++    // Assert completed class.
++    await expect(firstTodo).toHaveClass("completed");
++    await expect(secondTodo).toHaveClass("completed");
++  });
++
++  test("should allow me to un-mark items as complete", async ({ page }) => {
++    // create a new todo locator
++    const newTodo = page.getByPlaceholder("What needs to be done?");
++
++    // Create two items.
++    for (const item of TODO_ITEMS.slice(0, 2)) {
++      await newTodo.fill(item);
++      await newTodo.press("Enter");
++    }
++
++    const firstTodo = page.getByTestId("todo-item").nth(0);
++    const secondTodo = page.getByTestId("todo-item").nth(1);
++    const firstTodoCheckbox = firstTodo.getByRole("checkbox");
++
++    await firstTodoCheckbox.check();
++    await expect(firstTodo).toHaveClass("completed");
++    await expect(secondTodo).not.toHaveClass("completed");
++    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
++
++    await firstTodoCheckbox.uncheck();
++    await expect(firstTodo).not.toHaveClass("completed");
++    await expect(secondTodo).not.toHaveClass("completed");
++    await checkNumberOfCompletedTodosInLocalStorage(page, 0);
++  });
++
++  test("should allow me to edit an item", async ({ page }) => {
++    await createDefaultTodos(page);
++
++    const todoItems = page.getByTestId("todo-item");
++    const secondTodo = todoItems.nth(1);
++    await secondTodo.dblclick();
++    await expect(secondTodo.getByRole("textbox", { name: "Edit" })).toHaveValue(
++      TODO_ITEMS[1]
++    );
++    await secondTodo
++      .getByRole("textbox", { name: "Edit" })
++      .fill("buy some sausages");
++    await secondTodo.getByRole("textbox", { name: "Edit" }).press("Enter");
++
++    // Explicitly assert the new text value.
++    await expect(todoItems).toHaveText([
++      TODO_ITEMS[0],
++      "buy some sausages",
++      TODO_ITEMS[2],
++    ]);
++    await checkTodosInLocalStorage(page, "buy some sausages");
++  });
++});
++
++test.describe("Editing", () => {
++  test.beforeEach(async ({ page }) => {
++    await createDefaultTodos(page);
++    await checkNumberOfTodosInLocalStorage(page, 3);
++  });
++
++  test("should hide other controls when editing", async ({ page }) => {
++    const todoItem = page.getByTestId("todo-item").nth(1);
++    await todoItem.dblclick();
++    await expect(todoItem.getByRole("checkbox")).not.toBeVisible();
++    await expect(
++      todoItem.locator("label", {
++        hasText: TODO_ITEMS[1],
++      })
++    ).not.toBeVisible();
++    await checkNumberOfTodosInLocalStorage(page, 3);
++  });
++
++  test("should save edits on blur", async ({ page }) => {
++    const todoItems = page.getByTestId("todo-item");
++    await todoItems.nth(1).dblclick();
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .fill("buy some sausages");
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .dispatchEvent("blur");
++
++    await expect(todoItems).toHaveText([
++      TODO_ITEMS[0],
++      "buy some sausages",
++      TODO_ITEMS[2],
++    ]);
++    await checkTodosInLocalStorage(page, "buy some sausages");
++  });
++
++  test("should trim entered text", async ({ page }) => {
++    const todoItems = page.getByTestId("todo-item");
++    await todoItems.nth(1).dblclick();
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .fill("    buy some sausages    ");
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .press("Enter");
++
++    await expect(todoItems).toHaveText([
++      TODO_ITEMS[0],
++      "buy some sausages",
++      TODO_ITEMS[2],
++    ]);
++    await checkTodosInLocalStorage(page, "buy some sausages");
++  });
++
++  test("should remove the item if an empty text string was entered", async ({
++    page,
++  }) => {
++    const todoItems = page.getByTestId("todo-item");
++    await todoItems.nth(1).dblclick();
++    await todoItems.nth(1).getByRole("textbox", { name: "Edit" }).fill("");
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .press("Enter");
++
++    await expect(todoItems).toHaveText([TODO_ITEMS[0], TODO_ITEMS[2]]);
++  });
++
++  test("should cancel edits on escape", async ({ page }) => {
++    const todoItems = page.getByTestId("todo-item");
++    await todoItems.nth(1).dblclick();
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .fill("buy some sausages");
++    await todoItems
++      .nth(1)
++      .getByRole("textbox", { name: "Edit" })
++      .press("Escape");
++    await expect(todoItems).toHaveText(TODO_ITEMS);
++  });
++});
++
++test.describe("Counter", () => {
++  test("should display the current number of todo items", async ({ page }) => {
++    // create a new todo locator
++    const newTodo = page.getByPlaceholder("What needs to be done?");
++
++    // create a todo count locator
++    const todoCount = page.getByTestId("todo-count");
++
++    await newTodo.fill(TODO_ITEMS[0]);
++    await newTodo.press("Enter");
++
++    await expect(todoCount).toContainText("1");
++
++    await newTodo.fill(TODO_ITEMS[1]);
++    await newTodo.press("Enter");
++    await expect(todoCount).toContainText("2");
++
++    await checkNumberOfTodosInLocalStorage(page, 2);
++  });
++});
++
++test.describe("Clear completed button", () => {
++  test.beforeEach(async ({ page }) => {
++    await createDefaultTodos(page);
++  });
++
++  test("should display the correct text", async ({ page }) => {
++    await page.locator(".todo-list li .toggle").first().check();
++    await expect(
++      page.getByRole("button", { name: "Clear completed" })
++    ).toBeVisible();
++  });
++
++  test("should remove completed items when clicked", async ({ page }) => {
++    const todoItems = page.getByTestId("todo-item");
++    await todoItems.nth(1).getByRole("checkbox").check();
++    await page.getByRole("button", { name: "Clear completed" }).click();
++    await expect(todoItems).toHaveCount(2);
++    await expect(todoItems).toHaveText([TODO_ITEMS[0], TODO_ITEMS[2]]);
++  });
++
++  test("should be hidden when there are no items that are completed", async ({
++    page,
++  }) => {
++    await page.locator(".todo-list li .toggle").first().check();
++    await page.getByRole("button", { name: "Clear completed" }).click();
++    await expect(
++      page.getByRole("button", { name: "Clear completed" })
++    ).toBeHidden();
++  });
++});
++
++test.describe("Persistence", () => {
++  test("should persist its data", async ({ page }) => {
++    // create a new todo locator
++    const newTodo = page.getByPlaceholder("What needs to be done?");
++
++    for (const item of TODO_ITEMS.slice(0, 2)) {
++      await newTodo.fill(item);
++      await newTodo.press("Enter");
++    }
++
++    const todoItems = page.getByTestId("todo-item");
++    const firstTodoCheck = todoItems.nth(0).getByRole("checkbox");
++    await firstTodoCheck.check();
++    await expect(todoItems).toHaveText([TODO_ITEMS[0], TODO_ITEMS[1]]);
++    await expect(firstTodoCheck).toBeChecked();
++    await expect(todoItems).toHaveClass(["completed", ""]);
++
++    // Ensure there is 1 completed item.
++    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
++
++    // Now reload.
++    await page.reload();
++    await expect(todoItems).toHaveText([TODO_ITEMS[0], TODO_ITEMS[1]]);
++    await expect(firstTodoCheck).toBeChecked();
++    await expect(todoItems).toHaveClass(["completed", ""]);
++  });
++});
++
++test.describe("Routing", () => {
++  test.beforeEach(async ({ page }) => {
++    await createDefaultTodos(page);
++    // make sure the app had a chance to save updated todos in storage
++    // before navigating to a new view, otherwise the items can get lost :(
++    // in some frameworks like Durandal
++    await checkTodosInLocalStorage(page, TODO_ITEMS[0]);
++  });
++
++  test("should allow me to display active items", async ({ page }) => {
++    const todoItem = page.getByTestId("todo-item");
++    await page.getByTestId("todo-item").nth(1).getByRole("checkbox").check();
++
++    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
++    await page.getByRole("link", { name: "Active" }).click();
++    await expect(todoItem).toHaveCount(2);
++    await expect(todoItem).toHaveText([TODO_ITEMS[0], TODO_ITEMS[2]]);
++  });
++
++  test("should respect the back button", async ({ page }) => {
++    const todoItem = page.getByTestId("todo-item");
++    await page.getByTestId("todo-item").nth(1).getByRole("checkbox").check();
++
++    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
++
++    await test.step("Showing all items", async () => {
++      await page.getByRole("link", { name: "All" }).click();
++      await expect(todoItem).toHaveCount(3);
++    });
++
++    await test.step("Showing active items", async () => {
++      await page.getByRole("link", { name: "Active" }).click();
++    });
++
++    await test.step("Showing completed items", async () => {
++      await page.getByRole("link", { name: "Completed" }).click();
++    });
++
++    await expect(todoItem).toHaveCount(1);
++    await page.goBack();
++    await expect(todoItem).toHaveCount(2);
++    await page.goBack();
++    await expect(todoItem).toHaveCount(3);
++  });
++
++  test("should allow me to display completed items", async ({ page }) => {
++    await page.getByTestId("todo-item").nth(1).getByRole("checkbox").check();
++    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
++    await page.getByRole("link", { name: "Completed" }).click();
++    await expect(page.getByTestId("todo-item")).toHaveCount(1);
++  });
++
++  test("should allow me to display all items", async ({ page }) => {
++    await page.getByTestId("todo-item").nth(1).getByRole("checkbox").check();
++    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
++    await page.getByRole("link", { name: "Active" }).click();
++    await page.getByRole("link", { name: "Completed" }).click();
++    await page.getByRole("link", { name: "All" }).click();
++    await expect(page.getByTestId("todo-item")).toHaveCount(3);
++  });
++
++  test("should highlight the currently applied filter", async ({ page }) => {
++    await expect(page.getByRole("link", { name: "All" })).toHaveClass(
++      "selected"
++    );
++
++    //create locators for active and completed links
++    const activeLink = page.getByRole("link", { name: "Active" });
++    const completedLink = page.getByRole("link", { name: "Completed" });
++    await activeLink.click();
++
++    // Page change - active items.
++    await expect(activeLink).toHaveClass("selected");
++    await completedLink.click();
++
++    // Page change - completed items.
++    await expect(completedLink).toHaveClass("selected");
++  });
++});
++
++async function createDefaultTodos(page: Page) {
++  // create a new todo locator
++  const newTodo = page.getByPlaceholder("What needs to be done?");
++
++  for (const item of TODO_ITEMS) {
++    await newTodo.fill(item);
++    await newTodo.press("Enter");
++  }
++}
++
++async function checkNumberOfTodosInLocalStorage(page: Page, expected: number) {
++  return await page.waitForFunction((e) => {
++    return JSON.parse(localStorage["react-todos"]).length === e;
++  }, expected);
++}
++
++async function checkNumberOfCompletedTodosInLocalStorage(
++  page: Page,
++  expected: number
++) {
++  return await page.waitForFunction((e) => {
++    return (
++      JSON.parse(localStorage["react-todos"]).filter(
++        (todo: any) => todo.completed
++      ).length === e
++    );
++  }, expected);
++}
++
++async function checkTodosInLocalStorage(page: Page, title: string) {
++  return await page.waitForFunction((t) => {
++    return JSON.parse(localStorage["react-todos"])
++      .map((todo: any) => todo.title)
++      .includes(t);
++  }, title);
++}

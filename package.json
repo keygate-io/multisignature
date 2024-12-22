@@ -1,40 +1,42 @@
 {
-    "engines": {
-        "node": ">=16.0.0",
-        "npm": ">=7.0.0"
-    },
-    "name": "multisignature",
-    "scripts": {
-        "build": "npm run build --workspaces --if-present",
-        "prebuild": "npm run prebuild --workspaces --if-present",
-        "pretest": "npm run prebuild --workspaces --if-present",
-        "start": "npm start --workspaces --if-present",
-        "test": "npm test --workspaces --if-present"
-    },
-    "type": "module",
-    "workspaces": [
-        "src/dash",
-        "src/landing"
-    ],
-    "dependencies": {
-        "@ant-design/icons": "^5.3.5",
-        "@dfinity/nns": "^7.0.1",
-        "bech32": "^2.0.0",
-        "buffer": "^6.0.3",
-        "clsx": "^2.1.0",
-        "crypto-js": "^4.2.0",
-        "js-sha3": "^0.9.3",
-        "react-router-dom": "^6.22.3",
-        "readable-stream": "^4.5.2",
-        "util-deprecate": "^1.0.2",
-        "web3": "^4.7.0"
-    },
-    "devDependencies": {
-        "@mui/icons-material": "^5.16.7",
-        "@mui/types": "^7.2.15",
-        "@types/bech32": "^1.1.4",
-        "@types/crypto-js": "^4.2.2",
-        "@types/node": "^20.11.30",
-        "@types/ripemd160": "^2.0.3"
-    }
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "name": "multisignature",
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "prebuild": "npm run prebuild --workspaces --if-present",
+    "pretest": "npm run prebuild --workspaces --if-present",
+    "start": "npm start --workspaces --if-present",
+    "test": "npm test --workspaces --if-present"
+  },
+  "type": "module",
+  "workspaces": [
+    "src/dash",
+    "src/landing"
+  ],
+  "dependencies": {
+    "@ant-design/icons": "^5.3.5",
+    "@dfinity/nns": "^7.0.1",
+    "bech32": "^2.0.0",
+    "buffer": "^6.0.3",
+    "clsx": "^2.1.0",
+    "crypto-js": "^4.2.0",
+    "js-sha3": "^0.9.3",
+    "react-router-dom": "^6.22.3",
+    "readable-stream": "^4.5.2",
+    "util-deprecate": "^1.0.2",
+    "web3": "^4.7.0"
+  },
+  "devDependencies": {
+    "@dfinity/internet-identity-playwright": "^0.0.4",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/types": "^7.2.15",
+    "@playwright/test": "^1.49.1",
+    "@types/bech32": "^1.1.4",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^20.11.30",
+    "@types/ripemd160": "^2.0.3"
+  }
 }

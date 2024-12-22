@@ -14,7 +14,3 @@ assignees: ''
 - [ ] Key requirement 1
 - [ ] Key requirement 2
 - [ ] Key requirement 3
-
-## Notes
-- Any relevant technical details
-- Links to related docs/issues

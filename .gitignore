@@ -33,11 +33,7 @@ load_account_wasm.log
 .history
 
 pocket-ic
-
-# Playwright
 /test-results/
 /playwright-report/
+/blob-report/
 /playwright/.cache/
-/tests-examples/
-/tests/*.json
-/tests/*.xml
