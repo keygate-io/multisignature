@@ -35,14 +35,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     setApprovalsLoading(true);
-    if (!vaultCanisterId || !identity) { return; }
+    if (!vaultCanisterId || !identity) {
+      return;
+    }
     getThreshold(vaultCanisterId, identity!).then((threshold) => {
       setRequiredApprovals(Number(threshold));
       setCurrentApproval(Number(threshold));
     });
+
     getSigners(vaultCanisterId, identity!).then((signers) => {
       setTotalApprovals(signers.length);
-    })
+    });
+
     setApprovalsLoading(false);
   }, [vaultCanisterId]);
 
