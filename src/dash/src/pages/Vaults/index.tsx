@@ -91,6 +91,7 @@ const Vaults = () => {
           color="primary"
           startIcon={<Plus />}
           onClick={handleCreateAccount}
+          data-testid="create-vault-button"
         >
           Create account
         </Button>
@@ -101,15 +102,21 @@ const Vaults = () => {
           My accounts
         </Typography>
         {vaults.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 4, color: "text.secondary" }}>
+          <Box
+            sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
+            data-testid="vaults-list-empty"
+          >
             <Typography>
               No vaults found. Create your first vault to get started.
             </Typography>
           </Box>
         ) : (
-          <List>
+          <List data-testid="vaults-list">
             {vaults.map((vault, index) => (
               <ListItem
+                data-testid={`vault-${vault.name
+                  .replace(/\s+/g, "-")
+                  .toLowerCase()}`}
                 key={index}
                 sx={{
                   minWidth: 500,

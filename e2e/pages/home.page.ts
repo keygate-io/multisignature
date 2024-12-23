@@ -37,8 +37,14 @@ export class HomePage {
     await expect(connectButton).toHaveText("Connect with Internet Identity");
   }
 
-  async login(): Promise<void> {
+  async register(): Promise<void> {
     await this.iiPage.signInWithNewIdentity({
+      captcha: true,
+    });
+  }
+
+  async login(): Promise<void> {
+    await this.iiPage.signInWithExistingIdentity({
       captcha: true,
     });
   }

@@ -49,6 +49,7 @@ const Step1: React.FC<Step1Props> = ({
       value={accountName}
       onChange={(e) => setAccountName(e.target.value)}
       margin="normal"
+      data-testid="account-name-input"
     />
   </Paper>
 );
@@ -75,10 +76,10 @@ const Review: React.FC<ReviewProps> = ({
       transaction with your connected identity.
     </Typography>
     <Box sx={{ mt: 2 }}>
-      <Typography>
+      <Typography data-testid="network-confirmation">
         <strong>Network:</strong> {selectedNetwork}
       </Typography>
-      <Typography>
+      <Typography data-testid="account-name-confirmation">
         <strong>Name:</strong> {accountName}
       </Typography>
     </Box>
@@ -200,6 +201,7 @@ const CreateAccount: React.FC = () => {
             <Button
               variant="contained"
               onClick={nextStep}
+              data-testid="next-button"
               sx={{ ml: "auto" }}
               disabled={accountName.trim().length === 0}
             >
