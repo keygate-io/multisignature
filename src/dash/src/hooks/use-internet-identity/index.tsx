@@ -9,6 +9,10 @@ import {
 } from "@dfinity/auth-client";
 import type { State } from "./state.type";
 import type { LoginOptions } from "./login-options.type";
+import {
+  INTERNET_IDENTITY_CANISTER_ID,
+  INTERNET_IDENTITY_URL,
+} from "../../util/constants";
 
 /**
  * React context for managing the login state and the Internet Identity.
@@ -135,6 +139,17 @@ export function InternetIdentityProvider({
     }));
   }
 
+  const getIdentityProviderUrl = (
+    iiUrl: string,
+    internetIdentityCanisterId: string
+  ) => {
+    const isSafari = /apple/i.test(navigator?.vendor);
+    if (!iiUrl) return "https://identity.ic0.app";
+    return isSafari
+      ? `http://localhost:4943?canisterId=${internetIdentityCanisterId}`
+      : iiUrl;
+  };
+
   /**
    * Connect to Internet Identity to login the user.
    */
@@ -153,7 +168,10 @@ export function InternetIdentityProvider({
     }));
 
     const options: AuthClientLoginOptions = {
-      identityProvider: process.env.II_URL,
+      identityProvider: getIdentityProviderUrl(
+        INTERNET_IDENTITY_URL,
+        INTERNET_IDENTITY_CANISTER_ID
+      ),
       onSuccess: onLoginSuccess,
       onError: onLoginError,
       maxTimeToLive: BigInt(3_600_000_000_000), // Defaults to 1 hour

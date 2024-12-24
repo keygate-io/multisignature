@@ -27,3 +27,8 @@ export const TOKEN_URN_TO_SYMBOL = {
   [`icp:icrc1:${CKBTC_CANISTER_ID}`]: "ckBTC",
   [`icp:icrc1:${CKUSDC_CANISTER_ID}`]: "ckUSDC",
 };
+
+export const INTERNET_IDENTITY_CANISTER_ID =
+  process.env.CANISTER_ID_INTERNET_IDENTITY ?? "";
+
+export const INTERNET_IDENTITY_URL = process.env.II_URL ?? "";

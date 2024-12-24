@@ -18,6 +18,8 @@ testWithII("new user can complete registration", async ({ page, iiPage }) => {
   // 2) Complete the II flow
   await homePage.register();
 
+  // print url
+  console.log("URL IS", await page.url());
   // 3) Navigate to the vaults page
   const vaultsPage = new VaultsPage({ page });
   await vaultsPage.expectUrl();

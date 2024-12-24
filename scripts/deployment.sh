@@ -305,8 +305,11 @@ deploy_core_canisters() {
     # Finally deploy central
     print_status "Deploying central..."
     dfx deploy "central" || print_error "Failed to deploy central"
+    print_status "Depositing cycles to central..."
+    dfx canister deposit-cycles 29T central
     print_success "central deployed successfully"
 }
+
 deploy_frontend_canisters() {
     print_status "Deploying frontend canisters..."
     
