@@ -3,13 +3,13 @@ import { testWithII } from "@dfinity/internet-identity-playwright";
 import { VaultsPage } from "../pages/vaults/vaults.page";
 import { Page } from "@playwright/test";
 
-export type VaultFixtures = {
+export type RegistrationFixture = {
   vaultsPage: VaultsPage;
   browserName: string;
   page: Page;
 };
 
-export const register = testWithII.extend<VaultFixtures>({
+export const register = testWithII.extend<RegistrationFixture>({
   vaultsPage: async ({ page, iiPage, browserName }, use) => {
     await iiPage.waitReady({
       url: "http://localhost:4943/",

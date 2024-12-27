@@ -166,6 +166,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
             color="primary"
             sx={{ mb: 2, mx: 2 }}
             onClick={handleMultipleRouteModalOpen}
+            data-testid="new-transaction-button"
           >
             New transaction
           </Button>

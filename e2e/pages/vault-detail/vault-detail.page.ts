@@ -1,5 +1,6 @@
 import { expect, Page } from "@playwright/test";
 import { isValidIcpAddress } from "../../utils/ledger";
+import { NewTransactionPage } from "../transactions/new-transaction.page";
 
 export interface VaultDetailPageParams {
   page: Page;
@@ -46,5 +47,22 @@ export class VaultDetailPage {
 
   async getVaultId() {
     return this.page.url().split("/").pop();
+  }
+
+  async navigateToNewTransaction() {
+    await this.page.click('[data-testid="new-transaction-button"]');
+
+    expect(
+      this.page.locator('[data-testid="create-transaction-modal"]')
+    ).toBeVisible();
+
+    await this.page
+      .getByRole("button")
+      .filter({
+        hasText: "Send token",
+      })
+      .click();
+
+    return new NewTransactionPage({ page: this.page });
   }
 }

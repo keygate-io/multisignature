@@ -63,6 +63,7 @@ const MultipleRouteModal: React.FC<MultipleRouteModalProps> = ({
       open={open}
       onClose={onClose}
       aria-labelledby="multiple-route-modal-title"
+      data-testid="create-transaction-modal"
     >
       <Box
         sx={{

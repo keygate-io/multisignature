@@ -1,11 +1,11 @@
-import { expect } from "@playwright/test";
-import { register, VaultFixtures } from "../../fixtures/auth.fixture";
+import { register, RegistrationFixture } from "../../fixtures/auth.fixture";
 import { setupConsoleLogger } from "../../utils/logging";
 import { VaultDetailPage } from "../../pages/vault-detail/vault-detail.page";
+import { vaultSelection } from "../../fixtures/vault.fixture";
 
 register(
   "user can view a vault detail page",
-  async ({ vaultsPage, browserName, page }: VaultFixtures) => {
+  async ({ vaultsPage, browserName, page }: RegistrationFixture) => {
     setupConsoleLogger(page, browserName, register.info().title);
 
     const createVaultPage = await vaultsPage.createVault();
@@ -32,5 +32,13 @@ register(
     await directUrlVaultDetailPage.expectVaultName("My Vault");
     await directUrlVaultDetailPage.expectVaultBalance("0");
     await directUrlVaultDetailPage.expectValidVaultAddress();
+  }
+);
+
+vaultSelection(
+  "user can initiate the new transaction flow",
+  async ({ vaultDetailPage, vaultId, page }) => {
+    const newTransactionPage = await vaultDetailPage.navigateToNewTransaction();
+    await newTransactionPage.expectUrl();
   }
 );
