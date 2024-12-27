@@ -103,7 +103,13 @@ async fn deploy_account(args: VaultInitArgs) -> Principal {
             .unwrap_or_else(|| ic_cdk::trap("Wallet wasm not loaded"))
     });
 
-    match deployer::deploy(wallet_wasm).await {
+    let deployment_arg = candid::encode_one(keygate_core::types::canister_init::VaultInitArgs {
+            name: args.name.clone(),
+            signers: vec![owner_principal],
+        })
+        .unwrap();
+
+    match deployer::deploy(wallet_wasm, deployment_arg).await {
         Ok(canister_id) => {
             let result = repository.create_vault(canister_id, args.name, owner_principal);
 

@@ -87,8 +87,6 @@ const Assets: React.FC = () => {
       identity!
     );
 
-    console.log("subaccountResult", subaccountResult);
-
     const rawBalance = await getTokenBalance(
       Principal.fromText(canisterId),
       vaultCanisterId!

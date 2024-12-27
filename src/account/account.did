@@ -78,4 +78,6 @@ service : (AccountInitializationArgs) -> {
   pubkey_bytes_to_address: () -> (text);
   get_proposed_transaction : (nat64) -> (opt ProposedTransaction) query;
   get_proposed_transactions : () -> (vec ProposedTransaction) query;
+  get_name : () -> (text) query;
 }
+

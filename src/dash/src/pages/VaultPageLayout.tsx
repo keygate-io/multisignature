@@ -141,7 +141,9 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
             </IconButton>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>
-            <Typography variant="h6">{vaultName || "Vault"}</Typography>
+            <Typography variant="h6" data-testid="vault-name">
+              {vaultName || "Vault"}
+            </Typography>
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", mb: 2, px: 2 }}>

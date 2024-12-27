@@ -113,8 +113,6 @@ const CreateAccount: React.FC = () => {
         severity: "info",
       });
 
-      console.log(identity);
-
       deployAccount(identity!, accountName).then(async (id) => {
         setSnackbar({ open: false, message: "", severity: "info" });
         navigate("/vaults");

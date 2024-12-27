@@ -12,6 +12,7 @@ import { DEFAULT_SUBACCOUNT } from "../util/constants";
 import { useParams } from "react-router-dom";
 import { useInternetIdentity } from "../hooks/use-internet-identity";
 import { balanceOf } from "../api/ledger";
+import { getVaultName } from "../api/account";
 
 interface VaultDetail {
   id: Principal;
@@ -40,7 +41,7 @@ export const VaultDetailProvider: React.FC<VaultDetailProviderProps> = ({
   children,
 }) => {
   const [vaultDetail, setVaultDetail] = useState<VaultDetail | null>(null);
-  const [nativeAccountId, setNativeAccountId] = useState<string | null>(null);
+  const [nativeAccountId, setNativeAccountId] = useState<string>("");
   const [nativeBalance, setNativeBalance] = useState<bigint | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +57,7 @@ export const VaultDetailProvider: React.FC<VaultDetailProviderProps> = ({
 
   useEffect(() => {
     fetchVaultDetail();
-  }, [vaultId]);
+  }, [vaultId, identity]);
 
   useEffect(() => {
     if (vaultDetail) {
@@ -98,12 +99,20 @@ export const VaultDetailProvider: React.FC<VaultDetailProviderProps> = ({
         return;
       }
 
-      const mockVaultDetail: VaultDetail = {
-        id: Principal.fromText(vaultId),
-        name: `Funding`,
-      };
+      if (Principal.fromText(vaultId).isAnonymous()) {
+        return;
+      }
 
-      setVaultDetail(mockVaultDetail);
+      if (!identity) {
+        return;
+      }
+
+      const name = await getVaultName(Principal.fromText(vaultId), identity);
+
+      setVaultDetail({
+        id: Principal.fromText(vaultId),
+        name,
+      });
     } catch (err) {
       setError("Failed to fetch vault details");
       console.error(err);
@@ -120,13 +129,13 @@ export const VaultDetailProvider: React.FC<VaultDetailProviderProps> = ({
     () => ({
       vaultName: vaultDetail?.name ?? "",
       vaultCanisterId: vaultDetail?.id ?? Principal.anonymous(),
-      nativeAccountId: nativeAccountId ?? "",
+      nativeAccountId,
       nativeBalance: nativeBalance ?? 0n,
       isLoading,
       error,
       refreshVaultDetail,
     }),
-    [vaultDetail, isLoading, error, nativeBalance]
+    [vaultDetail, isLoading, error, nativeBalance, nativeAccountId]
   );
 
   return (

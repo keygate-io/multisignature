@@ -60,4 +60,19 @@ export class VaultCreationPage {
     await this.page.waitForURL(/\/vaults$/);
     return new VaultsPage({ page: this.page });
   }
+
+  async doAllStepsAndConfirm(
+    networkName = "Internet Computer",
+    accountName = "My Vault"
+  ) {
+    await this.expectAccountNameInput();
+    await this.fillAccountName(accountName);
+    await this.clickNext();
+    await this.expectAccountNameConfirmation(RegExp(accountName));
+    await this.expectNetworkConfirmation(RegExp(networkName));
+    await this.expectConfirmationButton();
+    await this.clickNext();
+    await this.page.waitForURL(/\/vaults$/);
+    return new VaultsPage({ page: this.page });
+  }
 }

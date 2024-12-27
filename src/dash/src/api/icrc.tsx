@@ -45,9 +45,6 @@ export async function getTokenBalance(
   owner_id: Principal,
   subaccount?: Subaccount
 ) {
-  console.log("Subaccount", subaccount);
-  console.log("Principal", principal_id.toString());
-
   return getActor(principal_id)?.icrc1_balance_of({
     owner: owner_id,
     subaccount: subaccount ? [subaccount] : [],

@@ -34,9 +34,13 @@ function getCentralActor(identity: Identity) {
 }
 
 function getAccountActor(account_canister_id: Principal, identity: Identity) {
+  console.log("account_canister_id", account_canister_id.toString());
+  console.log("identity", identity.getPrincipal().toString());
+
   const key = `${account_canister_id.toString()}-${identity
     .getPrincipal()
     .toString()}`;
+
   if (!accountActorMap.has(key)) {
     const actor = createAccountActor(account_canister_id, {
       agentOptions: { identity },
@@ -135,7 +139,11 @@ export function getSigners(account_canister_id: Principal, identity: Identity) {
   return getAccountActor(account_canister_id, identity).get_signers();
 }
 
-export function addSigner(account_canister_id: Principal, identity: Identity, signer: Principal) {
+export function addSigner(
+  account_canister_id: Principal,
+  identity: Identity,
+  signer: Principal
+) {
   return getAccountActor(account_canister_id, identity).add_signer(signer);
 }
 
@@ -162,9 +170,11 @@ export async function getBalance(
   chain: string,
   identity: Identity
 ) {
-  const result = await getAccountActor(account_canister_id, identity).get_balance(chain);
+  const result = await getAccountActor(
+    account_canister_id,
+    identity
+  ).get_balance(chain);
   return result;
-
 }
 
 export async function pubkeyBytesToAddress(
@@ -183,4 +193,11 @@ export function getDebugInfo(
   identity: Identity
 ) {
   return getAccountActor(account_canister_id, identity).get_debug_info();
+}
+
+export function getVaultName(
+  account_canister_id: Principal,
+  identity: Identity
+) {
+  return getAccountActor(account_canister_id, identity).get_name();
 }

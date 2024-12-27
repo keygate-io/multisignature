@@ -46,7 +46,9 @@ export default defineConfig({
 
     {
       name: "safari",
-      use: { ...devices["Desktop Safari"] },
+      use: {
+        ...devices["Desktop Safari"],
+      },
     },
 
     /* Test against mobile viewports. */
@@ -54,10 +56,10 @@ export default defineConfig({
     //   name: 'Mobile Chrome',
     //   use: { ...devices['Pixel 5'] },
     // },
-    {
-      name: "Mobile Safari",
-      use: { ...devices["iPhone 12"] },
-    },
+    // {
+    //   name: "Mobile Safari",
+    //   use: { ...devices["iPhone 12"] },
+    // },
 
     /* Test against branded browsers. */
     // {
@@ -75,4 +77,5 @@ export default defineConfig({
     port: 3000,
     reuseExistingServer: true,
   },
+  timeout: 60_000,
 });

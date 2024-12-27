@@ -26,7 +26,7 @@ struct DeploymentResult {
     canister_id: Principal,
 }
 
-pub async fn deploy(bytecode: Vec<u8>) -> Result<Principal, String> {
+pub async fn deploy(bytecode: Vec<u8>, arg: Vec<u8>) -> Result<Principal, String> {
     let management_canister = Principal::management_canister();
 
     let create_result: Result<(DeploymentResult,), _> = api::call::call_with_payment128(
@@ -51,16 +51,11 @@ pub async fn deploy(bytecode: Vec<u8>) -> Result<Principal, String> {
         }
     };
 
-    let caller = ic_cdk::caller();
     let install_config = CanisterInstall {
         mode: InstallMode::Install,
         canister_id: create_result.canister_id,
         wasm_module: bytecode.clone(),
-        arg: candid::encode_one(keygate_core::types::canister_init::VaultInitArgs {
-            name: "".to_string(),
-            signers: vec![caller],
-        })
-        .unwrap()
+        arg: arg,
     };
 
     ic_cdk::println!("Attempting to install vault");

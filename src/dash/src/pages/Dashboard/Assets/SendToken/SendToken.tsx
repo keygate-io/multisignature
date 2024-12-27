@@ -180,7 +180,6 @@ const SendToken: React.FC = () => {
       // If threshold is 0 or 1, immediately execute the transaction
       const threshold = await getThreshold(vaultCanisterId, identity!);
       if (threshold <= BigInt(1)) {
-        console.log(proposedTx);
         await executeTransaction(vaultCanisterId, proposedTx.id, identity!);
       }
 

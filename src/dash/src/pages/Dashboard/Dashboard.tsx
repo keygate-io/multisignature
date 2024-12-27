@@ -43,6 +43,13 @@ const Dashboard = () => {
     if (!vaultCanisterId || !identity) {
       return;
     }
+
+    if (vaultCanisterId.isAnonymous()) {
+      return;
+    }
+
+    console.log("Vault canister id is", vaultCanisterId.toText());
+
     getThreshold(vaultCanisterId, identity).then((threshold) => {
       setRequiredApprovals(Number(threshold));
       setCurrentApprovals(Number(threshold));
@@ -74,7 +81,10 @@ const Dashboard = () => {
           <Typography color="error">{error}</Typography>
         ) : (
           <Typography variant="h3" fontWeight="bold">
-            {formatIcp(nativeBalance ?? 0n)} ICP
+            <span data-testid="vault-balance">
+              {formatIcp(nativeBalance ?? 0n)}
+            </span>{" "}
+            ICP
           </Typography>
         )}
       </Box>
@@ -106,6 +116,7 @@ const Dashboard = () => {
             fullWidth
             variant="outlined"
             size="small"
+            data-testid="vault-address"
           />
           <IconButton
             size="small"

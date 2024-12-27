@@ -96,6 +96,11 @@ fn get_signers() -> Vec<Principal> {
     })
 }
 
+#[query]
+fn get_name() -> String {
+    NAME.with(|name| name.borrow().get().clone())
+}
+
 #[ic_cdk::query]
 fn get_supported_blockchain_adapters() -> Vec<String> {
     ADAPTERS.with(|adapters| adapters.borrow().keys().cloned().collect())
