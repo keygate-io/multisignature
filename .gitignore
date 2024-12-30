@@ -38,3 +38,5 @@ pocket-ic
 /blob-report/
 /playwright/.cache/
 /screenshots/
+
+run-*.log
