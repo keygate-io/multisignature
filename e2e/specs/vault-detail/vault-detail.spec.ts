@@ -22,7 +22,6 @@ register(
 
     const vaultId = await vaultDetailPage.getVaultId();
 
-    // Test straight from url
     await page.goto("/");
     await page.goto(`/vaults/${vaultId}`);
 

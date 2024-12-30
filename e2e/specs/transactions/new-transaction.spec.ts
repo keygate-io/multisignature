@@ -1,7 +1,7 @@
 import { vaultSelection } from "../../fixtures/vault.fixture";
 
 vaultSelection(
-  "user can create an icp transaction",
+  "user can create an icp transaction and is successfully executed",
   async ({ vaultDetailPage, page }) => {
     const newTransactionPage = await vaultDetailPage.navigateToNewTransaction();
     await newTransactionPage.expectUrl();
@@ -31,5 +31,8 @@ vaultSelection(
 
     const transactionsPage = await newTransactionPage.confirmTransaction();
     await transactionsPage.expectUrl();
+
+    // check if the last transaction was successful
+    await transactionsPage.expectLastTransactionFailed();
   }
 );

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Tabs,
-  Tab,
   List,
   ListItem,
   ListItemText,
@@ -34,43 +32,71 @@ import {
   getProposedTransactions,
   getThreshold,
 } from "../../../api/account";
-import { E8sToIcp } from "../../../util/units";
 import { Principal } from "@dfinity/principal";
 
+type TransactionKey = string;
+type UnifiedTransaction = (Transaction | ProposedTransaction) & {
+  type: "proposed" | "executed";
+};
+
 const Transactions: React.FC = () => {
-  const [executedTransactions, setExecutedTransactions] = useState<
-    Transaction[]
-  >([]);
-  const [proposedTransactions, setProposedTransactions] = useState<
-    ProposedTransaction[]
-  >([]);
+  const [transactions, setTransactions] = useState<UnifiedTransaction[]>([]);
   const [threshold, setThreshold] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState(true);
-  const [tabValue, setTabValue] = useState(0);
   const { vaultCanisterId, nativeAccountId } = useVaultDetail();
   const { identity } = useInternetIdentity();
+
+  const getTransactionKey = (
+    tx: Transaction | ProposedTransaction
+  ): TransactionKey => {
+    return `${tx.amount}_${tx.token}_${tx.to}_${
+      Object.keys(tx.transaction_type)[0]
+    }`;
+  };
+
+  const deduplicateTransactions = (
+    executed: Transaction[],
+    proposed: ProposedTransaction[]
+  ): UnifiedTransaction[] => {
+    const transactionMap = new Map<TransactionKey, UnifiedTransaction>();
+
+    executed.forEach((tx) => {
+      const key = getTransactionKey(tx);
+      if (!transactionMap.has(key) || (tx.status && "Failed" in tx.status)) {
+        transactionMap.set(key, { ...tx, type: "executed" });
+      }
+    });
+
+    proposed.forEach((tx) => {
+      const key = getTransactionKey(tx);
+      if (!transactionMap.has(key)) {
+        transactionMap.set(key, { ...tx, type: "proposed" });
+      }
+    });
+
+    return Array.from(transactionMap.values()).sort((a, b) => {
+      const aTime = "timestamp" in a ? Number(a.timestamp) : Date.now();
+      const bTime = "timestamp" in b ? Number(b.timestamp) : Date.now();
+      return bTime - aTime;
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       if (vaultCanisterId && nativeAccountId) {
         setIsLoading(true);
         try {
-          let [executed, proposed, thresholdValue] = await Promise.all([
+          const [executed, proposed, thresholdValue] = await Promise.all([
             getTransactions(vaultCanisterId, identity!),
             getProposedTransactions(vaultCanisterId, identity!),
             getThreshold(vaultCanisterId, identity!),
           ]);
-
-          executed = executed.reverse();
-
-          setExecutedTransactions(executed || []);
-          setProposedTransactions(proposed || []);
+          const dedupedTransactions = deduplicateTransactions(
+            executed.reverse(),
+            proposed
+          );
+          setTransactions(dedupedTransactions);
           setThreshold(thresholdValue);
-
-          // Set initial tab value based on threshold
-          if (thresholdValue <= BigInt(1)) {
-            setTabValue(1);
-          }
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
@@ -78,30 +104,19 @@ const Transactions: React.FC = () => {
         }
       }
     };
-
     fetchData();
-  }, [nativeAccountId, vaultCanisterId]);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    if (threshold > BigInt(1) || newValue === 1) {
-      setTabValue(newValue);
-    }
-  };
+  }, [vaultCanisterId, nativeAccountId, identity]);
 
   const renderIntentIcon = (type: { [key: string]: null }) => {
-    if ("Transfer" in type) {
-      return <SendIcon sx={{ color: "white" }} />;
-    } else if ("Swap" in type) {
-      return <SwapIcon sx={{ color: "white" }} />;
-    } else {
-      return <WalletIcon sx={{ color: "white" }} />;
-    }
+    if ("Transfer" in type) return <SendIcon sx={{ color: "white" }} />;
+    if ("Swap" in type) return <SwapIcon sx={{ color: "white" }} />;
+    return <WalletIcon sx={{ color: "white" }} />;
   };
 
   const formatAmount = (amount: number, token: string) => {
-    const formattedAmount = (amount);
-    return `${formattedAmount.toFixed(4).toLocaleString()} ${TOKEN_URN_TO_SYMBOL[token]
-      }`;
+    return `${amount.toFixed(4).toLocaleString()} ${
+      TOKEN_URN_TO_SYMBOL[token]
+    }`;
   };
 
   const getIntentStatus = (status: IntentStatus): string => {
@@ -152,8 +167,8 @@ const Transactions: React.FC = () => {
     );
   };
 
-  const renderExecutedTransactions = () => {
-    if (executedTransactions.length === 0) {
+  const renderTransactionsList = () => {
+    if (transactions.length === 0) {
       return (
         <Paper sx={{ p: 3 }}>
           <Box
@@ -165,7 +180,7 @@ const Transactions: React.FC = () => {
             }}
           >
             <InfoIcon sx={{ fontSize: 48 }} />
-            <Typography variant="h6">No executed transactions found</Typography>
+            <Typography variant="h6">No transactions found</Typography>
           </Box>
         </Paper>
       );
@@ -173,8 +188,8 @@ const Transactions: React.FC = () => {
 
     return (
       <List>
-        {executedTransactions.map((transaction, index) => (
-          <React.Fragment key={index.toString()}>
+        {transactions.map((transaction, index) => (
+          <React.Fragment key={getTransactionKey(transaction) + index}>
             {index > 0 && <Divider component="li" />}
             <ListItem alignItems="flex-start" sx={{ py: 2 }}>
               <ListItemIcon>
@@ -189,9 +204,25 @@ const Transactions: React.FC = () => {
                       alignItems: "center",
                     }}
                   >
-                    <Typography variant="body1" sx={{ color: "white" }}>
-                      {Object.keys(transaction.transaction_type)[0]}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography variant="body1" sx={{ color: "white" }}>
+                        {Object.keys(transaction.transaction_type)[0]}
+                      </Typography>
+                      <Chip
+                        label={
+                          transaction.type === "proposed"
+                            ? "Proposed"
+                            : "Executed"
+                        }
+                        size="small"
+                        color={
+                          transaction.type === "proposed"
+                            ? "primary"
+                            : "default"
+                        }
+                        sx={{ ml: 1 }}
+                      />
+                    </Box>
                     <Typography component="span" sx={{ color: "white" }}>
                       {formatAmount(transaction.amount, transaction.token)}
                     </Typography>
@@ -202,6 +233,18 @@ const Transactions: React.FC = () => {
                     <Typography variant="body2">
                       To: {transaction.to}
                     </Typography>
+                    {transaction.type === "proposed" &&
+                      "signers" in transaction && (
+                        <>
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            Proposal ID: {transaction.id.toString()}
+                          </Typography>
+                          {renderSignersInfo(
+                            transaction.signers,
+                            transaction.rejections
+                          )}
+                        </>
+                      )}
                     <Box
                       sx={{
                         display: "flex",
@@ -213,10 +256,33 @@ const Transactions: React.FC = () => {
                         label={Object.keys(transaction.network)[0]}
                         size="small"
                       />
-                      <Chip
-                        label={getIntentStatus(transaction.status)}
-                        size="small"
-                      />
+                      {transaction.type === "proposed" &&
+                      "signers" in transaction ? (
+                        <Chip
+                          label={`${
+                            transaction.signers.length
+                          }/${threshold.toString()} signatures`}
+                          size="small"
+                          color={
+                            transaction.signers.length >= Number(threshold)
+                              ? "success"
+                              : "default"
+                          }
+                        />
+                      ) : (
+                        transaction.type === "executed" &&
+                        "status" in transaction && (
+                          <Chip
+                            label={getIntentStatus(transaction.status)}
+                            size="small"
+                            color={
+                              "Failed" in transaction.status
+                                ? "error"
+                                : "default"
+                            }
+                          />
+                        )
+                      )}
                     </Box>
                   </React.Fragment>
                 }
@@ -228,135 +294,17 @@ const Transactions: React.FC = () => {
     );
   };
 
-  const renderProposedTransactions = () => {
-    if (proposedTransactions.length === 0) {
-      return (
-        <Paper sx={{ p: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <InfoIcon sx={{ fontSize: 48 }} />
-            <Typography variant="h6">No proposed transactions found</Typography>
-          </Box>
-        </Paper>
-      );
-    }
-
-    return (
-      <>
-        <List>
-          {proposedTransactions.map((proposal, index) => (
-            <React.Fragment key={index.toString()}>
-              {index > 0 && <Divider component="li" />}
-              <ListItem alignItems="flex-start" sx={{ py: 2 }}>
-                <ListItemIcon>
-                  {renderIntentIcon(proposal.transaction_type)}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography variant="body1" sx={{ color: "white" }}>
-                        {Object.keys(proposal.transaction_type)[0]}
-                      </Typography>
-                      <Typography component="span" sx={{ color: "white" }}>
-                        {formatAmount(proposal.amount, proposal.token)}
-                      </Typography>
-                    </Box>
-                  }
-                  secondary={
-                    <React.Fragment>
-                      <Typography variant="body2">To: {proposal.to}</Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Proposal ID: {proposal.id.toString()}
-                      </Typography>
-                      {renderSignersInfo(proposal.signers, proposal.rejections)}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          mt: 1,
-                        }}
-                      >
-                        <Chip
-                          label={Object.keys(proposal.network)[0]}
-                          size="small"
-                        />
-                        <Chip
-                          label={`${proposal.signers.length
-                            }/${threshold.toString()} signatures`}
-                          size="small"
-                          color={
-                            proposal.signers.length >= Number(threshold)
-                              ? "success"
-                              : "default"
-                          }
-                        />
-                      </Box>
-                    </React.Fragment>
-                  }
-                />
-              </ListItem>
-            </React.Fragment>
-          ))}
-        </List>
-      </>
-    );
-  };
-
-  const renderContent = () => {
-    if (isLoading) {
-      return <Typography>Loading...</Typography>;
-    }
-
-    return tabValue === 0
-      ? renderProposedTransactions()
-      : renderExecutedTransactions();
-  };
-
   return (
     <AccountPageLayout>
       <Box>
         <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
           Transactions
         </Typography>
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: "rgba(255, 255, 255, 0.12)",
-            mb: 2,
-          }}
-        >
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            textColor="inherit"
-            sx={{
-              "& .MuiTab-root": { color: "white" },
-              "& .Mui-selected": { color: "primary.main" },
-            }}
-          >
-            <Tab
-              label="Proposed"
-              disabled={threshold <= BigInt(1)}
-              sx={{
-                opacity: threshold <= BigInt(1) ? 0.5 : 1,
-              }}
-            />
-            <Tab label="Executed" />
-          </Tabs>
-        </Box>
-        {renderContent()}
+        {isLoading ? (
+          <Typography>Loading...</Typography>
+        ) : (
+          renderTransactionsList()
+        )}
       </Box>
     </AccountPageLayout>
   );

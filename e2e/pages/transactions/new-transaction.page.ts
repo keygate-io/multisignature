@@ -69,4 +69,5 @@ export class NewTransactionPage {
     await this.page.waitForURL(/\/vaults\/[a-zA-Z0-9-]+\/transactions$/);
     return new TransactionsPage({ page: this.page });
   }
+
 }
