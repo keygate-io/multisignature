@@ -86,6 +86,7 @@ export function proposeTransaction(
   request: ProposeTransactionArgs,
   identity: Identity
 ): Promise<ProposedTransaction> {
+  console.log("request", request);
   return getAccountActor(account_canister_id, identity).propose_transaction(
     request
   );

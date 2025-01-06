@@ -40,4 +40,10 @@ export class VaultsPage {
     await this.page.waitForURL(/\/vaults\/[a-zA-Z0-9-]+$/);
     return new VaultDetailPage({ page: this.page });
   }
+
+  async logout() {
+    await this.page.locator('[data-testid="logout-button"]').click();
+    await this.page.waitForLoadState("networkidle");
+    await expect(this.page).toHaveURL(/\/$/);
+  }
 }

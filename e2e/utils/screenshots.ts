@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page, TestInfo } from "@playwright/test";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -7,9 +7,9 @@ export class ScreenshotUtil {
   private readonly testName: string;
   private readonly baseDir: string = "screenshots";
 
-  constructor(page: Page, testName: string) {
+  constructor(page: Page, testInfo: TestInfo) {
     this.page = page;
-    this.testName = testName;
+    this.testName = testInfo.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   }
 
   /**
@@ -28,7 +28,10 @@ export class ScreenshotUtil {
 
     await fs.promises.mkdir(dirPath, { recursive: true });
 
-    const fileName = `${screenshotName}.png`;
+    const sanitizedName = screenshotName
+      .replace(/[^a-z0-9]/gi, "_")
+      .toLowerCase();
+    const fileName = `${sanitizedName}.png`;
     const screenshotPath = path.join(dirPath, fileName);
 
     await this.page.screenshot({

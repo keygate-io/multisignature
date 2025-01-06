@@ -164,12 +164,26 @@ const SendToken: React.FC = () => {
         amount: Number(amount),
         token,
         to: recipient,
-        network: token.toLowerCase().includes("eth") ? { ETH: null } : { ICP: null },
+        network: token.toLowerCase().includes("eth")
+          ? { ETH: null }
+          : { ICP: null },
         transaction_type: { Transfer: null },
         from: nativeAccountId,
       };
 
       setCurrentStep(2);
+
+      /**
+               * export interface ProposeTransactionArgs {
+          'to' : string,
+          'token' : string,
+          'transaction_type' : TransactionType,
+          'network' : SupportedNetwork,
+          'amount' : number,
+        }
+       */
+
+      console.log("proposing transaction", intent);
 
       const proposedTx = await proposeTransaction(
         vaultCanisterId,

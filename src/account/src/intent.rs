@@ -90,6 +90,8 @@ type ICPNativeTransferArgs = TransferArgs;
 /**
  * See TransferArgs in ic_ledger_types
  */
+// Production: 10000
+// Testnet or local: 1000000
 pub const RECOMMENDED_ICP_TRANSACTION_FEE: u64 = 10000;
 pub const RECOMMENDED_ICRC1_TRANSACTION_FEE: u64 = 1000000;
 
@@ -434,9 +436,9 @@ pub async fn execute_transaction(proposal_id: u64) -> IntentStatus {
         network: proposal.network,
     };
 
-    let execution_result = super::execute(&transaction).await;
-
     ic_cdk::println!("Executing transaction: {:?}", transaction);
+
+    let execution_result = super::execute(&transaction).await;
 
     ic_cdk::println!("Execution result: {:?}", execution_result);
 

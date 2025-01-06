@@ -2,6 +2,7 @@ import { HomePage } from "../pages/home.page";
 import { testWithII } from "@dfinity/internet-identity-playwright";
 import { VaultsPage } from "../pages/vaults/vaults.page";
 import { Page } from "@playwright/test";
+import { setupConsoleLogger } from "../utils/logging";
 
 export type RegistrationFixture = {
   vaultsPage: VaultsPage;
@@ -23,6 +24,8 @@ export const register = testWithII.extend<RegistrationFixture>({
 
     const vaultsPage = new VaultsPage({ page });
     await vaultsPage.expectUrl();
+
+    await setupConsoleLogger(page, register.info());
 
     await use(vaultsPage);
   },

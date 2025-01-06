@@ -53,7 +53,7 @@ dfx canister install ledger --argument "(variant {
       principal \"$LEDGER_ACC\";
     };
     transfer_fee = opt record {
-      e8s = 1000000 : nat64;
+      e8s = 10000 : nat64;
     };
     token_symbol = opt \"SYB\";
     token_name = opt \"NAME\";

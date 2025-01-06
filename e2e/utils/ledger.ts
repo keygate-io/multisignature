@@ -1,4 +1,9 @@
 import { bigEndianCrc32 } from "@dfinity/utils";
+import { exec } from "child_process";
+import { promisify } from "util";
+import path from "path";
+
+const execAsync = promisify(exec);
 
 export function isValidIcpAddress(hexAddress: string): boolean {
   // Validation constraints:
@@ -30,4 +35,24 @@ export function isValidIcpAddress(hexAddress: string): boolean {
 
   // Compare calculated checksum with provided checksum
   return calculatedChecksumHex === checksumHex.toLowerCase();
+}
+
+export async function fundAddress(
+  address: string,
+  amount: number
+): Promise<void> {
+  const scriptPath = path.join(process.cwd(), "scripts/fund-icp.sh");
+
+  try {
+    const { stdout, stderr } = await execAsync(
+      `${scriptPath} ${address} ${amount}`
+    );
+
+    // Log result
+    console.log(`Funded ${address} with ${amount} ICP`);
+    if (stdout) console.log(stdout);
+    if (stderr) console.error(stderr);
+  } catch (error) {
+    throw new Error(`Funding failed: ${error.message}`);
+  }
 }

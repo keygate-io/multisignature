@@ -6,7 +6,7 @@ import { vaultSelection } from "../../fixtures/vault.fixture";
 register(
   "user can view a vault detail page",
   async ({ vaultsPage, browserName, page }: RegistrationFixture) => {
-    setupConsoleLogger(page, browserName, register.info().title);
+    await setupConsoleLogger(page, register.info());
 
     const createVaultPage = await vaultsPage.createVault();
     await createVaultPage.expectUrl();

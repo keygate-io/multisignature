@@ -53,12 +53,12 @@ const Settings: React.FC = () => {
 
         setThresholdValue(thresholdValue);
         setSigners(signersValue);
+
         setIsLoading(false);
       } catch (err) {
         setError("Failed to load settings");
         console.error("Error loading settings:", err);
       } finally {
-
       }
     };
 
@@ -66,48 +66,55 @@ const Settings: React.FC = () => {
   }, [vaultCanisterId, identity]);
 
   const addNewSigner = async () => {
-    if (!newSigner || !identity || !vaultCanisterId || newSigner.length < 1) return;
+    if (!newSigner || !identity || !vaultCanisterId || newSigner.length < 1)
+      return;
 
-    addSigner(vaultCanisterId, identity, Principal.fromText(newSigner))
-  }
+    addSigner(vaultCanisterId, identity, Principal.fromText(newSigner));
+  };
 
   if (isLoading) {
     return (
       <AccountPageLayout>
-        <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ color: "white" }}
+          data-testid="loading-state"
+        >
           Loading settings...
         </Typography>
       </AccountPageLayout>
     );
   }
 
-
   return (
     <AccountPageLayout>
-      <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ color: "white" }}
+        data-testid="settings-title"
+      >
         Settings
       </Typography>
 
-      {(error && !(identity && vaultCanisterId)) && (
+      {error && !(identity && vaultCanisterId) && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-
       <ThresholdModal
         visible={thresholdModalOpen}
         onClose={() => setThresholdModalOpen(false)}
         onUpdate={async (value) => {
-          console.log(value)
+          console.log(value);
           await setThreshold(vaultCanisterId, value, identity!);
           setThresholdValue(value);
-        }
-        }
+        }}
         currentThreshold={threshold}
         maxThreshold={BigInt(signers.length)}
       />
-
 
       {/* Threshold Management */}
       <Card sx={{ mb: 4, bgcolor: "background.paper" }}>
@@ -117,7 +124,7 @@ const Settings: React.FC = () => {
         />
         <CardContent>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography>
+            <Typography data-testid="threshold-range">
               Current threshold: {threshold.toString()} of {signers.length}{" "}
               signers
             </Typography>
@@ -152,18 +159,22 @@ const Settings: React.FC = () => {
                 onChange={(e) => setNewSigner(e.target.value)}
               />
               <span>
-                <Button startIcon={<AddIcon />} variant="contained" onClick={addNewSigner}>
+                <Button
+                  startIcon={<AddIcon />}
+                  variant="contained"
+                  onClick={addNewSigner}
+                >
                   Add
                 </Button>
               </span>
             </Box>
           </Box>
 
-          <List>
+          <List data-testid="signers-list">
             {signers.map((signer, index) => (
               <React.Fragment key={signer.toString()}>
                 {index > 0 && <Divider />}
-                <ListItem>
+                <ListItem data-testid={`signer-${index}`}>
                   <ListItemText
                     primary={signer.toString()}
                     secondary={

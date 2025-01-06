@@ -2,6 +2,7 @@ import { expect, Page } from "@playwright/test";
 import { isValidIcpAddress } from "../../utils/ledger";
 import { NewTransactionPage } from "../transactions/new-transaction.page";
 import { AssetsPage } from "../assets/assets.page";
+import { SettingsPage } from "../settings/settings.page";
 
 export interface VaultDetailPageParams {
   page: Page;
@@ -28,6 +29,17 @@ export class VaultDetailPage {
     await expect(this.page.locator('[data-testid="vault-balance"]')).toHaveText(
       vaultBalance
     );
+  }
+
+  async getAddress() {
+    await this.page.waitForSelector('[data-testid="vault-address"] input', {
+      state: "attached",
+      timeout: 5000,
+    });
+
+    return this.page
+      .locator('[data-testid="vault-address"] input')
+      .inputValue();
   }
 
   async expectValidVaultAddress() {
@@ -70,5 +82,10 @@ export class VaultDetailPage {
   async navigateToAssets() {
     await this.page.click('[data-testid="assets-navigator"]');
     return new AssetsPage({ page: this.page });
+  }
+
+  async navigateToSettings() {
+    await this.page.click('[data-testid="settings-navigator"]');
+    return new SettingsPage({ page: this.page });
   }
 }

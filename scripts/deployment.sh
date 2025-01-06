@@ -237,7 +237,7 @@ deploy_ledger_canisters() {
                 record {
                     \"$ACCOUNT_ID\";
                     record {
-                        e8s = 100000000 : nat64;
+                        e8s = 1000000000000000000 : nat64;
                     };
                 };
             };
@@ -258,7 +258,7 @@ deploy_ledger_canisters() {
                 principal \"$LEDGER_ACC\";
             };
             transfer_fee = opt record {
-                e8s = 1000000 : nat64;
+                e8s = 10000 : nat64;
             };
             token_symbol = opt \"SYB\";
             token_name = opt \"NAME\";

@@ -50,6 +50,7 @@ const Header: React.FC = () => {
               color="inherit"
               onClick={handleLogout}
               aria-label="logout"
+              data-testid="logout-button"
             >
               <LogoutIcon />
             </IconButton>
