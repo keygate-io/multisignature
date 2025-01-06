@@ -84,6 +84,7 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     <ListItem
       button
       key={item.text}
+      data-testid={`${item.text.toLowerCase().replace(/\s+/g, "-")}-navigator`}
       sx={{
         borderRadius: 1,
         backgroundColor:

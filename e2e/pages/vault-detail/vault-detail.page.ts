@@ -1,6 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { isValidIcpAddress } from "../../utils/ledger";
 import { NewTransactionPage } from "../transactions/new-transaction.page";
+import { AssetsPage } from "../assets/assets.page";
 
 export interface VaultDetailPageParams {
   page: Page;
@@ -64,5 +65,10 @@ export class VaultDetailPage {
       .click();
 
     return new NewTransactionPage({ page: this.page });
+  }
+
+  async navigateToAssets() {
+    await this.page.click('[data-testid="assets-navigator"]');
+    return new AssetsPage({ page: this.page });
   }
 }

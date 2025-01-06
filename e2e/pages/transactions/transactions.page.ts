@@ -12,6 +12,13 @@ export class TransactionsPage {
   }
 
   async expectUrl() {
+    await this.page.waitForLoadState("networkidle");
+    await expect(
+      this.page.locator("[data-testid='loading-state']")
+    ).not.toBeVisible();
+    await expect(
+      this.page.locator("[data-testid='transactions-container']")
+    ).toBeVisible();
     await expect(this.page).toHaveURL(/\/vaults\/[a-zA-Z0-9-]+\/transactions$/);
   }
 
@@ -21,28 +28,17 @@ export class TransactionsPage {
   private async checkLastTransactionStatus(
     expectedStatus: "Completed" | "Failed"
   ) {
-    const executedTab = this.page.locator('button[role="tab"]', {
-      hasText: /^Executed$/,
+    // Wait for transactions list to load
+    await this.page.waitForLoadState("networkidle", {
+      timeout: 10000,
     });
 
-    await executedTab.waitFor({
-      state: "attached",
-      timeout: 15000,
-    });
-
-    const isSelected = await executedTab.getAttribute("aria-selected");
-    if (isSelected !== "true") {
-      await executedTab.click();
-      await this.page.waitForLoadState("networkidle", {
-        timeout: 10000,
-      });
-    }
-
-    // Find transaction status
+    // Find transaction status directly in the list
     await this.page
       .locator(".MuiChip-root", {
         hasText: expectedStatus,
       })
+      .first()
       .waitFor();
   }
 

@@ -170,7 +170,7 @@ const Transactions: React.FC = () => {
   const renderTransactionsList = () => {
     if (transactions.length === 0) {
       return (
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: 3 }} data-testid="no-transactions-message">
           <Box
             sx={{
               display: "flex",
@@ -187,7 +187,7 @@ const Transactions: React.FC = () => {
     }
 
     return (
-      <List>
+      <List data-testid="transactions-list">
         {transactions.map((transaction, index) => (
           <React.Fragment key={getTransactionKey(transaction) + index}>
             {index > 0 && <Divider component="li" />}
@@ -296,12 +296,12 @@ const Transactions: React.FC = () => {
 
   return (
     <AccountPageLayout>
-      <Box>
+      <Box data-testid="transactions-container">
         <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
           Transactions
         </Typography>
         {isLoading ? (
-          <Typography>Loading...</Typography>
+          <Typography data-testid="loading-message">Loading...</Typography>
         ) : (
           renderTransactionsList()
         )}
