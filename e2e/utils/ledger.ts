@@ -37,7 +37,7 @@ export function isValidIcpAddress(hexAddress: string): boolean {
   return calculatedChecksumHex === checksumHex.toLowerCase();
 }
 
-export async function fundAddress(
+export async function fundICPPrincipal(
   address: string,
   amount: number
 ): Promise<void> {
@@ -54,5 +54,31 @@ export async function fundAddress(
     if (stderr) console.error(stderr);
   } catch (error) {
     throw new Error(`Funding failed: ${error.message}`);
+  }
+}
+
+export async function fundIcrcAddress(vault_principal: string, amount: number) {
+  const execAsync = promisify(exec);
+
+  try {
+    await execAsync("dfx identity use default");
+
+    // principal = account principal id
+    const command = `dfx canister call icrc1_ledger_canister icrc1_transfer '(record {
+        to = record { owner = principal "${vault_principal}"; subaccount = null };
+        amount = ${amount * 10 ** 3};
+      })'`;
+
+    const result = await execAsync(command);
+
+    if (result.stderr) {
+      console.error("Error funding ICRC address:", result.stderr);
+      throw new Error(result.stderr);
+    }
+
+    return result.stdout;
+  } catch (error) {
+    console.error("Failed to fund ICRC address:", error);
+    throw error;
   }
 }

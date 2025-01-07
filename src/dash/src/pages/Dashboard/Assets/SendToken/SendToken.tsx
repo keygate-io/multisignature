@@ -230,8 +230,12 @@ const SendToken: React.FC = () => {
   useEffect(() => {
     async function fetchTokenInfo() {
       if (vaultCanisterId && identity && token) {
+        console.log("fetching token info", token);
+
         const tokenInfo = extractTokenData(token);
         setTokenNetwork(tokenInfo.network);
+
+        console.log("token info", tokenInfo);
 
         if (token.toLowerCase().includes("icp:native")) {
           setTokenSymbol("ICP");
@@ -245,9 +249,14 @@ const SendToken: React.FC = () => {
           const symbol = await getTokenSymbol(
             Principal.fromText(tokenInfo.principalId)
           );
+
+          console.log("symbol", symbol);
+
           const decimals = await getTokenDecimals(
             Principal.fromText(tokenInfo.principalId)
           );
+
+          console.log("decimals", decimals);
 
           if (!symbol) {
             setError("Could not fetch token symbol");

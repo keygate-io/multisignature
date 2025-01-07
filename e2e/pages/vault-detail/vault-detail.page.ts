@@ -31,6 +31,24 @@ export class VaultDetailPage {
     );
   }
 
+  async getPrincipal() {
+    await this.page.waitForSelector('[data-testid="vault-principal"]', {
+      state: "attached",
+      timeout: 5000,
+    });
+
+    const principal = await this.page.locator(
+      '[data-testid="vault-principal"]'
+    );
+    const text = await principal.textContent();
+
+    if (text === "Fetching account") {
+      throw new Error("Principal still loading");
+    }
+
+    return text;
+  }
+
   async getAddress() {
     await this.page.waitForSelector('[data-testid="vault-address"] input', {
       state: "attached",

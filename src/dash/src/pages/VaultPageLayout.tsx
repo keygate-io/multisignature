@@ -157,9 +157,9 @@ const AccountPageLayout: React.FC<PageLayoutProps> = ({ children }) => {
                 textAlign: "left",
               }}
             >
-              {vaultCanisterId
-                ? `${vaultCanisterId.toString()}`
-                : "Fetching account"}
+              <span data-testid="vault-principal">
+                {vaultCanisterId?.toString() ?? "Fetching account"}
+              </span>
             </Typography>
           </Box>
           <Button

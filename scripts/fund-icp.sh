@@ -17,12 +17,7 @@ initial_identity=$(dfx identity whoami)
 dfx identity use minter
 
 # Transfer with zero memo (standard)
-dfx ledger transfer \
- --memo 0 \
- --amount $amount \
- --fee 0 \
- $address \
- --network local
+dfx ledger transfer --memo 0 --amount $amount --fee 0 $address --network local
 
 exit_code=$?
 
