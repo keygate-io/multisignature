@@ -46,7 +46,13 @@ interface SendFormProps {
   recipient: string;
   amount: string;
   token: string;
-  tokens: string[];
+  tokens: Array<{
+    urn: string;
+    symbol: string;
+    decimals: number;
+    network: string;
+    canisterId?: string;
+  }>;
   handleRecipientChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleAmountChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleTokenChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -89,8 +95,8 @@ const SendForm: React.FC<SendFormProps> = ({
         margin="normal"
       >
         {tokens.map((option) => (
-          <MenuItem key={option} value={option}>
-            {TOKEN_URN_TO_SYMBOL[option]}
+          <MenuItem key={option.urn} value={option.urn}>
+            {option.symbol}
           </MenuItem>
         ))}
       </TextField>
@@ -112,9 +118,17 @@ const SendToken: React.FC = () => {
   const [recipient, setRecipient] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [token, setToken] = useState<string>("icp:native");
-  const [tokens, setTokens] = useState<string[]>([]);
+  const [tokens, setTokens] = useState<
+    Array<{
+      urn: string;
+      symbol: string;
+      decimals: number;
+      network: string;
+      canisterId?: string;
+    }>
+  >([]);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const { identity } = useInternetIdentity();
@@ -137,7 +151,14 @@ const SendToken: React.FC = () => {
   };
 
   const handleTokenChange = (event: SelectChangeEvent<string>) => {
-    setToken(event.target.value);
+    const selectedToken = tokens.find((t) => t.urn === event.target.value);
+    if (selectedToken) {
+      setToken(selectedToken.urn);
+      setTokenSymbol(selectedToken.symbol);
+      setTokenNetwork(selectedToken.network);
+      setTokenCanisterId(selectedToken.canisterId || "");
+      setTokenDecimals(selectedToken.decimals);
+    }
   };
 
   const handleNext = () => {
@@ -173,16 +194,6 @@ const SendToken: React.FC = () => {
 
       setCurrentStep(2);
 
-      /**
-               * export interface ProposeTransactionArgs {
-          'to' : string,
-          'token' : string,
-          'transaction_type' : TransactionType,
-          'network' : SupportedNetwork,
-          'amount' : number,
-        }
-       */
-
       console.log("proposing transaction", intent);
 
       const proposedTx = await proposeTransaction(
@@ -191,7 +202,6 @@ const SendToken: React.FC = () => {
         identity!
       );
 
-      // If threshold is 0 or 1, immediately execute the transaction
       const threshold = await getThreshold(vaultCanisterId, identity!);
       if (threshold <= BigInt(1)) {
         await executeTransaction(vaultCanisterId, proposedTx.id, identity!);
@@ -209,73 +219,110 @@ const SendToken: React.FC = () => {
 
   useEffect(() => {
     async function fetchTokens() {
-      if (vaultCanisterId && identity) {
+      if (!vaultCanisterId || !identity) return;
+
+      try {
+        setIsLoading(true);
+        const tokenList = [];
+
+        // Add ICP native token
+        tokenList.push({
+          urn: "icp:native",
+          symbol: "ICP",
+          decimals: ICP_DECIMALS,
+          network: "ICP",
+        });
+
         if (process.env.DFX_NETWORK === "ic") {
-          const fetchedTokens = [
-            "icp:native",
-            `icp:icrc1:${CKETH_CANISTER_ID}`,
-            `icp:icrc1:${CKBTC_CANISTER_ID}`,
-            `icp:icrc1:${CKUSDC_CANISTER_ID}`,
+          // Fetch ICRC token info
+          const icrcTokens = [
+            {
+              urn: `icp:icrc1:${CKETH_CANISTER_ID}`,
+              canisterId: CKETH_CANISTER_ID,
+            },
+            {
+              urn: `icp:icrc1:${CKBTC_CANISTER_ID}`,
+              canisterId: CKBTC_CANISTER_ID,
+            },
+            {
+              urn: `icp:icrc1:${CKUSDC_CANISTER_ID}`,
+              canisterId: CKUSDC_CANISTER_ID,
+            },
           ];
 
-          setTokens(fetchedTokens);
+          for (const token of icrcTokens) {
+            try {
+              const principal = Principal.fromText(token.canisterId);
+              const [symbol, decimals] = await Promise.all([
+                getTokenSymbol(principal),
+                getTokenDecimals(principal),
+              ]);
+
+              if (symbol && decimals !== undefined) {
+                tokenList.push({
+                  urn: token.urn,
+                  symbol,
+                  decimals,
+                  network: "ICP",
+                  canisterId: token.canisterId,
+                });
+              }
+            } catch (err) {
+              console.error(`Failed to load token ${token.canisterId}:`, err);
+              // Skip this token and continue with others
+              continue;
+            }
+          }
         } else {
-          setTokens(["icp:native", `icp:icrc1:${MOCK_ICRC1_CANISTER}`, "eth:native"]);
+          // Local development tokens
+          tokenList.push({
+            urn: "eth:native",
+            symbol: "ETH",
+            decimals: 18,
+            network: "ETH",
+          });
+
+          try {
+            const mockPrincipal = Principal.fromText(MOCK_ICRC1_CANISTER);
+            const [symbol, decimals] = await Promise.all([
+              getTokenSymbol(mockPrincipal),
+              getTokenDecimals(mockPrincipal),
+            ]);
+
+            if (symbol && decimals !== undefined) {
+              tokenList.push({
+                urn: `icp:icrc1:${MOCK_ICRC1_CANISTER}`,
+                symbol,
+                decimals,
+                network: "ICP",
+                canisterId: MOCK_ICRC1_CANISTER,
+              });
+            }
+          } catch (err) {
+            console.error(`Failed to load mock token:`, err);
+            // Skip mock token if it fails to load
+          }
         }
+
+        setTokens(tokenList);
+
+        // Set initial token info
+        const initialToken = tokenList[0];
+        setToken(initialToken.urn);
+        setTokenSymbol(initialToken.symbol);
+        setTokenNetwork(initialToken.network);
+        setTokenDecimals(initialToken.decimals);
+        setTokenCanisterId(initialToken.canisterId || "");
+      } catch (err) {
+        console.error("Error fetching tokens:", err);
+        setError("Failed to load tokens");
+      } finally {
+        setIsLoading(false);
       }
     }
+
     fetchTokens();
   }, [vaultCanisterId, identity]);
-
-  useEffect(() => {
-    async function fetchTokenInfo() {
-      if (vaultCanisterId && identity && token) {
-        console.log("fetching token info", token);
-
-        const tokenInfo = extractTokenData(token);
-        setTokenNetwork(tokenInfo.network);
-
-        console.log("token info", tokenInfo);
-
-        if (token.toLowerCase().includes("icp:native")) {
-          setTokenSymbol("ICP");
-          setTokenCanisterId("");
-          setTokenDecimals(ICP_DECIMALS);
-        } else if (token.toLowerCase().includes("eth:native")) {
-          setTokenSymbol("ETH");
-          setTokenCanisterId("");
-          setTokenDecimals(18);
-        } else {
-          const symbol = await getTokenSymbol(
-            Principal.fromText(tokenInfo.principalId)
-          );
-
-          console.log("symbol", symbol);
-
-          const decimals = await getTokenDecimals(
-            Principal.fromText(tokenInfo.principalId)
-          );
-
-          console.log("decimals", decimals);
-
-          if (!symbol) {
-            setError("Could not fetch token symbol");
-            return;
-          }
-
-          if (!decimals) {
-            setError("Could not fetch token decimals");
-            return;
-          }
-
-          setTokenSymbol(symbol);
-          setTokenCanisterId(tokenInfo.principalId);
-          setTokenDecimals(decimals !== undefined ? decimals : ICP_DECIMALS);
-        }
-      }
-    }
-    fetchTokenInfo();
-  }, [vaultCanisterId, nativeAccountId, identity, token]);
 
   useEffect(() => {
     setFormattedAmount(amount);

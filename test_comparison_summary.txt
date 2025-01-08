@@ -1,0 +1,26 @@
+Test Iterations Comparison Summary
+===================================
+Generated on: 2025-01-08 11:23:00
+
+Iteration 1 Statistics:
+- Average Success Rate: 92.73%
+- Success Rate Range: 72.73% - 100.00%
+- Average Duration: 52.62 seconds
+- Duration Range: 46.92 - 61.84 seconds
+- Average Tests per Run: 11.0
+- Total Failed Tests: 4
+- Number of Runs: 5
+
+Iteration 2 Statistics:
+- Average Success Rate: 87.27%
+- Success Rate Range: 54.55% - 100.00%
+- Average Duration: 61.05 seconds
+- Duration Range: 49.10 - 77.51 seconds
+- Average Tests per Run: 11.0
+- Total Failed Tests: 7
+- Number of Runs: 5
+
+Comparison (Iteration 2 vs Iteration 1):
+- Success Rate Change: -5.45%
+- Duration Change: 8.43 seconds
+- Failed Tests Change: 3

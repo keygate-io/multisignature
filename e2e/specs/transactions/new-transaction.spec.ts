@@ -56,7 +56,7 @@ vaultSelection(
     await screenshotUtil.takeScreenshot("initial vault detail page");
 
     const vault_principal = await vaultDetailPage.getPrincipal();
-    await fundIcrcAddress(vault_principal!, 15);
+    await fundIcrcAddress(vault_principal!, 1500000);
     await screenshotUtil.takeScreenshot("vault funded with ICRC tokens");
 
     const newTransactionPage = await vaultDetailPage.navigateToNewTransaction();
@@ -68,7 +68,7 @@ vaultSelection(
       amount: "10",
       token: "MCK",
       recipient:
-        "8611a2a90f0a3dacf14d980c6cf7ba6e51877022885ce020875a115e8db89021",
+        "qxacs-awqor-2la7l-kgtty-5knnf-b24sz-24tdh-y2pkd-rohli-neghj-4qe",
     };
 
     await setupConsoleLogger(page, register.info());
@@ -82,7 +82,7 @@ vaultSelection(
     await newTransactionPage.expectReviewStep();
     await newTransactionPage.expectTransactionDetails({
       amount: `${intent.amount} ${intent.token}`,
-      network: "MCK",
+      network: "ICP",
       recipient: intent.recipient,
     });
     await screenshotUtil.takeScreenshot("transaction review step");

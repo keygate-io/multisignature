@@ -1,0 +1,1177 @@
+{
+  "config": {
+    "configFile": "/Users/vincxntes/multisignature/playwright.config.ts",
+    "rootDir": "/Users/vincxntes/multisignature/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/vincxntes/multisignature/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/vincxntes/multisignature/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.49.1",
+    "workers": 6,
+    "webServer": {
+      "command": "npm run start",
+      "port": 3000,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "specs/assets/assets.spec.ts",
+      "file": "specs/assets/assets.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can view assets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "passed",
+                  "duration": 23871,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:06:24.993Z] log: account_canister_id dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:24.996Z] log: identity y7v27-rtkc5-ugj3l-ijeiw-3647n-wmnj7-c3hqv-jf5ev-com63-p7hyv-nae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:24.996Z] log: account_canister_id dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:24.997Z] log: identity y7v27-rtkc5-ugj3l-ijeiw-3647n-wmnj7-c3hqv-jf5ev-com63-p7hyv-nae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.162Z] log: Vault canister id is dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.162Z] log: account_canister_id dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.162Z] log: identity y7v27-rtkc5-ugj3l-ijeiw-3647n-wmnj7-c3hqv-jf5ev-com63-p7hyv-nae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.162Z] log: account_canister_id dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.162Z] log: identity y7v27-rtkc5-ugj3l-ijeiw-3647n-wmnj7-c3hqv-jf5ev-com63-p7hyv-nae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.208Z] log: account_canister_id dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.208Z] log: identity y7v27-rtkc5-ugj3l-ijeiw-3647n-wmnj7-c3hqv-jf5ev-com63-p7hyv-nae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.208Z] log: account_canister_id dfdal-2uaaa-aaaaa-qaama-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.208Z] log: identity y7v27-rtkc5-ugj3l-ijeiw-3647n-wmnj7-c3hqv-jf5ev-com63-p7hyv-nae\n\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:01.152Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "943026cf9f01c9a546cd-f07e3569b7f682806f40",
+          "file": "specs/assets/assets.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/auth/registration.spec.ts",
+      "file": "specs/auth/registration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "new user can complete registration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "status": "passed",
+                  "duration": 13462,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:01.151Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c55c4f1f5cfed8586114-15a8fe71f66ab0976c51",
+          "file": "specs/auth/registration.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/landing/landing.spec.ts",
+      "file": "specs/landing/landing.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "has 'Keygate' in title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "status": "passed",
+                  "duration": 2056,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:01.055Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "589bb866630c5fb4a9bf-46ef755ae859f7ea4a62",
+          "file": "specs/landing/landing.spec.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "title": "has 'Connect with Internet Identity' button",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "status": "passed",
+                  "duration": 2060,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:01.055Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "589bb866630c5fb4a9bf-86242e9931a301983f5d",
+          "file": "specs/landing/landing.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/settings/settings.spec.ts",
+      "file": "specs/settings/settings.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can view settings in default state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "status": "passed",
+                  "duration": 22017,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:06:23.002Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.006Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.007Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.007Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.181Z] log: Vault canister id is dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.181Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.181Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.182Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.182Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.223Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.223Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.224Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.224Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.224Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.224Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.224Z] log: account_canister_id dccg7-xmaaa-aaaaa-qaamq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:23.224Z] log: identity nmow4-2v23v-eihko-sczla-vh7yd-3gqxr-6gjbx-doimu-qcg76-nzbx5-mae\n\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:01.151Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6507a9b862cd6bce240e-30ef8f4ee13440620fbe",
+          "file": "specs/settings/settings.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/transactions/new-transaction.spec.ts",
+      "file": "specs/transactions/new-transaction.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can create an icp transaction and is successfully executed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "status": "passed",
+                  "duration": 29016,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:06:25.016Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.029Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.032Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.034Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.187Z] log: Vault canister id is dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.187Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.187Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.188Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.188Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "Funded 08d323c0122fac64ab151527a8a6760d4a3c0b54a8195a5f60678b47301813eb with 15 ICP\n"
+                    },
+                    {
+                      "text": "Transfer sent at block height 3\nFunded 08d323c0122fac64ab151527a8a6760d4a3c0b54a8195a5f60678b47301813eb with 15 ICP\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:27.338Z] error: Failed to load mock token: _AgentError: Invalid certificate: Signature verification failed\n    at http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11564:17\n    at async Promise.all (index 0)\n    at async request (http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11578:3)\n    at async _HttpAgent.fetchSubnetKeys (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2453:22)\n    at async getSubnetStatus (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2299:7)\n    at async Promise.all (index 1)\n    at async _HttpAgent.query (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2302:41)\n    at async caller (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:3388:22)\n    at async Promise.all (index 0)\n    at async fetchTokens (http://localhost:3000/src/pages/Dashboard/Assets/SendToken/SendToken.tsx:294:40)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.080Z] log: proposing transaction {amount: 10, token: icp:native, to: 8611a2a90f0a3dacf14d980c6cf7ba6e51877022885ce020875a115e8db89021, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.080Z] log: proposing transaction {amount: 10, token: icp:native, to: 8611a2a90f0a3dacf14d980c6cf7ba6e51877022885ce020875a115e8db89021, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.081Z] log: request {amount: 10, token: icp:native, to: 8611a2a90f0a3dacf14d980c6cf7ba6e51877022885ce020875a115e8db89021, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.081Z] log: request {amount: 10, token: icp:native, to: 8611a2a90f0a3dacf14d980c6cf7ba6e51877022885ce020875a115e8db89021, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.081Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.081Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.081Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:28.081Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.033Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.033Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.033Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.033Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.046Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.046Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.046Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.046Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.274Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: account_canister_id dlbnd-beaaa-aaaaa-qaana-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.275Z] log: identity qwjbf-s6h3e-sa6uf-775ts-okt24-oyvr2-s2tet-aczsr-4sih7-2gvn4-aqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    }
+                  ],
+                  "stderr": [
+                    {
+                      "text": "Using identity: \"minter\".\nUsing identity: \"default\".\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:27.338Z] Console Error: Failed to load mock token: _AgentError: Invalid certificate: Signature verification failed\n    at http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11564:17\n    at async Promise.all (index 0)\n    at async request (http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11578:3)\n    at async _HttpAgent.fetchSubnetKeys (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2453:22)\n    at async getSubnetStatus (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2299:7)\n    at async Promise.all (index 1)\n    at async _HttpAgent.query (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2302:41)\n    at async caller (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:3388:22)\n    at async Promise.all (index 0)\n    at async fetchTokens (http://localhost:3000/src/pages/Dashboard/Assets/SendToken/SendToken.tsx:294:40)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.314Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:01.153Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23d684c00dbc5af89e5e-0134b9abb0a77f3fecf0",
+          "file": "specs/transactions/new-transaction.spec.ts",
+          "line": 7,
+          "column": 1
+        },
+        {
+          "title": "user can create an icrc transaction and is successfully executed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "status": "passed",
+                  "duration": 30944,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:06:25.214Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.221Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.228Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.229Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.403Z] log: Vault canister id is dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.403Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.403Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.404Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.404Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:29.169Z] error: Failed to load mock token: _AgentError: Invalid certificate: Signature verification failed\n    at http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11564:17\n    at async Promise.all (index 0)\n    at async request (http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11578:3)\n    at async _HttpAgent.fetchSubnetKeys (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2453:22)\n    at async getSubnetStatus (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2299:7)\n    at async Promise.all (index 1)\n    at async _HttpAgent.query (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2302:41)\n    at async caller (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:3388:22)\n    at async Promise.all (index 0)\n    at async fetchTokens (http://localhost:3000/src/pages/Dashboard/Assets/SendToken/SendToken.tsx:294:40)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.113Z] log: proposing transaction {amount: 10, token: icp:icrc1:bkyz2-fmaaa-aaaaa-qaaaq-cai, to: qxacs-awqor-2la7l-kgtty-5knnf-b24sz-24tdh-y2pkd-rohli-neghj-4qe, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.113Z] log: proposing transaction {amount: 10, token: icp:icrc1:bkyz2-fmaaa-aaaaa-qaaaq-cai, to: qxacs-awqor-2la7l-kgtty-5knnf-b24sz-24tdh-y2pkd-rohli-neghj-4qe, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.113Z] log: request {amount: 10, token: icp:icrc1:bkyz2-fmaaa-aaaaa-qaaaq-cai, to: qxacs-awqor-2la7l-kgtty-5knnf-b24sz-24tdh-y2pkd-rohli-neghj-4qe, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.114Z] log: request {amount: 10, token: icp:icrc1:bkyz2-fmaaa-aaaaa-qaaaq-cai, to: qxacs-awqor-2la7l-kgtty-5knnf-b24sz-24tdh-y2pkd-rohli-neghj-4qe, network: Object, transaction_type: Object}\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.114Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.114Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.114Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:30.114Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.712Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.712Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.713Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.713Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.724Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.724Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.724Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:31.724Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.183Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.184Z] log: account_canister_id dmalx-m4aaa-aaaaa-qaanq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.185Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.185Z] log: identity dju3c-jvmns-tjkzu-lxayy-dk4to-pgybc-2s2pt-wjvnc-xiah4-n7qqt-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.237Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    }
+                  ],
+                  "stderr": [
+                    {
+                      "text": "[2025-01-08T13:06:29.169Z] Console Error: Failed to load mock token: _AgentError: Invalid certificate: Signature verification failed\n    at http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11564:17\n    at async Promise.all (index 0)\n    at async request (http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11578:3)\n    at async _HttpAgent.fetchSubnetKeys (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2453:22)\n    at async getSubnetStatus (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2299:7)\n    at async Promise.all (index 1)\n    at async _HttpAgent.query (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2302:41)\n    at async caller (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:3388:22)\n    at async Promise.all (index 0)\n    at async fetchTokens (http://localhost:3000/src/pages/Dashboard/Assets/SendToken/SendToken.tsx:294:40)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <p> p \n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:34.238Z] Console Error: Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Chip2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:12056:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at p\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Typography2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:8203:22)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItemText2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:28020:17)\n    at li\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at ListItem2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:27495:17)\n    at ul\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at List2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:26937:17)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at main\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at AccountPageLayout (http://localhost:3000/src/pages/VaultPageLayout.tsx:42:30)\n    at Transactions (http://localhost:3000/src/pages/Dashboard/Transactions/Transactions.tsx:49:43)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at VaultDetailProvider (http://localhost:3000/src/contexts/VaultDetailContext.tsx:36:3)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4460:26)\n    at div\n    at http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:4110:50\n    at Box4 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:851:19)\n    at div\n    at PageLayout\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4084:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4524:5)\n    at MotionWrapper (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6558:5)\n    at ProviderChildren (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6667:5)\n    at ConfigProvider (http://localhost:3000/node_modules/.vite/deps/antd.js?v=81dc5474:6947:27)\n    at DefaultPropsProvider (http://localhost:3000/node_modules/.vite/deps/chunk-TP5HK4WL.js?v=81dc5474:9512:3)\n    at RtlProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1525:5)\n    at ThemeProvider (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1475:15)\n    at ThemeProvider2 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:1565:15)\n    at ThemeProvider3 (http://localhost:3000/node_modules/.vite/deps/@mui_material.js?v=81dc5474:3667:12)\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:4467:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=81dc5474:5215:5)\n    at App\n    at InternetIdentityProvider (http://localhost:3000/src/hooks/use-internet-identity/index.tsx:42:3)\n\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:03.402Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "23d684c00dbc5af89e5e-d375e020cae2cccb7ffa",
+          "file": "specs/transactions/new-transaction.spec.ts",
+          "line": 52,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/vault-detail/vault-detail.spec.ts",
+      "file": "specs/vault-detail/vault-detail.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can view a vault detail page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "status": "passed",
+                  "duration": 23151,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:06:25.212Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.216Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.217Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.217Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.218Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.218Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.219Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.219Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.408Z] log: Vault canister id is dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.409Z] log: Vault canister id is dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.415Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.416Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.416Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.416Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.416Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.416Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.417Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.417Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.682Z] debug: [vite] connecting...\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.682Z] debug: [vite] connecting...\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.700Z] debug: [vite] connected.\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.702Z] debug: [vite] connected.\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.778Z] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.779Z] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.923Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.923Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.928Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] warning: Unable to fetch root key. Check to ensure that your local replica is running\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.933Z] debug: [vite] connecting...\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.933Z] debug: [vite] connecting...\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.934Z] debug: [vite] connected.\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.934Z] debug: [vite] connected.\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.940Z] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.940Z] info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.118Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.118Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.118Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.118Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.128Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.128Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.128Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.128Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: Vault canister id is dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: Vault canister id is dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: account_canister_id dzh22-nuaaa-aaaaa-qaaoa-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:26.274Z] log: identity nt22x-ld5er-67irk-uws5d-2vupy-giq2a-dgsly-gacfn-2xeex-yxuoh-xqe\n\n"
+                    }
+                  ],
+                  "stderr": [
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.929Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] Console Error: TypeError: Failed to fetch\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:25.930Z] Console Error: TypeError: Failed to fetch\n\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:03.384Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "208465d465c32f89db60-c07ac253423a0df4f657",
+          "file": "specs/vault-detail/vault-detail.spec.ts",
+          "line": 6,
+          "column": 1
+        },
+        {
+          "title": "user can initiate the new transaction flow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "status": "passed",
+                  "duration": 21458,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:06:35.992Z] log: account_canister_id d6g4o-amaaa-aaaaa-qaaoq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:35.994Z] log: identity xnxwd-cihvh-yqtrs-kej6z-yd6r5-rsrwa-dibty-djqm3-7frlr-so4b2-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:35.994Z] log: account_canister_id d6g4o-amaaa-aaaaa-qaaoq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:35.994Z] log: identity xnxwd-cihvh-yqtrs-kej6z-yd6r5-rsrwa-dibty-djqm3-7frlr-so4b2-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:36.165Z] log: Vault canister id is d6g4o-amaaa-aaaaa-qaaoq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:36.165Z] log: account_canister_id d6g4o-amaaa-aaaaa-qaaoq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:36.165Z] log: identity xnxwd-cihvh-yqtrs-kej6z-yd6r5-rsrwa-dibty-djqm3-7frlr-so4b2-bae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:36.166Z] log: account_canister_id d6g4o-amaaa-aaaaa-qaaoq-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:06:36.166Z] log: identity xnxwd-cihvh-yqtrs-kej6z-yd6r5-rsrwa-dibty-djqm3-7frlr-so4b2-bae\n\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:14.836Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "208465d465c32f89db60-a6e105718f668081e931",
+          "file": "specs/vault-detail/vault-detail.spec.ts",
+          "line": 37,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/vaults/vaults.spec.ts",
+      "file": "specs/vaults/vaults.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "new user can create a vault",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "status": "passed",
+                  "duration": 19629,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:23.386Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "447914e186e895347887-03bac2c7f8ba209b2b31",
+          "file": "specs/vaults/vaults.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "user can create multiple vaults",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "passed",
+                  "duration": 23873,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:06:25.278Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "447914e186e895347887-27000bf35c8ff873b26b",
+          "file": "specs/vaults/vaults.spec.ts",
+          "line": 20,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-01-08T13:05:59.700Z",
+    "duration": 49482.158,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

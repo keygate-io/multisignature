@@ -14,7 +14,7 @@ if (!process.env.CANISTER_ID_ICRC1_LEDGER_CANISTER) {
 }
 
 export const NATIVE_ICP_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-export const MOCK_ICRC1_CANISTER = "bd3sg-teaaa-aaaaa-qaaba-cai";
+export const MOCK_ICRC1_CANISTER = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
 export const CKETH_CANISTER_ID = "ss2fx-dyaaa-aaaar-qacoq-cai";
 export const CKBTC_CANISTER_ID = "mxzaz-hqaaa-aaaar-qaada-cai";
 export const CKUSDC_CANISTER_ID = "xevnm-gaaaa-aaaar-qafnq-cai";

@@ -1,0 +1,587 @@
+{
+  "config": {
+    "configFile": "/Users/vincxntes/multisignature/playwright.config.ts",
+    "rootDir": "/Users/vincxntes/multisignature/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/vincxntes/multisignature/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/vincxntes/multisignature/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.49.1",
+    "workers": 6,
+    "webServer": {
+      "command": "npm run start",
+      "port": 3000,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "specs/assets/assets.spec.ts",
+      "file": "specs/assets/assets.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can view assets",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "timedOut",
+                  "duration": 60044,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts",
+                        "column": 29,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nLocator: locator(':root')\nExpected pattern: \u001b[32m/\\/vaults$/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nCall log:\n\u001b[2m  - expect.toHaveURL with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator(':root')\u001b[22m\n\n\n   at pages/vaults/vaults.page.ts:17\n\n  15 |\n  16 |   async expectUrl() {\n> 17 |     await expect(this.page).toHaveURL(/\\/vaults$/);\n     |                             ^\n  18 |   }\n  19 |\n  20 |   async createVault() {\n    at VaultsPage.expectUrl (/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts:17:29)\n    at Object.vaultsPage (/Users/vincxntes/multisignature/e2e/fixtures/auth.fixture.ts:26:22)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:40.990Z",
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "943026cf9f01c9a546cd-f07e3569b7f682806f40",
+          "file": "specs/assets/assets.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/auth/registration.spec.ts",
+      "file": "specs/auth/registration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "new user can complete registration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "status": "passed",
+                  "duration": 14989,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:40.989Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c55c4f1f5cfed8586114-15a8fe71f66ab0976c51",
+          "file": "specs/auth/registration.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/landing/landing.spec.ts",
+      "file": "specs/landing/landing.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "has 'Keygate' in title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "status": "passed",
+                  "duration": 2204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:40.895Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "589bb866630c5fb4a9bf-46ef755ae859f7ea4a62",
+          "file": "specs/landing/landing.spec.ts",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "title": "has 'Connect with Internet Identity' button",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "status": "passed",
+                  "duration": 2199,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:40.894Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "589bb866630c5fb4a9bf-86242e9931a301983f5d",
+          "file": "specs/landing/landing.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/settings/settings.spec.ts",
+      "file": "specs/settings/settings.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can view settings in default state",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "status": "timedOut",
+                  "duration": 60047,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts",
+                        "column": 29,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nLocator: locator(':root')\nExpected pattern: \u001b[32m/\\/vaults$/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nCall log:\n\u001b[2m  - expect.toHaveURL with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator(':root')\u001b[22m\n\n\n   at pages/vaults/vaults.page.ts:17\n\n  15 |\n  16 |   async expectUrl() {\n> 17 |     await expect(this.page).toHaveURL(/\\/vaults$/);\n     |                             ^\n  18 |   }\n  19 |\n  20 |   async createVault() {\n    at VaultsPage.expectUrl (/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts:17:29)\n    at Object.vaultsPage (/Users/vincxntes/multisignature/e2e/fixtures/auth.fixture.ts:26:22)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:40.998Z",
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6507a9b862cd6bce240e-30ef8f4ee13440620fbe",
+          "file": "specs/settings/settings.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/transactions/new-transaction.spec.ts",
+      "file": "specs/transactions/new-transaction.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can create an icp transaction and is successfully executed",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "status": "timedOut",
+                  "duration": 60049,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts",
+                        "column": 29,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nLocator: locator(':root')\nExpected pattern: \u001b[32m/\\/vaults$/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nCall log:\n\u001b[2m  - expect.toHaveURL with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator(':root')\u001b[22m\n\n\n   at pages/vaults/vaults.page.ts:17\n\n  15 |\n  16 |   async expectUrl() {\n> 17 |     await expect(this.page).toHaveURL(/\\/vaults$/);\n     |                             ^\n  18 |   }\n  19 |\n  20 |   async createVault() {\n    at VaultsPage.expectUrl (/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts:17:29)\n    at Object.vaultsPage (/Users/vincxntes/multisignature/e2e/fixtures/auth.fixture.ts:26:22)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:40.992Z",
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23d684c00dbc5af89e5e-0134b9abb0a77f3fecf0",
+          "file": "specs/transactions/new-transaction.spec.ts",
+          "line": 7,
+          "column": 1
+        },
+        {
+          "title": "user can create an icrc transaction and is successfully executed",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "status": "timedOut",
+                  "duration": 60029,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts",
+                        "column": 29,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nLocator: locator(':root')\nExpected pattern: \u001b[32m/\\/vaults$/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nCall log:\n\u001b[2m  - expect.toHaveURL with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator(':root')\u001b[22m\n\n\n   at pages/vaults/vaults.page.ts:17\n\n  15 |\n  16 |   async expectUrl() {\n> 17 |     await expect(this.page).toHaveURL(/\\/vaults$/);\n     |                             ^\n  18 |   }\n  19 |\n  20 |   async createVault() {\n    at VaultsPage.expectUrl (/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts:17:29)\n    at Object.vaultsPage (/Users/vincxntes/multisignature/e2e/fixtures/auth.fixture.ts:26:22)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:43.596Z",
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "23d684c00dbc5af89e5e-d375e020cae2cccb7ffa",
+          "file": "specs/transactions/new-transaction.spec.ts",
+          "line": 52,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/vault-detail/vault-detail.spec.ts",
+      "file": "specs/vault-detail/vault-detail.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can view a vault detail page",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "status": "timedOut",
+                  "duration": 60035,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"vaultsPage\".\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts",
+                        "column": 29,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nLocator: locator(':root')\nExpected pattern: \u001b[32m/\\/vaults$/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nCall log:\n\u001b[2m  - expect.toHaveURL with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator(':root')\u001b[22m\n\n\n   at pages/vaults/vaults.page.ts:17\n\n  15 |\n  16 |   async expectUrl() {\n> 17 |     await expect(this.page).toHaveURL(/\\/vaults$/);\n     |                             ^\n  18 |   }\n  19 |\n  20 |   async createVault() {\n    at VaultsPage.expectUrl (/Users/vincxntes/multisignature/e2e/pages/vaults/vaults.page.ts:17:29)\n    at Object.vaultsPage (/Users/vincxntes/multisignature/e2e/fixtures/auth.fixture.ts:26:22)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:43.586Z",
+                  "attachments": []
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "208465d465c32f89db60-c07ac253423a0df4f657",
+          "file": "specs/vault-detail/vault-detail.spec.ts",
+          "line": 6,
+          "column": 1
+        },
+        {
+          "title": "user can initiate the new transaction flow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "status": "passed",
+                  "duration": 19693,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "[2025-01-08T13:43:15.584Z] log: account_canister_id avqkn-guaaa-aaaaa-qaaea-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.586Z] log: identity j7m7p-eeyxn-komyh-kx7sv-smzum-y4hlm-37boi-wjcaq-cyh4l-lu4il-qae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.587Z] log: account_canister_id avqkn-guaaa-aaaaa-qaaea-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.587Z] log: identity j7m7p-eeyxn-komyh-kx7sv-smzum-y4hlm-37boi-wjcaq-cyh4l-lu4il-qae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.759Z] log: Vault canister id is avqkn-guaaa-aaaaa-qaaea-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.759Z] log: account_canister_id avqkn-guaaa-aaaaa-qaaea-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.759Z] log: identity j7m7p-eeyxn-komyh-kx7sv-smzum-y4hlm-37boi-wjcaq-cyh4l-lu4il-qae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.759Z] log: account_canister_id avqkn-guaaa-aaaaa-qaaea-cai\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.759Z] log: identity j7m7p-eeyxn-komyh-kx7sv-smzum-y4hlm-37boi-wjcaq-cyh4l-lu4il-qae\n\n"
+                    },
+                    {
+                      "text": "[2025-01-08T13:43:15.940Z] error: Failed to load mock token: _AgentError: Invalid certificate: Signature verification failed\n    at http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11564:17\n    at async Promise.all (index 0)\n    at async request (http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11578:3)\n    at async _HttpAgent.fetchSubnetKeys (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2453:22)\n    at async getSubnetStatus (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2299:7)\n    at async Promise.all (index 1)\n    at async _HttpAgent.query (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2302:41)\n    at async caller (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:3388:22)\n    at async Promise.all (index 1)\n    at async fetchTokens (http://localhost:3000/src/pages/Dashboard/Assets/SendToken/SendToken.tsx:294:40)\n\n"
+                    }
+                  ],
+                  "stderr": [
+                    {
+                      "text": "[2025-01-08T13:43:15.940Z] Console Error: Failed to load mock token: _AgentError: Invalid certificate: Signature verification failed\n    at http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11564:17\n    at async Promise.all (index 0)\n    at async request (http://localhost:3000/node_modules/.vite/deps/chunk-U5M5LHT6.js?v=81dc5474:11578:3)\n    at async _HttpAgent.fetchSubnetKeys (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2453:22)\n    at async getSubnetStatus (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2299:7)\n    at async Promise.all (index 1)\n    at async _HttpAgent.query (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:2302:41)\n    at async caller (http://localhost:3000/node_modules/.vite/deps/chunk-H5SX37VP.js?v=81dc5474:3388:22)\n    at async Promise.all (index 1)\n    at async fetchTokens (http://localhost:3000/src/pages/Dashboard/Assets/SendToken/SendToken.tsx:294:40)\n\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:42:56.274Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "208465d465c32f89db60-a6e105718f668081e931",
+          "file": "specs/vault-detail/vault-detail.spec.ts",
+          "line": 37,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/vaults/vaults.spec.ts",
+      "file": "specs/vaults/vaults.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "new user can create a vault",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "status": "passed",
+                  "duration": 18866,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:43:15.975Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "447914e186e895347887-03bac2c7f8ba209b2b31",
+          "file": "specs/vaults/vaults.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "user can create multiple vaults",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "status": "passed",
+                  "duration": 22153,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2025-01-08T13:43:34.847Z",
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "447914e186e895347887-27000bf35c8ff873b26b",
+          "file": "specs/vaults/vaults.spec.ts",
+          "line": 20,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-01-08T13:42:39.529Z",
+    "duration": 77509.27900000001,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

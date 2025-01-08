@@ -16,16 +16,27 @@ initial_identity=$(dfx identity whoami)
 # Switch to minter identity
 dfx identity use minter
 
-# Transfer with zero memo (standard)
-dfx ledger transfer --memo 0 --amount $amount --fee 0 $address --network local
+# Set max retries and delay between retries
+max_retries=3
+retry_delay=5
 
-exit_code=$?
+# Try transfer with retries
+for ((i=1; i<=$max_retries; i++)); do
+ # Transfer with zero memo (standard)
+ dfx ledger transfer --memo 0 --amount $amount --fee 0 $address --network local
+ exit_code=$?
 
-if [ $exit_code -eq 0 ]; then
- echo "Funded $address with $amount ICP"
-else
- echo "Transfer failed with code $exit_code"
-fi
+ if [ $exit_code -eq 0 ]; then
+  echo "Funded $address with $amount ICP"
+  break
+ else
+  echo "Transfer attempt $i failed with code $exit_code"
+  if [ $i -lt $max_retries ]; then
+   echo "Retrying in $retry_delay seconds..."
+   sleep $retry_delay
+  fi
+ fi
+done
 
 # Switch back to initial identity
 dfx identity use "$initial_identity"
