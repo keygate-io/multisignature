@@ -10,6 +10,7 @@ import {
   ListItemIcon,
   Divider,
   Chip,
+  Button,
   Paper,
 } from "@mui/material";
 import {
@@ -36,6 +37,7 @@ import {
 } from "../../../api/account";
 import { E8sToIcp } from "../../../util/units";
 import { Principal } from "@dfinity/principal";
+import { executeTransaction } from "../../../api/account";
 
 const Transactions: React.FC = () => {
   const [executedTransactions, setExecutedTransactions] = useState<
@@ -53,7 +55,6 @@ const Transactions: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (vaultCanisterId && nativeAccountId) {
-        setIsLoading(true);
         try {
           let [executed, proposed, thresholdValue] = await Promise.all([
             getTransactions(vaultCanisterId, identity!),
@@ -71,10 +72,10 @@ const Transactions: React.FC = () => {
           if (thresholdValue <= BigInt(1)) {
             setTabValue(1);
           }
+          setIsLoading(false);
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
-          setIsLoading(false);
         }
       }
     };
@@ -273,13 +274,32 @@ const Transactions: React.FC = () => {
                         {formatAmount(proposal.amount, proposal.token)}
                       </Typography>
                     </Box>
+
                   }
                   secondary={
                     <React.Fragment>
-                      <Typography variant="body2">To: {proposal.to}</Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Proposal ID: {proposal.id.toString()}
-                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Box>
+                          <Typography variant="body2">To: {proposal.to}</Typography>
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            Proposal ID: {proposal.id.toString()}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            mt: 1,
+                          }}>
+                          {proposal.signers.length >= Number(threshold) && (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => executeTransaction(vaultCanisterId, proposal.id, identity!)}
+                            >
+                              Execute
+                            </Button>
+                          )}
+                        </Box>
+                      </Box>
                       {renderSignersInfo(proposal.signers, proposal.rejections)}
                       <Box
                         sx={{
