@@ -1,6 +1,5 @@
 import { expect, Page } from "@playwright/test";
 import { VaultCreationPage } from "./vault-creation.page";
-import { VaultDetailPage } from "../vault-detail/vault-detail.page";
 
 export interface VaultsPageParams {
   page: Page; // Playwright page
@@ -17,6 +16,18 @@ export class VaultsPage {
     await expect(this.page).toHaveURL(/\/vaults$/);
   }
 
+  async expectVaultsList() {
+    await expect(
+      this.page.locator('[data-testid="vaults-list"]')
+    ).toBeVisible();
+  }
+
+  async expectVaultsListEmpty() {
+    await expect(
+      this.page.locator('[data-testid="vaults-list-empty"]')
+    ).toBeVisible();
+  }
+
   async createVault() {
     await this.page.locator('[data-testid="create-vault-button"]').click();
     await expect(this.page).toHaveURL(/\/new-account\/create$/);
@@ -29,21 +40,5 @@ export class VaultsPage {
         `[data-testid="vault-${name.replace(/\s+/g, "-").toLowerCase()}"]`
       )
     ).toBeVisible();
-  }
-
-  async navigateToVault(name: string) {
-    await this.page
-      .locator(
-        `[data-testid="vault-${name.replace(/\s+/g, "-").toLowerCase()}"]`
-      )
-      .click();
-    await this.page.waitForURL(/\/vaults\/[a-zA-Z0-9-]+$/);
-    return new VaultDetailPage({ page: this.page });
-  }
-
-  async logout() {
-    await this.page.locator('[data-testid="logout-button"]').click();
-    await this.page.waitForLoadState("networkidle");
-    await expect(this.page).toHaveURL(/\/$/);
   }
 }
