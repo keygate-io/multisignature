@@ -4,6 +4,8 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?logo=apache&style=for-the-badge)](LICENSE)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/keygate-vault/multisignature/tests.yaml?logo=githubactions&logoColor=white&style=for-the-badge&label=tests)](./actions/workflows/tests.yaml)
 
+💝 This project received a $25,000 grant from the DFINITY foundation.
+
 # Keygate Vault
 
 A cross-chain decentralized multisignature platform built for the Internet Computer Protocol (ICP). Keygate simplifies the management of multi-party digital assets by providing a secure, flexible, and user-friendly infrastructure for creating and managing multisignature wallets.
