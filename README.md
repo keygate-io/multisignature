@@ -1,5 +1,3 @@
-> This project is **still in Alpha**. We are happy to answer questions if they are raised as issues in this github repo.
-
 [![Internet Computer portal](https://img.shields.io/badge/InternetComputer-grey?logo=internet%20computer&style=for-the-badge)](https://internetcomputer.org)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?logo=apache&style=for-the-badge)](LICENSE)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/keygate-vault/multisignature/tests.yaml?logo=githubactions&logoColor=white&style=for-the-badge&label=tests)](./actions/workflows/tests.yaml)
